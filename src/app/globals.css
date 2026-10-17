@@ -1,0 +1,64 @@
+@import "tailwindcss";
+
+:root {
+  --background: #F6F7F9;
+  --foreground: #26292E;
+  --charcoal-dark: #1C1E22;
+  --charcoal-medium: #26292E;
+  --gray-medium: #737A84;
+  --gray-light: #E8EAEC;
+  --lime-accent: #D2F367;
+  --lime-tint: #ECFCCB;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-charcoal-dark: #1C1E22;
+  --color-charcoal-medium: #26292E;
+  --color-gray-medium: #737A84;
+  --color-gray-light: #E8EAEC;
+  --color-lime-accent: #D2F367;
+  --color-lime-tint: #ECFCCB;
+  --font-sans: var(--font-sans);
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), system-ui, -apple-system, sans-serif;
+  overflow-x: hidden;
+}
+
+/* Background Garis Lengkung Putus-putus Halus (Dashed Orbital SVG Lines ala Terra) */
+.bg-orbital-pattern {
+  background-image: 
+    radial-gradient(circle at 10% 20%, rgba(210, 243, 103, 0.08) 0%, transparent 40%),
+    radial-gradient(circle at 90% 80%, rgba(115, 122, 132, 0.06) 0%, transparent 45%);
+}
+
+/* Potongan Asimetris Poligon Arsitektur dengan Lekukan Diagonal */
+.clip-asymmetric-notch {
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 70px), calc(100% - 70px) 100%, 0 100%);
+}
+
+.clip-badge-notch {
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 16px), calc(100% - 16px) 100%, 0 100%);
+}
+
+/* Custom Scrollbar Elegan */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #F6F7F9;
+}
+::-webkit-scrollbar-thumb {
+  background: #D5D9DE;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #737A84;
+}
+
