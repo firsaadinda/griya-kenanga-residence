@@ -5,7 +5,6 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { OrbitalBackground } from "@/components/ui/OrbitalBackground";
 import { createClient } from "@/lib/supabase/client";
-import { validateStrongPassword } from "@/lib/auth/password";
 import {
   Lock,
   Mail,
@@ -85,19 +84,15 @@ function LoginFormContent() {
     }
   };
 
-  // Metode A: Login Email & Kata Sandi Murni (Dengan Validasi 12 - 16 Karakter)
+  // Metode A: Login Email & Kata Sandi Murni
   const handleEmailSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage(null);
     setSuccessMessage(null);
 
-    // Validasi Client-Side: Aturan Keamanan Kata Sandi 12 - 16 Karakter
-    const passwordCheck = validateStrongPassword(password);
-    if (!passwordCheck.isValid) {
-      setErrorMessage(
-        passwordCheck.message ||
-          "Kata sandi wajib 12 hingga 16 karakter dengan kombinasi huruf besar, huruf kecil, angka, dan simbol."
-      );
+    const cleanEmail = email.trim().toLowerCase();
+    if (!cleanEmail || !password) {
+      setErrorMessage("Email dan kata sandi wajib diisi.");
       return;
     }
 
@@ -254,11 +249,9 @@ function LoginFormContent() {
               <input
                 type={showPassword ? "text" : "password"}
                 required
-                minLength={12}
-                maxLength={16}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="Kata sandi 12 - 16 karakter"
+                placeholder="Masukkan kata sandi akun"
                 className="w-full bg-[#F6F7F9] text-xs text-[#26292E] pl-10 pr-10 py-2.5 rounded-xl border border-transparent focus:border-[#D5D9DE] focus:bg-white focus:outline-none transition"
               />
               <button

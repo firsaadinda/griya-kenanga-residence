@@ -1,0 +1,78 @@
+
+<svg width="600" height="960" viewBox="0 0 600 960" xmlns="http://www.w3.org/2000/svg" font-family="'Segoe UI', Roboto, Helvetica, Arial, sans-serif">
+  <!-- Phone Frame -->
+  <rect width="600" height="960" rx="36" fill="#002D38" />
+
+  <!-- Status Bar -->
+  <rect x="0" y="0" width="600" height="44" rx="36" fill="#00AED6" />
+  <text x="300" y="28" fill="#FFFFFF" font-size="12" text-anchor="middle" font-weight="600">18:45</text>
+
+  <!-- Header GoPay Resmi (Tanpa QRIS) -->
+  <rect x="0" y="44" width="600" height="85" fill="#00AED6" />
+  <!-- GoPay Logo -->
+  <g transform="translate(48, 65)">
+    <circle cx="16" cy="18" r="14" fill="#FFFFFF" />
+    <circle cx="16" cy="18" r="7" fill="#00AED6" />
+    <text x="38" y="25" fill="#FFFFFF" font-size="22" font-weight="800">gopay</text>
+  </g>
+  <!-- Transfer Badge -->
+  <g transform="translate(420, 68)">
+    <rect width="130" height="34" rx="17" fill="#008EA6" />
+    <text x="65" y="22" fill="#FFFFFF" font-size="12" font-weight="bold" text-anchor="middle">Transfer Sukses</text>
+  </g>
+
+  <!-- White Slip -->
+  <rect x="24" y="145" width="552" height="770" rx="24" fill="#FFFFFF" />
+
+  <!-- GoPay Check Circle Badge -->
+  <g transform="translate(260, 185)">
+    <circle cx="40" cy="40" r="38" fill="#00AED6" />
+    <circle cx="40" cy="40" r="32" fill="#00AED6" stroke="#FFFFFF" stroke-width="2" />
+    <path d="M 28 40 L 36 48 L 54 28" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" />
+  </g>
+
+  <text x="300" y="300" fill="#0F172A" font-size="18" font-weight="bold" text-anchor="middle">Transfer Saldo GoPay Berhasil</text>
+  <text x="300" y="325" fill="#64748B" font-size="12" text-anchor="middle">09 Okt 2026  13:40 WIB</text>
+
+  <text x="300" y="385" fill="#0F172A" font-size="36" font-weight="800" text-anchor="middle">Rp 1.450.000</text>
+  <text x="300" y="415" fill="#00AED6" font-size="12" font-weight="bold" text-anchor="middle">TRANSAKSI SUKSES DITERIMA</text>
+
+  <line x1="48" y1="445" x2="552" y2="445" stroke="#E2E8F0" stroke-width="1.5" stroke-dasharray="6,6" />
+
+  <!-- Details -->
+  <g transform="translate(48, 470)">
+    <text x="0" y="20" fill="#64748B" font-size="12">Penerima</text>
+    <text x="504" y="20" fill="#0F172A" font-size="13" font-weight="bold" text-anchor="end">Griya Kenanga Residence</text>
+    <line x1="0" y1="36" x2="504" y2="36" stroke="#F1F5F9" stroke-width="1" />
+
+    <text x="0" y="60" fill="#64748B" font-size="12">Nomor HP Penerima / Akun</text>
+    <text x="504" y="60" fill="#005E6A" font-size="13" font-weight="bold" text-anchor="end">GoPay Merchant Kenanga</text>
+    <line x1="0" y1="76" x2="504" y2="76" stroke="#F1F5F9" stroke-width="1" />
+
+    <text x="0" y="100" fill="#64748B" font-size="12">Pengirim (Penyewa)</text>
+    <text x="504" y="100" fill="#0F172A" font-size="13" font-weight="bold" text-anchor="end">EKA WULANDARI</text>
+    <line x1="0" y1="116" x2="504" y2="116" stroke="#F1F5F9" stroke-width="1" />
+
+    <text x="0" y="140" fill="#64748B" font-size="12">Nomor Ponsel Pengirim</text>
+    <text x="504" y="140" fill="#334155" font-size="13" font-weight="500" text-anchor="end">085743427281</text>
+    <line x1="0" y1="156" x2="504" y2="156" stroke="#F1F5F9" stroke-width="1" />
+
+    <text x="0" y="180" fill="#64748B" font-size="12">Metode Pembayaran</text>
+    <text x="504" y="180" fill="#00AED6" font-size="13" font-weight="bold" text-anchor="end">Saldo GoPay</text>
+    <line x1="0" y1="196" x2="504" y2="196" stroke="#F1F5F9" stroke-width="1" />
+
+    <text x="0" y="220" fill="#64748B" font-size="12">ID Transaksi GoPay</text>
+    <text x="504" y="220" fill="#0F172A" font-size="13" font-family="'Consolas', monospace" font-weight="bold" text-anchor="end">GPAY88100105</text>
+    <line x1="0" y1="236" x2="504" y2="236" stroke="#F1F5F9" stroke-width="1" />
+
+    <text x="0" y="260" fill="#64748B" font-size="12">Catatan Transaksi</text>
+    <text x="504" y="260" fill="#0F172A" font-size="13" font-weight="600" text-anchor="end">Tagihan Sewa Unit A-105</text>
+  </g>
+
+  <!-- GoPay Security Shield -->
+  <rect x="48" y="780" width="504" height="65" rx="14" fill="#F0FDFA" stroke="#99F6E4" />
+  <circle cx="75" cy="812" r="12" fill="#0D9488" />
+  <path d="M 69 812 L 73 816 L 81 808" fill="none" stroke="#FFFFFF" stroke-width="2.5" />
+  <text x="96" y="808" fill="#0F766E" font-size="12" font-weight="bold">Pembayaran Dilindungi GoPay Aman</text>
+  <text x="96" y="825" fill="#115E59" font-size="10">Resmi diproses PT Dompet Anak Bangsa (GoTo Financial)</text>
+</svg>

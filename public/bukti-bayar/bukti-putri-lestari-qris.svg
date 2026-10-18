@@ -1,0 +1,84 @@
+
+<svg width="600" height="960" viewBox="0 0 600 960" xmlns="http://www.w3.org/2000/svg" font-family="'Segoe UI', Roboto, Helvetica, Arial, sans-serif">
+  <!-- Phone Frame -->
+  <rect width="600" height="960" rx="36" fill="#002D38" />
+
+  <!-- Status Bar -->
+  <rect x="0" y="0" width="600" height="44" rx="36" fill="#00AED6" />
+  <text x="300" y="28" fill="#FFFFFF" font-size="12" text-anchor="middle" font-weight="600">18:45</text>
+
+  <!-- Header GoPay & QRIS -->
+  <rect x="0" y="44" width="600" height="85" fill="#00AED6" />
+  <!-- GoPay Logo -->
+  <g transform="translate(48, 65)">
+    <circle cx="16" cy="18" r="14" fill="#FFFFFF" />
+    <circle cx="16" cy="18" r="7" fill="#00AED6" />
+    <text x="38" y="25" fill="#FFFFFF" font-size="22" font-weight="800">gopay</text>
+  </g>
+  <!-- QRIS Logo -->
+  <g transform="translate(460, 68)">
+    <rect width="90" height="34" rx="6" fill="#FFFFFF" />
+    <text x="45" y="24" fill="#EF4444" font-size="18" font-weight="900" font-family="'Arial Black', sans-serif" text-anchor="middle" letter-spacing="1">QRIS</text>
+  </g>
+
+  <!-- White Slip -->
+  <rect x="24" y="145" width="552" height="770" rx="24" fill="#FFFFFF" />
+
+  <!-- QR Code Mock Graphic -->
+  <g transform="translate(245, 175)">
+    <rect width="110" height="110" rx="12" fill="#F8FAFC" stroke="#E2E8F0" stroke-width="2" />
+    <!-- QR Corner 1 -->
+    <rect x="12" y="12" width="28" height="28" fill="#0F172A" />
+    <rect x="18" y="18" width="16" height="16" fill="#FFFFFF" />
+    <rect x="22" y="22" width="8" height="8" fill="#0F172A" />
+    <!-- QR Corner 2 -->
+    <rect x="70" y="12" width="28" height="28" fill="#0F172A" />
+    <rect x="76" y="18" width="16" height="16" fill="#FFFFFF" />
+    <rect x="80" y="22" width="8" height="8" fill="#0F172A" />
+    <!-- QR Corner 3 -->
+    <rect x="12" y="70" width="28" height="28" fill="#0F172A" />
+    <rect x="18" y="76" width="16" height="16" fill="#FFFFFF" />
+    <rect x="22" y="80" width="8" height="8" fill="#0F172A" />
+    <!-- Center Logo -->
+    <circle cx="55" cy="55" r="10" fill="#00AED6" />
+  </g>
+
+  <text x="300" y="325" fill="#059669" font-size="16" font-weight="bold" text-anchor="middle">✓ Pembayaran Berhasil</text>
+  <text x="300" y="375" fill="#0F172A" font-size="34" font-weight="800" text-anchor="middle">Rp 2.800.000</text>
+  <text x="300" y="405" fill="#64748B" font-size="12" text-anchor="middle">09 Agu 2026  12:00 WIB</text>
+
+  <line x1="48" y1="430" x2="552" y2="430" stroke="#E2E8F0" stroke-width="1.5" stroke-dasharray="6,6" />
+
+  <!-- Details -->
+  <g transform="translate(48, 455)">
+    <text x="0" y="20" fill="#64748B" font-size="12">Merchant</text>
+    <text x="504" y="20" fill="#0F172A" font-size="13" font-weight="bold" text-anchor="end">Griya Kenanga Residence</text>
+    <line x1="0" y1="36" x2="504" y2="36" stroke="#F1F5F9" stroke-width="1" />
+
+    <text x="0" y="60" fill="#64748B" font-size="12">Penyewa / Pengirim</text>
+    <text x="504" y="60" fill="#0F172A" font-size="13" font-weight="bold" text-anchor="end">PUTRI LESTARI</text>
+    <line x1="0" y1="76" x2="504" y2="76" stroke="#F1F5F9" stroke-width="1" />
+
+    <text x="0" y="100" fill="#64748B" font-size="12">Metode Pembayaran</text>
+    <text x="504" y="100" fill="#00AED6" font-size="13" font-weight="bold" text-anchor="end">QRIS Mandiri/BCA</text>
+    <line x1="0" y1="116" x2="504" y2="116" stroke="#F1F5F9" stroke-width="1" />
+
+    <text x="0" y="140" fill="#64748B" font-size="12">No. Handphone / Akun</text>
+    <text x="504" y="140" fill="#334155" font-size="13" font-weight="500" text-anchor="end">081392936648</text>
+    <line x1="0" y1="156" x2="504" y2="156" stroke="#F1F5F9" stroke-width="1" />
+
+    <text x="0" y="180" fill="#64748B" font-size="12">Transaction ID</text>
+    <text x="504" y="180" fill="#0F172A" font-size="13" font-family="'Consolas', monospace" font-weight="bold" text-anchor="end">QRIS99001301</text>
+    <line x1="0" y1="196" x2="504" y2="196" stroke="#F1F5F9" stroke-width="1" />
+
+    <text x="0" y="220" fill="#64748B" font-size="12">Unit Kos</text>
+    <text x="504" y="220" fill="#0F172A" font-size="13" font-weight="600" text-anchor="end">Kamar C-301</text>
+  </g>
+
+  <!-- GoPay Security Shield -->
+  <rect x="48" y="780" width="504" height="65" rx="14" fill="#F0FDFA" stroke="#99F6E4" />
+  <circle cx="75" cy="812" r="12" fill="#0D9488" />
+  <path d="M 69 812 L 73 816 L 81 808" fill="none" stroke="#FFFFFF" stroke-width="2.5" />
+  <text x="96" y="808" fill="#0F766E" font-size="12" font-weight="bold">Pembayaran Dilindungi GoPay Aman</text>
+  <text x="96" y="825" fill="#115E59" font-size="10">Konfirmasi instan diterima pengelola Griya Kenanga Residence</text>
+</svg>

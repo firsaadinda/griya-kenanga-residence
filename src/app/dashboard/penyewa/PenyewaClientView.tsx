@@ -440,11 +440,11 @@ export function PenyewaClientView({ initialPenyewa, userRole }: PenyewaClientVie
                 Membuat dokumen KTP resmi dari Supabase Storage...
               </div>
             ) : ktpSignedUrl ? (
-              <div className="rounded-[24px] bg-[#ECEEEF] border border-[#D5D9DC] p-2 sm:p-3 flex items-center justify-center shadow-inner overflow-hidden">
+              <div className="rounded-[24px] bg-[#ECEEEF] border border-[#D5D9DC] pt-2.5 pb-1 px-1.5 sm:pt-3 sm:pb-1.5 sm:px-2 flex items-center justify-center shadow-inner overflow-hidden">
                 <img
                   src={ktpSignedUrl}
                   alt={`KTP ${selectedPenyewa.nama_lengkap}`}
-                  className="w-full h-auto object-contain rounded-[20px] transition"
+                  className="w-full h-auto object-contain rounded-[18px] transition"
                 />
               </div>
             ) : (

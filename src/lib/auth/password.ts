@@ -23,7 +23,7 @@ export interface PasswordValidationResult {
 export function evaluatePasswordStrength(password: string): PasswordValidationResult {
   const p = password || "";
 
-  const hasLength = p.length >= 12 && p.length <= 16;
+  const hasLength = p.length >= 12 && p.length <= 32;
   const hasUpper = /[A-Z]/.test(p);
   const hasLower = /[a-z]/.test(p);
   const hasNumber = /\d/.test(p);
@@ -31,7 +31,7 @@ export function evaluatePasswordStrength(password: string): PasswordValidationRe
 
   let score = 0;
   if (p.length >= 8) score++;
-  if (p.length >= 12 && p.length <= 16) score++;
+  if (p.length >= 12) score++;
   if (hasUpper && hasLower) score++;
   if (hasNumber) score++;
   if (hasSymbol) score++;
@@ -67,7 +67,7 @@ export function evaluatePasswordStrength(password: string): PasswordValidationRe
     if (p.length < 12) {
       message = `Kata sandi minimal 12 karakter (saat ini ${p.length} karakter).`;
     } else {
-      message = `Kata sandi maksimal 16 karakter (saat ini ${p.length} karakter).`;
+      message = `Kata sandi maksimal 32 karakter (saat ini ${p.length} karakter).`;
     }
   } else if (!hasUpper) {
     message = "Kata sandi wajib mengandung setidaknya 1 huruf kapital (A-Z).";

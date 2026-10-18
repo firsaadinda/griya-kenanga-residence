@@ -1,0 +1,97 @@
+
+<svg width="600" height="960" viewBox="0 0 600 960" xmlns="http://www.w3.org/2000/svg" font-family="'Segoe UI', Roboto, Helvetica, Arial, sans-serif">
+  <!-- Phone Frame -->
+  <rect width="600" height="960" rx="36" fill="#041B2D" />
+
+  <!-- Status Bar -->
+  <rect x="0" y="0" width="600" height="44" rx="36" fill="#00213D" />
+  <circle cx="50" cy="24" r="4" fill="#FFFFFF" opacity="0.8"/>
+  <circle cx="62" cy="24" r="4" fill="#FFFFFF" opacity="0.8"/>
+  <circle cx="74" cy="24" r="4" fill="#FFFFFF" opacity="0.8"/>
+  <text x="300" y="28" fill="#FFFFFF" font-size="12" text-anchor="middle" font-weight="600">14:03</text>
+  <rect x="530" y="18" width="22" height="12" rx="3" fill="none" stroke="#FFFFFF" stroke-width="1.5" />
+  <rect x="532" y="20" width="16" height="8" rx="1.5" fill="#FFFFFF" />
+
+  <!-- Header Mandiri Livin -->
+  <rect x="0" y="44" width="600" height="110" fill="#002B49" />
+  <path d="M 32 90 L 44 78 M 32 90 L 44 102" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+  
+  <!-- Mandiri Logo Curve -->
+  <g transform="translate(440, 68)">
+    <path d="M 0 15 Q 40 -10 90 20 Q 50 15 20 28 Z" fill="#FBBF24" />
+    <text x="50" y="38" fill="#FFFFFF" font-size="22" font-weight="900" letter-spacing="0.5">mandiri</text>
+  </g>
+  <text x="60" y="96" fill="#FFFFFF" font-size="20" font-weight="bold">Transaksi Berhasil</text>
+
+  <!-- Body Container -->
+  <rect x="24" y="130" width="552" height="790" rx="24" fill="#FFFFFF" />
+
+  <!-- Mandiri Blue Curve Accent -->
+  <rect x="24" y="130" width="552" height="170" rx="24" fill="#002B49" />
+  <rect x="24" y="270" width="552" height="30" fill="#002B49" />
+
+  <!-- Yellow Stripe -->
+  <rect x="24" y="295" width="552" height="6" fill="#FBBF24" />
+
+  <!-- Checkmark & Title -->
+  <circle cx="300" cy="180" r="28" fill="#FBBF24" />
+  <path d="M 290 180 L 297 187 L 311 173" fill="none" stroke="#002B49" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" />
+  
+  <text x="300" y="230" fill="#FFFFFF" font-size="18" font-weight="bold" text-anchor="middle">Tagihan Sewa Hunian</text>
+  <text x="300" y="255" fill="#93C5FD" font-size="13" text-anchor="middle">09 Okt 2026   14:03 WIB</text>
+
+  <!-- Nominal Besar -->
+  <text x="300" y="360" fill="#002B49" font-size="36" font-weight="800" text-anchor="middle">Rp 1.000.000</text>
+  <rect x="230" y="380" width="140" height="24" rx="12" fill="#ECFDF5" />
+  <text x="300" y="396" fill="#059669" font-size="11" font-weight="bold" text-anchor="middle">STATUS: BERHASIL</text>
+
+  <!-- Garis Pemisah -->
+  <line x1="48" y1="425" x2="552" y2="425" stroke="#E2E8F0" stroke-width="1" />
+
+  <!-- Detail Information -->
+  <g transform="translate(48, 445)">
+    <!-- Row 1: Tujuan -->
+    <text x="0" y="20" fill="#64748B" font-size="12">Penerima</text>
+    <text x="504" y="20" fill="#0F172A" font-size="13" font-weight="bold" text-anchor="end">Griya Kenanga Residence</text>
+    <line x1="0" y1="36" x2="504" y2="36" stroke="#F8FAFC" stroke-width="1" />
+
+    <!-- Row 2: No Rekening -->
+    <text x="0" y="60" fill="#64748B" font-size="12">Rekening Penerima</text>
+    <text x="504" y="60" fill="#002B49" font-size="13" font-weight="bold" text-anchor="end">137-00-1234567-8 (Mandiri)</text>
+    <line x1="0" y1="76" x2="504" y2="76" stroke="#F8FAFC" stroke-width="1" />
+
+    <!-- Row 3: Pengirim -->
+    <text x="0" y="100" fill="#64748B" font-size="12">Pengirim</text>
+    <text x="504" y="100" fill="#0F172A" font-size="13" font-weight="bold" text-anchor="end">LARAS ANGGRAINI</text>
+    <line x1="0" y1="116" x2="504" y2="116" stroke="#F8FAFC" stroke-width="1" />
+
+    <!-- Row 4: Rekening Pengirim -->
+    <text x="0" y="140" fill="#64748B" font-size="12">Rekening Pengirim</text>
+    <text x="504" y="140" fill="#334155" font-size="13" font-weight="500" text-anchor="end">137-00-7788990-1</text>
+    <line x1="0" y1="156" x2="504" y2="156" stroke="#F8FAFC" stroke-width="1" />
+
+    <!-- Row 5: Bank -->
+    <text x="0" y="180" fill="#64748B" font-size="12">Bank</text>
+    <text x="504" y="180" fill="#0F172A" font-size="13" font-weight="600" text-anchor="end">Bank Mandiri</text>
+    <line x1="0" y1="196" x2="504" y2="196" stroke="#F8FAFC" stroke-width="1" />
+
+    <!-- Row 6: Ref -->
+    <text x="0" y="220" fill="#64748B" font-size="12">Ref.</text>
+    <text x="504" y="220" fill="#0F172A" font-size="13" font-family="'Consolas', monospace" font-weight="bold" text-anchor="end">7788990011</text>
+    <line x1="0" y1="236" x2="504" y2="236" stroke="#F8FAFC" stroke-width="1" />
+
+    <!-- Row 7: Transaction ID -->
+    <text x="0" y="260" fill="#64748B" font-size="12">Transaction ID</text>
+    <text x="504" y="260" fill="#0F172A" font-size="13" font-family="'Consolas', monospace" text-anchor="end">TRX77889900</text>
+    <line x1="0" y1="276" x2="504" y2="276" stroke="#F8FAFC" stroke-width="1" />
+
+    <!-- Row 8: Catatan -->
+    <text x="0" y="300" fill="#64748B" font-size="12">Keterangan</text>
+    <text x="504" y="300" fill="#002B49" font-size="13" font-weight="bold" text-anchor="end">Pelunasan Sewa Unit B-204</text>
+  </g>
+
+  <!-- Livin Badge Footer -->
+  <rect x="48" y="800" width="504" height="60" rx="14" fill="#F0F9FF" border="1" stroke="#BAE6FD" />
+  <text x="300" y="828" fill="#0369A1" font-size="13" font-weight="bold" text-anchor="middle">Livin' by Mandiri</text>
+  <text x="300" y="846" fill="#0284C7" font-size="11" text-anchor="middle">Resmi terverifikasi sistem pembayaran elektronik nasional</text>
+</svg>

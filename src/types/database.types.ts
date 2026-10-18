@@ -364,6 +364,8 @@ export type Database = {
           id: string
           jumlah: number
           metode: Database["public"]["Enums"]["pembayaran_metode"]
+          nama_bank: string | null
+          nama_rekening_pengirim: string | null
           referensi_mayar: string | null
           status: Database["public"]["Enums"]["pembayaran_status"]
           tagihan_id: string
@@ -379,6 +381,8 @@ export type Database = {
           id?: string
           jumlah: number
           metode: Database["public"]["Enums"]["pembayaran_metode"]
+          nama_bank?: string | null
+          nama_rekening_pengirim?: string | null
           referensi_mayar?: string | null
           status?: Database["public"]["Enums"]["pembayaran_status"]
           tagihan_id: string
@@ -394,6 +398,8 @@ export type Database = {
           id?: string
           jumlah?: number
           metode?: Database["public"]["Enums"]["pembayaran_metode"]
+          nama_bank?: string | null
+          nama_rekening_pengirim?: string | null
           referensi_mayar?: string | null
           status?: Database["public"]["Enums"]["pembayaran_status"]
           tagihan_id?: string
@@ -440,6 +446,7 @@ export type Database = {
       profiles: {
         Row: {
           aktif: boolean
+          catatan: string | null
           dibuat_pada: string
           email: string
           id: string
@@ -449,6 +456,7 @@ export type Database = {
         }
         Insert: {
           aktif?: boolean
+          catatan?: string | null
           dibuat_pada?: string
           email: string
           id: string
@@ -458,6 +466,7 @@ export type Database = {
         }
         Update: {
           aktif?: boolean
+          catatan?: string | null
           dibuat_pada?: string
           email?: string
           id?: string
@@ -626,6 +635,47 @@ export type Database = {
         Args: never
         Returns: Database["public"]["Enums"]["peran_pengguna"]
       }
+      rpc_batalkan_pembayaran: {
+        Args: { p_alasan_batal: string; p_pembayaran_id: string }
+        Returns: Json
+      }
+      rpc_batalkan_tagihan: {
+        Args: { p_alasan_batal: string; p_tagihan_id: string }
+        Returns: Json
+      }
+      rpc_buat_kontrak: {
+        Args: {
+          p_durasi_bulan: number
+          p_penyewa_id: string
+          p_tanggal_mulai: string
+          p_unit_id: string
+        }
+        Returns: Json
+      }
+      rpc_buat_tagihan_bulanan: { Args: { p_periode: string }; Returns: Json }
+      rpc_catat_pembayaran:
+        | {
+            Args: {
+              p_bukti_path?: string
+              p_jumlah: number
+              p_metode: Database["public"]["Enums"]["pembayaran_metode"]
+              p_tagihan_id: string
+              p_tanggal_bayar?: string
+            }
+            Returns: Json
+          }
+        | {
+            Args: {
+              p_bukti_path?: string
+              p_jumlah: number
+              p_metode: Database["public"]["Enums"]["pembayaran_metode"]
+              p_nama_bank?: string
+              p_nama_rekening_pengirim?: string
+              p_tagihan_id: string
+              p_tanggal_bayar?: string
+            }
+            Returns: Json
+          }
     }
     Enums: {
       kerusakan_kategori:

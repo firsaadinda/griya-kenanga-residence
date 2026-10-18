@@ -2,10 +2,11 @@ import fs from "fs";
 import path from "path";
 
 // Cache Base64 gambar wajah dalam memori agar responsif dan cepat
+// Cache Base64 gambar wajah dalam memori (aktif di production, selalu reload di development)
 const photoBase64Cache = new Map<string, string>();
 
 function getTenantPhotoBase64(filename: string): string {
-  if (photoBase64Cache.has(filename)) {
+  if (process.env.NODE_ENV === "production" && photoBase64Cache.has(filename)) {
     return photoBase64Cache.get(filename)!;
   }
   try {
@@ -334,13 +335,13 @@ export function generateKtpSvg(params: KtpParams): string {
   // 6. Tanda Tangan Unik Berdasarkan Nama Pemilik KTP
   const signaturePath = getSignatureSvgPath(rawNama);
 
-  // SVG Presisi Kartu e-KTP Republik Indonesia Resmi (100% Cocok dengan Foto KTP Nyata)
-  return `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="760" height="500" viewBox="0 0 760 500">
+  // SVG Presisi Kartu e-KTP Republik Indonesia Resmi (Crop Full-Frame Mode, Tepi Lengkap, Offset Vertikal)
+  return `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="706" height="458" viewBox="27 16 706 458">
   <defs>
-    <!-- Background Bayangan Kartu Fisik Realistis -->
-    <filter id="cardElevation" x="-15%" y="-15%" width="130%" height="135%">
-      <feDropShadow dx="0" dy="16" stdDeviation="16" flood-color="#000000" flood-opacity="0.24"/>
-      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#000000" flood-opacity="0.14"/>
+    <!-- Background Bayangan Kartu Fisik Realistis Presisi -->
+    <filter id="cardElevation" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="5" stdDeviation="5" flood-color="#000000" flood-opacity="0.20"/>
+      <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#000000" flood-opacity="0.10"/>
     </filter>
 
     <!-- Gradasi Biru Cyan Khas e-KTP Indonesia -->
@@ -370,8 +371,8 @@ export function generateKtpSvg(params: KtpParams): string {
     </clipPath>
   </defs>
 
-  <!-- LATAR BELAKANG DINDING/MEJA BERTEKSTUR NETRAL -->
-  <rect x="0" y="0" width="760" height="500" fill="#ECEEEF"/>
+  <!-- LATAR BELAKANG DINDING/MEJA BERTEKSTUR NETRAL (CROP FULL-FRAME) -->
+  <rect x="27" y="16" width="706" height="458" fill="#ECEEEF"/>
 
   <!-- KARTU FISIK e-KTP DENGAN ELEVASI BAYANGAN 3D -->
   <g filter="url(#cardElevation)">
@@ -509,7 +510,7 @@ export function generateKtpSvg(params: KtpParams): string {
 
     <!-- PAS FOTO RESMI (LATAR MERAH/BIRU SESUAI TAHUN KELAHIRAN GANJIL/GENAP) -->
     <rect x="490" y="132" width="165" height="215" fill="${photoBgColorHex}" rx="3" ry="3"/>
-    ${fotoBase64 ? `<image href="${fotoBase64}" x="490" y="132" width="165" height="215" preserveAspectRatio="xMidYMid slice" clip-path="url(#ktpPhotoClip)"/>` : ""}
+    ${fotoBase64 ? `<image href="${fotoBase64}" x="490" y="132" width="165" height="215" preserveAspectRatio="xMidYMax slice" clip-path="url(#ktpPhotoClip)"/>` : ""}
     <rect x="490" y="132" width="165" height="215" fill="none" stroke="#FFFFFF" stroke-width="1.8" rx="3" ry="3"/>
 
     <!-- TANGGAL & TEMPAT PENERBITAN (SESUAI USIA 17 TAHUN PEMBUATAN PERTAMA KTP) -->

@@ -1,48 +1,109 @@
+import { redirect } from "next/navigation";
 import { getCurrentUserProfile } from "@/lib/auth/guard";
-import Link from "next/link";
-import { CreditCard, ArrowLeft } from "lucide-react";
+import { createClient } from "@/lib/supabase/server";
+import { TagihanClientView, TagihanItem } from "./TagihanClientView";
+
+export const metadata = {
+  title: "Tagihan & Pembayaran | Griya Kenanga Residence",
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
 
 export default async function TagihanPage() {
-
   const profile = await getCurrentUserProfile();
 
-  const isTenant = profile?.peran === "penyewa";
+  if (!profile) {
+    redirect("/login?status=401&returnUrl=/dashboard/tagihan");
+  }
+
+  const supabase = await createClient();
+
+  // Ambil seluruh tagihan
+  let query = supabase
+    .from("tagihan")
+    .select(`
+      id,
+      nomor,
+      kontrak_id,
+      periode,
+      jatuh_tempo,
+      nominal_sewa,
+      denda,
+      terbayar,
+      status,
+      alasan_batal,
+      kontrak:kontrak_id (
+        id,
+        nomor,
+        unit:unit_id (
+          id,
+          kode,
+          tipe
+        ),
+        penyewa:penyewa_id (
+          id,
+          nama_lengkap,
+          email,
+          no_hp
+        )
+      )
+    `)
+    .order("nomor", { ascending: true });
+
+  // Jika penyewa, hanya tampilkan tagihan miliknya
+  if (profile.peran === "penyewa") {
+    query = query.eq("kontrak.penyewa_id", profile.id);
+  }
+
+  const { data: rawTagihan, error: errTagihan } = await query;
+
+  if (errTagihan) {
+    console.error("Gagal memuat data tagihan:", errTagihan);
+  }
+
+  // Format ke TagihanItem[]
+  const tagihanList: TagihanItem[] = (rawTagihan || []).map((t: any) => ({
+    id: t.id,
+    nomor: t.nomor,
+    kontrak_id: t.kontrak_id,
+    periode: t.periode,
+    jatuh_tempo: t.jatuh_tempo,
+    nominal_sewa: t.nominal_sewa,
+    denda: t.denda || 0,
+    terbayar: t.terbayar || 0,
+    status: t.status,
+    alasan_batal: t.alasan_batal,
+    unit_kode: t.kontrak?.unit?.kode || "-",
+    unit_tipe: t.kontrak?.unit?.tipe || "standar",
+    penyewa_nama: t.kontrak?.penyewa?.nama_lengkap || "Penyewa",
+    penyewa_email: t.kontrak?.penyewa?.email || "-",
+    penyewa_hp: t.kontrak?.penyewa?.no_hp || null,
+  }));
+
+  // Kumpulkan daftar periode yang tersedia secara dinamis
+  const periodesSet = new Set<string>();
+  tagihanList.forEach((item) => {
+    if (item.periode) periodesSet.add(item.periode);
+  });
+  // Pastikan periode acuan 2026-10-01 selalu ada
+  periodesSet.add("2026-10-01");
+  periodesSet.add("2026-09-01");
+  periodesSet.add("2026-08-01");
+
+  const availablePeriodes = Array.from(periodesSet).sort().reverse();
+  const activePeriode = availablePeriodes.includes("2026-10-01")
+    ? "2026-10-01"
+    : availablePeriodes[0] || "2026-10-01";
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <span className="inline-block text-[11px] font-semibold text-[#737A84] tracking-widest uppercase">
-            keuangan & pembayaran [05]
-          </span>
-          <h1 className="text-3xl font-bold tracking-tight text-[#26292E]">
-            {isTenant ? "Tagihan Sewa Saya" : "Kelola Tagihan Bulanan"},{" "}
-            <span className="text-[#737A84] font-normal">
-              {isTenant ? "transparan & tepat waktu" : "24 unit & denda otomatis"}
-            </span>
-          </h1>
-          <p className="text-xs text-[#737A84] mt-1">
-            {isTenant
-              ? "Lihat riwayat invoice dan status pelunasan sewa kamar Anda."
-              : "Daftar tagihan 24 unit, status lunas/sebagian/jatuh tempo, serta integrasi Mayar & ekspor PDF."}
-          </p>
-        </div>
-
-        <Link
-          href="/dashboard"
-          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-white hover:bg-[#F6F7F9] text-xs font-semibold text-[#26292E] border border-[#E8EAEC] shadow-sm transition"
-        >
-          <ArrowLeft className="w-3.5 h-3.5" />
-          <span>Kembali ke Beranda</span>
-        </Link>
-      </div>
-
-      <div className="rounded-[28px] bg-white p-6 sm:p-8 border border-[#E8EAEC] shadow-sm space-y-4">
-        <div className="p-4 rounded-2xl bg-[#F6F7F9] border border-[#E8EAEC] text-xs text-[#26292E]">
-          <strong>Informasi Modul Tagihan:</strong> Terhubung dengan sesi aktif{" "}
-          <strong className="uppercase">{profile?.nama_lengkap} ({profile?.peran})</strong>. Pada Tahap 5, modul ini memfasilitasi pembuatan invoice, pembayaran cicilan (min Rp100.000, BR-08), kalkulasi denda Rp20.000/hari, dan checkout Mayar.
-        </div>
-      </div>
-    </div>
+    <TagihanClientView
+      initialTagihanList={tagihanList}
+      userRole={profile.peran}
+      userName={profile.nama_lengkap}
+      activePeriode={activePeriode}
+      availablePeriodes={availablePeriodes}
+    />
   );
 }

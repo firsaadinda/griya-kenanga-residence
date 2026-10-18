@@ -31,17 +31,7 @@ export async function loginAction(formData: FormData): Promise<AuthActionResult>
     };
   }
 
-  // Validasi ketat kata sandi: Wajib 12 - 16 karakter dengan kombinasi lengkap
-  const passwordValidation = validateStrongPassword(password);
-  if (!passwordValidation.isValid) {
-    return {
-      success: false,
-      statusCode: 400,
-      message:
-        passwordValidation.message ||
-        "Kata sandi wajib 12 hingga 16 karakter dengan kombinasi huruf besar (A-Z), huruf kecil (a-z), angka (0-9), dan simbol.",
-    };
-  }
+  // Pada login, validasi otentikasi diserahkan langsung ke Supabase Auth (agar password lama yang sah tidak terblokir)
 
   try {
     const supabase = await createClient();

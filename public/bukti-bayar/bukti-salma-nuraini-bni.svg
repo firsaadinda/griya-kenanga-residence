@@ -1,0 +1,73 @@
+
+<svg width="600" height="960" viewBox="0 0 600 960" xmlns="http://www.w3.org/2000/svg" font-family="'Segoe UI', Roboto, Helvetica, Arial, sans-serif">
+  <!-- Phone Frame -->
+  <rect width="600" height="960" rx="36" fill="#1C2127" />
+
+  <!-- Status Bar -->
+  <rect x="0" y="0" width="600" height="44" rx="36" fill="#F4F4F2" />
+  <text x="300" y="28" fill="#1E293B" font-size="12" text-anchor="middle" font-weight="600">11:30</text>
+
+  <!-- App Header BNI Mobile -->
+  <rect x="0" y="44" width="600" height="80" fill="#FFFFFF" />
+  <!-- BNI Logo -->
+  <g transform="translate(48, 64)">
+    <text x="0" y="30" fill="#F15A24" font-size="28" font-weight="900" letter-spacing="-1">BNI</text>
+    <text x="65" y="28" fill="#005E6A" font-size="16" font-weight="bold">Mobile Banking</text>
+  </g>
+  <rect x="450" y="68" width="100" height="32" rx="16" fill="#ECFDF5" />
+  <text x="500" y="89" fill="#059669" font-size="12" font-weight="bold" text-anchor="middle">✓ Berhasil</text>
+
+  <!-- Main Slip Container -->
+  <rect x="24" y="140" width="552" height="770" rx="20" fill="#FFFFFF" />
+
+  <!-- Sub Header -->
+  <rect x="24" y="140" width="552" height="150" rx="20" fill="#FFF7ED" />
+  <text x="300" y="185" fill="#C2410C" font-size="16" font-weight="bold" text-anchor="middle">Pembayaran Sewa Properti</text>
+  <text x="300" y="208" fill="#9A3412" font-size="12" text-anchor="middle">Griya Kenanga Residence Sleman</text>
+  <text x="300" y="230" fill="#64748B" font-size="12" text-anchor="middle">Waktu: 02 Okt 2026  09:40 WIB</text>
+
+  <!-- Nominal -->
+  <text x="300" y="325" fill="#0F172A" font-size="34" font-weight="800" text-anchor="middle">Rp 2.750.000</text>
+  <text x="300" y="350" fill="#059669" font-size="13" font-weight="bold" text-anchor="middle">TRANSAKSI SUKSES DIPROSES</text>
+
+  <line x1="48" y1="380" x2="552" y2="380" stroke="#FED7AA" stroke-width="1.5" stroke-dasharray="4,4" />
+
+  <!-- Detail BNI -->
+  <g transform="translate(48, 400)">
+    <text x="0" y="25" fill="#64748B" font-size="12">Rekening Tujuan</text>
+    <text x="504" y="25" fill="#0F172A" font-size="13" font-weight="bold" text-anchor="end">GRIYA KENANGA RESIDENCE</text>
+    <line x1="0" y1="42" x2="504" y2="42" stroke="#F1F5F9" stroke-width="1" />
+
+    <text x="0" y="70" fill="#64748B" font-size="12">Nomor Rekening</text>
+    <text x="504" y="70" fill="#005E6A" font-size="13" font-weight="bold" text-anchor="end">089-1234-567 (BNI)</text>
+    <line x1="0" y1="87" x2="504" y2="87" stroke="#F1F5F9" stroke-width="1" />
+
+    <text x="0" y="115" fill="#64748B" font-size="12">Nama Pengirim</text>
+    <text x="504" y="115" fill="#0F172A" font-size="13" font-weight="bold" text-anchor="end">SALMA NURAINI</text>
+    <line x1="0" y1="132" x2="504" y2="132" stroke="#F1F5F9" stroke-width="1" />
+
+    <text x="0" y="160" fill="#64748B" font-size="12">Rekening Asal</text>
+    <text x="504" y="160" fill="#334155" font-size="13" font-weight="500" text-anchor="end">089-9900-112</text>
+    <line x1="0" y1="177" x2="504" y2="177" stroke="#F1F5F9" stroke-width="1" />
+
+    <text x="0" y="205" fill="#64748B" font-size="12">Bank Pengirim</text>
+    <text x="504" y="205" fill="#0F172A" font-size="13" font-weight="600" text-anchor="end">Bank Negara Indonesia (BNI)</text>
+    <line x1="0" y1="222" x2="504" y2="222" stroke="#F1F5F9" stroke-width="1" />
+
+    <text x="0" y="250" fill="#64748B" font-size="12">Nomor Referensi</text>
+    <text x="504" y="250" fill="#0F172A" font-size="13" font-family="'Consolas', monospace" font-weight="bold" text-anchor="end">5566100303</text>
+    <line x1="0" y1="267" x2="504" y2="267" stroke="#F1F5F9" stroke-width="1" />
+
+    <text x="0" y="295" fill="#64748B" font-size="12">Trace Number</text>
+    <text x="504" y="295" fill="#005E6A" font-size="13" font-family="'Consolas', monospace" text-anchor="end">0980303</text>
+    <line x1="0" y1="312" x2="504" y2="312" stroke="#F1F5F9" stroke-width="1" />
+
+    <text x="0" y="340" fill="#64748B" font-size="12">Keterangan</text>
+    <text x="504" y="340" fill="#C2410C" font-size="13" font-weight="bold" text-anchor="end">Tagihan Unit C-303</text>
+  </g>
+
+  <!-- Footer Seal BNI -->
+  <rect x="48" y="790" width="504" height="60" rx="12" fill="#F8FAFC" stroke="#E2E8F0" stroke-width="1" />
+  <text x="300" y="818" fill="#334155" font-size="12" font-weight="bold" text-anchor="middle">PT Bank Negara Indonesia (Persero) Tbk.</text>
+  <text x="300" y="836" fill="#64748B" font-size="10" text-anchor="middle">Terdaftar dan diawasi oleh Otoritas Jasa Keuangan (OJK)</text>
+</svg>
