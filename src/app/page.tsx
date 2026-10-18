@@ -57,14 +57,16 @@ export default function HomePage() {
       <header className="sticky top-4 z-40 w-full px-4 sm:px-6 lg:px-8 mb-6">
         <nav className="max-w-7xl mx-auto flex items-center justify-between gap-3 bg-white/95 backdrop-blur-md px-4 sm:px-6 py-2.5 rounded-full border border-[#E8EAEC] shadow-[0_8px_30px_rgba(38,41,46,0.06)]">
           <div className="flex items-center gap-2.5">
-            <div className="w-10 h-10 rounded-full bg-[#1C1E22] text-[#D2F367] flex items-center justify-center font-bold text-sm tracking-wider">
-              GK
-            </div>
+            <img
+              src="/logo-griya-kenanga.png"
+              alt="Logo Griya Kenanga Residence"
+              className="h-10 sm:h-11 w-auto object-contain"
+            />
             <div>
               <span className="font-bold text-xs uppercase tracking-wider text-[#26292E] block">
                 Griya Kenanga
               </span>
-              <span className="text-[10px] text-[#737A84] tracking-widest uppercase block -mt-0.5">
+              <span className="text-[10px] text-[#737A84] tracking-widest uppercase block -mt-0.5 font-medium">
                 Residence • Sleman
               </span>
             </div>

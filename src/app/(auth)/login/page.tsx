@@ -4,7 +4,6 @@ import { Suspense, useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { OrbitalBackground } from "@/components/ui/OrbitalBackground";
-import { loginAction } from "@/lib/auth/actions";
 import { createClient } from "@/lib/supabase/client";
 import { validateStrongPassword } from "@/lib/auth/password";
 import {
@@ -15,6 +14,7 @@ import {
   CheckCircle2,
   Eye,
   EyeOff,
+  HelpCircle,
 } from "lucide-react";
 
 function LoginFormContent() {
@@ -60,7 +60,6 @@ function LoginFormContent() {
       }
 
       if (data?.url) {
-        // Validasi kesiapan provider Supabase sebelum melempar pengguna ke luar halaman
         try {
           const probe = await fetch(data.url, { method: "GET", redirect: "manual" });
           if (probe.status === 400) {
@@ -74,10 +73,9 @@ function LoginFormContent() {
             }
           }
         } catch {
-          // Fetch terpotong CORS saat redirect 302 ke accounts.google.com menandakan provider aktif
+          // Fetch terpotong CORS saat redirect 302 menandakan provider aktif
         }
 
-        // Provider aktif, lanjutkan pengalihan resmi ke Google
         window.location.href = data.url;
       }
     } catch (err: unknown) {
@@ -87,33 +85,52 @@ function LoginFormContent() {
     }
   };
 
-  // Metode A: Login Email & Kata Sandi Murni (Dengan Validasi Ketat)
+  // Metode A: Login Email & Kata Sandi Murni (Dengan Validasi 12 - 16 Karakter)
   const handleEmailSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage(null);
     setSuccessMessage(null);
 
-    // Validasi Client-Side: Aturan Keamanan Kata Sandi Ketat
+    // Validasi Client-Side: Aturan Keamanan Kata Sandi 12 - 16 Karakter
     const passwordCheck = validateStrongPassword(password);
     if (!passwordCheck.isValid) {
       setErrorMessage(
         passwordCheck.message ||
-          "Kata sandi tidak memenuhi kriteria keamanan: minimal 8 karakter dengan kombinasi huruf besar, huruf kecil, angka, dan simbol khusus."
+          "Kata sandi wajib 12 hingga 16 karakter dengan kombinasi huruf besar, huruf kecil, angka, dan simbol."
       );
       return;
     }
 
-    const formData = new FormData();
-    formData.set("email", email);
-    formData.set("password", password);
-
     startTransition(async () => {
-      const res = await loginAction(formData);
-      if (!res.success) {
-        setErrorMessage(res.message);
-      } else {
-        setSuccessMessage(res.message);
-        router.push(returnUrl);
+      try {
+        const supabaseBrowser = createClient();
+        const { data, error } = await supabaseBrowser.auth.signInWithPassword({
+          email: email.trim().toLowerCase(),
+          password,
+        });
+
+        if (error || !data.user) {
+          setErrorMessage("Email atau kata sandi tidak cocok. Silakan coba kembali.");
+          return;
+        }
+
+        // Pastikan akun aktif
+        const { data: profile } = await supabaseBrowser
+          .from("profiles")
+          .select("aktif, peran")
+          .eq("id", data.user.id)
+          .single();
+
+        if (profile && profile.aktif === false) {
+          await supabaseBrowser.auth.signOut();
+          setErrorMessage("Akun Anda telah dinonaktifkan. Hubungi pengelola Griya Kenanga Residence.");
+          return;
+        }
+
+        setSuccessMessage("Login berhasil. Mengarahkan ke halaman...");
+        window.location.href = returnUrl || "/dashboard";
+      } catch (err: unknown) {
+        setErrorMessage(err instanceof Error ? err.message : "Gagal melakukan autentikasi.");
       }
     });
   };
@@ -124,10 +141,13 @@ function LoginFormContent() {
 
       <div className="relative z-10 w-full max-w-md bg-white rounded-[28px] p-8 shadow-xl border border-[#E8EAEC] space-y-6">
         {/* Header Identitas Griya Kenanga Residence */}
-        <div className="text-center space-y-1.5">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#F6F7F9] border border-[#E8EAEC] text-[11px] font-semibold text-[#26292E] mb-1">
-            <Lock className="w-3.5 h-3.5 text-[#26292E]" />
-            <span>Portal Masuk Resmi</span>
+        <div className="text-center space-y-2">
+          <div className="flex justify-center mb-1">
+            <img
+              src="/logo-griya-kenanga.png"
+              alt="Logo Griya Kenanga Residence Sleman"
+              className="h-16 w-auto object-contain"
+            />
           </div>
           <h1 className="text-2xl font-extrabold tracking-tight text-[#1C1E22]">
             Griya Kenanga <span className="text-[#737A84] font-normal">Residence</span>
@@ -137,7 +157,7 @@ function LoginFormContent() {
           </p>
         </div>
 
-        {/* Feedback Pesan Kesalahan (Status 400 Bad Request / 401 Unauthorized) */}
+        {/* Feedback Pesan Kesalahan */}
         {errorMessage && (
           <div className="p-3.5 bg-red-50 border border-red-200 rounded-2xl flex items-start gap-2.5 text-xs text-red-700 animate-in fade-in duration-200">
             <ShieldAlert className="w-4 h-4 shrink-0 mt-0.5 text-red-500" />
@@ -216,18 +236,29 @@ function LoginFormContent() {
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-[#26292E] mb-1.5">
-              Kata Sandi
-            </label>
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="text-xs font-semibold text-[#26292E]">
+                Kata Sandi
+              </label>
+              {/* Fitur Lupa Kata Sandi */}
+              <Link
+                href="/lupa-password"
+                className="text-[11px] font-semibold text-emerald-700 hover:text-emerald-900 hover:underline flex items-center gap-1"
+              >
+                <HelpCircle className="w-3 h-3" />
+                <span>Lupa kata sandi?</span>
+              </Link>
+            </div>
             <div className="relative">
               <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#737A84]" />
               <input
                 type={showPassword ? "text" : "password"}
                 required
-                minLength={8}
+                minLength={12}
+                maxLength={16}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="Kata sandi akun Anda"
+                placeholder="Kata sandi 12 - 16 karakter"
                 className="w-full bg-[#F6F7F9] text-xs text-[#26292E] pl-10 pr-10 py-2.5 rounded-xl border border-transparent focus:border-[#D5D9DE] focus:bg-white focus:outline-none transition"
               />
               <button
@@ -239,9 +270,9 @@ function LoginFormContent() {
                 {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
             </div>
-            {/* Teks Panduan Standar Keamanan Ketat */}
+            {/* Teks Panduan Standar Keamanan Ketat 12 - 16 karakter */}
             <p className="text-[11px] text-[#737A84] mt-1.5 leading-relaxed">
-              Kombinasi huruf besar, huruf kecil, angka, dan simbol khusus (min. 8 karakter).
+              Minimal 12 hingga 16 karakter, Gunakan gabungan huruf kapital (A-Z), huruf kecil (a-z), angka (0-9), serta simbol atau tanda baca.
             </p>
           </div>
 

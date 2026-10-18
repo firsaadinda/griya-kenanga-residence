@@ -20,8 +20,8 @@ export async function proxy(request: NextRequest) {
     }
   }
 
-  // Jika sudah login dan membuka halaman /login atau /register, arahkan langsung ke /dashboard
-  if (pathname === "/login" || pathname === "/register") {
+  // Jika sudah login dan membuka halaman /login, /register, atau /lupa-password, arahkan langsung ke /dashboard
+  if (pathname === "/login" || pathname === "/register" || pathname === "/lupa-password") {
     if (user) {
       const dashboardUrl = new URL("/dashboard", request.url);
       return NextResponse.redirect(dashboardUrl);
