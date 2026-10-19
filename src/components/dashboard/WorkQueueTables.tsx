@@ -98,8 +98,16 @@ export function WorkQueueTables({
               </tr>
             </thead>
             <tbody className="divide-y divide-[#F0F2F4]">
-              {overdueBills.map((bill) => (
-                <tr key={bill.id} className="hover:bg-[#F6F7F9] transition">
+              {overdueBills.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="py-8 text-center text-xs text-[#737A84]">
+                    <CheckCircle2 className="w-5 h-5 text-emerald-600 mx-auto mb-1" />
+                    Semua tagihan periode ini telah lunas tepat waktu.
+                  </td>
+                </tr>
+              ) : (
+                overdueBills.map((bill) => (
+                  <tr key={bill.id} className="hover:bg-[#F6F7F9] transition">
                   <td className="py-3 px-2 font-mono text-[11px] font-bold text-[#26292E] whitespace-nowrap">
                     {bill.nomor}
                   </td>
@@ -150,7 +158,8 @@ export function WorkQueueTables({
                     )}
                   </td>
                 </tr>
-              ))}
+              ))
+              )}
             </tbody>
           </table>
         </div>
@@ -175,7 +184,12 @@ export function WorkQueueTables({
           </div>
 
           <div className="divide-y divide-[#F0F2F4]">
-            {openReports.map((report) => (
+            {openReports.length === 0 ? (
+              <div className="py-6 text-center text-xs text-[#737A84]">
+                Tidak ada laporan kerusakan terbuka saat ini.
+              </div>
+            ) : (
+              openReports.map((report) => (
               <Link
                 key={report.id}
                 href="/dashboard/kerusakan"
@@ -207,7 +221,8 @@ export function WorkQueueTables({
                   </span>
                 </div>
               </Link>
-            ))}
+            ))
+            )}
           </div>
         </div>
 
@@ -226,7 +241,12 @@ export function WorkQueueTables({
           </div>
 
           <div className="divide-y divide-[#F0F2F4]">
-            {actionContracts.map((contract) => (
+            {actionContracts.length === 0 ? (
+              <div className="py-6 text-center text-xs text-[#737A84]">
+                Semua kontrak dalam kondisi aktif dan tertib administrasi.
+              </div>
+            ) : (
+              actionContracts.map((contract) => (
               <Link
                 key={contract.id}
                 href="/dashboard/kontrak"
@@ -254,7 +274,8 @@ export function WorkQueueTables({
                   </span>
                 </div>
               </Link>
-            ))}
+            ))
+            )}
           </div>
         </div>
       </div>

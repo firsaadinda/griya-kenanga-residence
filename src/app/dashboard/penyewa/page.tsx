@@ -1,3 +1,4 @@
+import React, { Suspense } from "react";
 import { requireRole } from "@/lib/auth/guard";
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
@@ -110,7 +111,9 @@ export default async function PenyewaPage() {
       </div>
 
       {/* CLIENT VIEW PENYEWA */}
-      <PenyewaClientView initialPenyewa={penyewaData} userRole={profile.peran} />
+      <Suspense fallback={<div className="p-12 text-center text-xs text-[#737A84]">Memuat direktori data penyewa...</div>}>
+        <PenyewaClientView initialPenyewa={penyewaData} userRole={profile.peran} />
+      </Suspense>
     </div>
   );
 }

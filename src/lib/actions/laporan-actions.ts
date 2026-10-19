@@ -3,6 +3,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { requireRole } from "@/lib/auth/guard";
 import { revalidatePath } from "next/cache";
+import { HttpStatusCode } from "@/types/api";
 
 export interface UnitRevenueItem {
   unit: string;
@@ -332,7 +333,7 @@ export async function getUsersForRoleManagementAction(): Promise<
 export async function updateUserRoleAction(
   targetUserId: string,
   newRole: "pengelola" | "penyewa"
-): Promise<{ success: boolean; message: string }> {
+): Promise<{ success: boolean; message: string; statusCode: HttpStatusCode }> {
   const caller = await requireRole(["pemilik"], "/dashboard/laporan");
   const supabase = await createClient();
 
@@ -340,6 +341,7 @@ export async function updateUserRoleAction(
   if (caller.id === targetUserId) {
     return {
       success: false,
+      statusCode: 400,
       message: "Pemilik tidak dapat mengubah peran akunnya sendiri (Aturan BR-10).",
     };
   }
@@ -354,6 +356,7 @@ export async function updateUserRoleAction(
   if (targetError || !targetProfile) {
     return {
       success: false,
+      statusCode: 404,
       message: "Pengguna target tidak ditemukan.",
     };
   }
@@ -362,6 +365,7 @@ export async function updateUserRoleAction(
   if (targetProfile.peran === "pemilik") {
     return {
       success: false,
+      statusCode: 403,
       message: "Peran Pemilik tidak dapat diubah (Aturan BR-10).",
     };
   }
@@ -377,6 +381,7 @@ export async function updateUserRoleAction(
   if (updateError) {
     return {
       success: false,
+      statusCode: 500,
       message: `Gagal mengubah peran: ${updateError.message}`,
     };
   }
@@ -395,6 +400,7 @@ export async function updateUserRoleAction(
   revalidatePath("/dashboard/laporan");
   return {
     success: true,
+    statusCode: 200,
     message: `Peran ${targetProfile.nama_lengkap} berhasil diubah dari ${oldRole} menjadi ${newRole}.`,
   };
 }

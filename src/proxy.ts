@@ -7,28 +7,7 @@ import { updateSession } from "@/lib/supabase/middleware";
  * - Mencegat pengguna yang BELUM LOGIN (401) saat mencoba membuka rute internal /dashboard
  */
 export async function proxy(request: NextRequest) {
-  const { supabaseResponse, user } = await updateSession(request);
-  const pathname = request.nextUrl.pathname;
-
-  // Proteksi rute internal dashboard
-  if (pathname.startsWith("/dashboard")) {
-    if (!user) {
-      const loginUrl = new URL("/login", request.url);
-      loginUrl.searchParams.set("status", "401");
-      loginUrl.searchParams.set("returnUrl", pathname);
-      return NextResponse.redirect(loginUrl);
-    }
-  }
-
-  // Jika sudah login dan membuka halaman /login, /register, atau /lupa-password, arahkan langsung ke /dashboard
-  if (pathname === "/login" || pathname === "/register" || pathname === "/lupa-password") {
-    if (user) {
-      const dashboardUrl = new URL("/dashboard", request.url);
-      return NextResponse.redirect(dashboardUrl);
-    }
-  }
-
-  return supabaseResponse;
+  return await updateSession(request);
 }
 
 export const config = {

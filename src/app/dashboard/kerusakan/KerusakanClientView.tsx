@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState, useTransition } from "react";
+import React, { useState, useEffect, useTransition } from "react";
+import { useSearchParams } from "next/navigation";
 import { UserRole } from "@/lib/auth/guard";
 import {
   buatLaporanKerusakanAction,
@@ -23,7 +24,11 @@ import {
   Building,
   Eye,
   X,
+  Loader2,
 } from "lucide-react";
+import { AlertBanner } from "@/components/feedback/AlertBanner";
+import { EmptyState } from "@/components/feedback/EmptyState";
+import { HttpStatusCode } from "@/types/api";
 
 export interface LaporanKerusakanItem {
   id: string;
@@ -60,12 +65,56 @@ export function KerusakanClientView({
   currentUserId,
   activeContractUnit,
 }: KerusakanClientViewProps) {
+  const searchParams = useSearchParams();
+  const qParam = searchParams.get("q") || "";
+  const targetIdParam = searchParams.get("targetId") || "";
+
   const [laporanList, setLaporanList] = useState<LaporanKerusakanItem[]>(initialLaporan);
-  const [selectedLaporan, setSelectedLaporan] = useState<LaporanKerusakanItem>(
-    initialLaporan[0] || null
+  
+  // Cari laporan awal yang ditargetkan jika ada targetIdParam atau qParam
+  const matchedInitial = initialLaporan.find(
+    (lk) =>
+      (targetIdParam && (lk.id === targetIdParam || lk.nomor.toLowerCase() === targetIdParam.toLowerCase())) ||
+      (qParam && (
+        lk.nomor.toLowerCase().includes(qParam.toLowerCase()) ||
+        lk.judul.toLowerCase().includes(qParam.toLowerCase()) ||
+        lk.pelapor_nama.toLowerCase().includes(qParam.toLowerCase()) ||
+        lk.unit_kode.toLowerCase().includes(qParam.toLowerCase())
+      ))
+  );
+
+  const [selectedLaporan, setSelectedLaporan] = useState<LaporanKerusakanItem | null>(
+    matchedInitial || initialLaporan[0] || null
   );
   const [filterStatus, setFilterStatus] = useState<string>("all");
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState(qParam);
+
+  // Sync if query param changes
+  useEffect(() => {
+    if (qParam || targetIdParam) {
+      if (qParam) setSearchQuery(qParam);
+      const found = laporanList.find(
+        (lk) =>
+          (targetIdParam && (lk.id === targetIdParam || lk.nomor.toLowerCase() === targetIdParam.toLowerCase())) ||
+          (qParam && (
+            lk.nomor.toLowerCase().includes(qParam.toLowerCase()) ||
+            lk.judul.toLowerCase().includes(qParam.toLowerCase()) ||
+            lk.pelapor_nama.toLowerCase().includes(qParam.toLowerCase()) ||
+            lk.unit_kode.toLowerCase().includes(qParam.toLowerCase())
+          ))
+      );
+      if (found) {
+        setSelectedLaporan(found);
+        setFilterStatus("all");
+        setTimeout(() => {
+          document.getElementById(`laporan-item-${found.id}`)?.scrollIntoView({
+            behavior: "smooth",
+            block: "nearest",
+          });
+        }, 150);
+      }
+    }
+  }, [qParam, targetIdParam, laporanList]);
 
   // Modal Form Laporan Baru (Penyewa)
   const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -88,9 +137,12 @@ export function KerusakanClientView({
   // Modal Lightbox Foto Kerusakan Realistis
   const [selectedPhotoModal, setSelectedPhotoModal] = useState<string | null>(null);
 
+  // Modal Konfirmasi Eksplisit (Persetujuan Pemilik & Penutupan Tiket)
+  const [confirmAksiModal, setConfirmAksiModal] = useState<"setujui_biaya" | "tutup_laporan" | null>(null);
+
   const [isPending, startTransition] = useTransition();
   const [feedback, setFeedback] = useState<{
-    type: "success" | "error";
+    statusCode: HttpStatusCode;
     message: string;
   } | null>(null);
 
@@ -101,6 +153,7 @@ export function KerusakanClientView({
       searchQuery &&
       !lk.nomor.toLowerCase().includes(searchQuery.toLowerCase()) &&
       !lk.judul.toLowerCase().includes(searchQuery.toLowerCase()) &&
+      !lk.pelapor_nama.toLowerCase().includes(searchQuery.toLowerCase()) &&
       !lk.unit_kode.toLowerCase().includes(searchQuery.toLowerCase())
     ) {
       return false;
@@ -138,7 +191,7 @@ export function KerusakanClientView({
 
         setLaporanList((prev) => [newItem, ...prev]);
         setSelectedLaporan(newItem);
-        setFeedback({ type: "success", message: res.message });
+        setFeedback({ statusCode: res.statusCode, message: res.message });
         setTimeout(() => {
           setIsCreateOpen(false);
           setJudul("");
@@ -146,7 +199,7 @@ export function KerusakanClientView({
           setFeedback(null);
         }, 1500);
       } else {
-        setFeedback({ type: "error", message: res.message });
+        setFeedback({ statusCode: res.statusCode, message: res.message });
       }
     });
   };
@@ -189,12 +242,12 @@ export function KerusakanClientView({
           prev.map((item) => (item.id === selectedLaporan.id ? updatedLaporan : item))
         );
 
-        setFeedback({ type: "success", message: res.message });
+        setFeedback({ statusCode: res.statusCode, message: res.message });
         setActionModal(null);
         setInputCatatan("");
         setInputAlasanTolak("");
       } else {
-        setFeedback({ type: "error", message: res.message });
+        setFeedback({ statusCode: res.statusCode, message: res.message });
       }
     });
   };
@@ -253,13 +306,25 @@ export function KerusakanClientView({
 
         {/* Input Search & Tombol Buat Laporan */}
         <div className="flex items-center gap-3">
-          <input
-            type="text"
-            placeholder="Cari nomor / judul / unit..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="px-3.5 py-1.5 rounded-full bg-[#F6F7F9] text-xs text-[#26292E] placeholder-[#737A84] border border-[#E8EAEC] focus:outline-none w-48 sm:w-60"
-          />
+          <div className="relative w-48 sm:w-60">
+            <input
+              type="text"
+              placeholder="Cari nomor / judul / unit..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="px-3.5 pr-8 py-1.5 rounded-full bg-[#F6F7F9] text-xs text-[#26292E] placeholder-[#737A84] border border-[#E8EAEC] focus:outline-none w-full"
+            />
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => setSearchQuery("")}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#737A84] hover:text-[#26292E] p-0.5 rounded-full"
+                title="Reset pencarian"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
 
           {userRole === "penyewa" && (
             <button
@@ -278,15 +343,11 @@ export function KerusakanClientView({
       </div>
 
       {feedback && (
-        <div
-          className={`p-4 rounded-2xl text-xs font-medium flex items-center gap-2 ${feedback.type === "success"
-            ? "bg-[#EAFCD6] text-[#2F6B12] border border-[#C8F296]"
-            : "bg-[#FFF0F0] text-[#D32F2F] border border-[#FFCDD2]"
-            }`}
-        >
-          <AlertCircle className="w-4 h-4 shrink-0" />
-          <span>{feedback.message}</span>
-        </div>
+        <AlertBanner
+          statusCode={feedback.statusCode}
+          message={feedback.message}
+          onDismiss={() => setFeedback(null)}
+        />
       )}
 
       {/* TAMPILAN DETAIL TIKET & STEPPER SESUAI WIREFRAME HALAMAN 3 */}
@@ -521,9 +582,9 @@ export function KerusakanClientView({
                     <div className="flex items-center gap-2">
                       <button
                         type="button"
-                        onClick={() => handleExecuteAction("proses")}
+                        onClick={() => setConfirmAksiModal("setujui_biaya")}
                         disabled={isPending}
-                        className="flex-1 inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-full bg-[#1C1E22] hover:bg-[#26292E] text-white text-xs font-bold shadow-sm transition disabled:opacity-50"
+                        className="flex-1 inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-full bg-[#1C1E22] hover:bg-[#26292E] text-white text-xs font-bold shadow-sm transition disabled:opacity-50 cursor-pointer"
                       >
                         <CheckCircle2 className="w-3.5 h-3.5 text-[#D2F367]" />
                         <span>Setujui Biaya</span>
@@ -533,7 +594,7 @@ export function KerusakanClientView({
                         type="button"
                         onClick={() => setActionModal("tolak")}
                         disabled={isPending}
-                        className="px-4 py-2.5 rounded-full bg-[#FFF0F0] hover:bg-[#FFE5E5] text-[#D32F2F] text-xs font-bold border border-[#FFCDD2] transition disabled:opacity-50"
+                        className="px-4 py-2.5 rounded-full bg-[#FFF0F0] hover:bg-[#FFE5E5] text-[#D32F2F] text-xs font-bold border border-[#FFCDD2] transition disabled:opacity-50 cursor-pointer"
                       >
                         Tolak
                       </button>
@@ -655,9 +716,9 @@ export function KerusakanClientView({
                     {userRole === "penyewa" && selectedLaporan.pelapor_id === currentUserId && (
                       <button
                         type="button"
-                        onClick={() => handleExecuteAction("tutup")}
+                        onClick={() => setConfirmAksiModal("tutup_laporan")}
                         disabled={isPending}
-                        className="w-full inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-full bg-[#1C1E22] hover:bg-[#26292E] text-white text-xs font-bold shadow-sm transition disabled:opacity-50"
+                        className="w-full inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-full bg-[#1C1E22] hover:bg-[#26292E] text-white text-xs font-bold shadow-sm transition disabled:opacity-50 cursor-pointer"
                       >
                         <CheckCircle2 className="w-3.5 h-3.5 text-[#D2F367]" />
                         <span>Tutup Laporan Kerusakan</span>
@@ -667,9 +728,9 @@ export function KerusakanClientView({
                     {userRole === "pengelola" && (
                       <button
                         type="button"
-                        onClick={() => handleExecuteAction("tutup")}
+                        onClick={() => setConfirmAksiModal("tutup_laporan")}
                         disabled={isPending}
-                        className="w-full inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-full bg-[#F6F7F9] hover:bg-[#E8EAEC] text-[#26292E] text-xs font-semibold border border-[#E8EAEC] transition disabled:opacity-50"
+                        className="w-full inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-full bg-[#F6F7F9] hover:bg-[#E8EAEC] text-[#26292E] text-xs font-semibold border border-[#E8EAEC] transition disabled:opacity-50 cursor-pointer"
                       >
                         <span>Tutup (Pengelola - Aturan &gt; 3 Hari BR-12)</span>
                       </button>
@@ -695,12 +756,20 @@ export function KerusakanClientView({
           Semua Tiket Laporan Kerusakan ({filteredList.length})
         </h3>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {filteredList.length === 0 ? (
+          <EmptyState
+            icon={Wrench}
+            title="Tidak Ada Laporan Kerusakan"
+            description="Tidak ada tiket laporan kerusakan yang sesuai dengan filter status atau kata kunci pencarian Anda."
+          />
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredList.map((lk) => {
             const isSelected = selectedLaporan?.id === lk.id;
             return (
               <div
                 key={lk.id}
+                id={`laporan-item-${lk.id}`}
                 onClick={() => setSelectedLaporan(lk)}
                 className={`p-4 rounded-2xl border cursor-pointer transition flex flex-col justify-between space-y-3 ${isSelected
                   ? "bg-white border-[#26292E] shadow-md ring-2 ring-[#26292E]/10"
@@ -725,6 +794,7 @@ export function KerusakanClientView({
             );
           })}
         </div>
+        )}
       </div>
 
       {/* MODAL BUAT LAPORAN BARU (PENYEWA - BR-11) */}
@@ -738,9 +808,15 @@ export function KerusakanClientView({
                 </span>
                 <h2 className="text-xl font-bold text-[#26292E]">Buat Laporan Baru</h2>
               </div>
-              <span className="w-9 h-9 rounded-full bg-[#1C1E22] text-[#D2F367] flex items-center justify-center font-bold text-xs">
-                LK
-              </span>
+              <button
+                type="button"
+                onClick={() => setIsCreateOpen(false)}
+                disabled={isPending}
+                className="w-8 h-8 rounded-full bg-[#F6F7F9] hover:bg-[#E8EAEC] text-[#737A84] hover:text-[#26292E] flex items-center justify-center transition cursor-pointer"
+                title="Tutup Modal"
+              >
+                <X className="w-4 h-4" />
+              </button>
             </div>
 
             <div className="p-3 rounded-2xl bg-[#F6F7F9] border border-[#E8EAEC] text-xs text-[#737A84]">
@@ -839,9 +915,15 @@ export function KerusakanClientView({
                 </span>
                 <h2 className="text-xl font-bold text-[#26292E]">Tolak Laporan Kerusakan</h2>
               </div>
-              <span className="w-9 h-9 rounded-full bg-[#FFF0F0] text-[#D32F2F] flex items-center justify-center font-bold text-xs">
-                !
-              </span>
+              <button
+                type="button"
+                onClick={() => setActionModal(null)}
+                disabled={isPending}
+                className="w-8 h-8 rounded-full bg-[#FFF0F0] hover:bg-[#FFE5E5] text-[#D32F2F] flex items-center justify-center transition cursor-pointer"
+                title="Tutup Modal"
+              >
+                <X className="w-4 h-4" />
+              </button>
             </div>
 
             <div>
@@ -923,6 +1005,96 @@ export function KerusakanClientView({
                 className="px-5 py-2 rounded-full bg-[#1C1E22] hover:bg-[#26292E] text-xs font-semibold text-white shadow-sm transition"
               >
                 Tutup
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL KONFIRMASI EKSPLISIT PEMILIK & PENUTUPAN TIKET */}
+      {confirmAksiModal && selectedLaporan && (
+        <div className="fixed inset-0 z-60 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-in fade-in">
+          <div className="w-full max-w-md rounded-[28px] bg-white p-6 shadow-2xl border border-[#E8EAEC] space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <span className="text-[10px] font-bold text-[#737A84] uppercase tracking-widest">
+                  Konfirmasi Tindakan
+                </span>
+                <h3 className="text-base font-bold text-[#26292E]">
+                  {confirmAksiModal === "setujui_biaya"
+                    ? "Persetujuan Biaya Perbaikan (Pemilik)"
+                    : "Tutup Tiket Laporan Kerusakan"}
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setConfirmAksiModal(null)}
+                disabled={isPending}
+                className="w-8 h-8 rounded-full bg-[#F6F7F9] hover:bg-[#E8EAEC] text-[#737A84] hover:text-[#26292E] flex items-center justify-center transition cursor-pointer"
+                title="Tutup Modal"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="p-3.5 rounded-2xl bg-[#F6F7F9] border border-[#E8EAEC] text-xs space-y-1.5">
+              <div className="flex justify-between">
+                <span className="text-[#737A84]">Nomor Tiket:</span>
+                <span className="font-mono font-bold">{selectedLaporan.nomor}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-[#737A84]">Unit:</span>
+                <span className="font-semibold">{selectedLaporan.unit_kode}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-[#737A84]">Judul:</span>
+                <span className="font-semibold">{selectedLaporan.judul}</span>
+              </div>
+              {confirmAksiModal === "setujui_biaya" && (
+                <div className="flex justify-between pt-1 border-t border-[#E8EAEC]">
+                  <span className="text-[#737A84]">Estimasi Biaya:</span>
+                  <span className="font-bold text-[#1C1E22]">
+                    Rp{selectedLaporan.estimasi_biaya?.toLocaleString("id-ID")}
+                  </span>
+                </div>
+              )}
+            </div>
+
+            <p className="text-xs text-[#737A84] leading-relaxed">
+              {confirmAksiModal === "setujui_biaya"
+                ? "Sebagai Pemilik, Anda menyetujui estimasi biaya perbaikan melebihi batas Rp1.000.000 (BR-12). Status tiket akan berubah menjadi 'diproses' dan Pengelola dapat menunjuk teknisi pengerjaan."
+                : "Apakah Anda yakin ingin menutup tiket laporan kerusakan ini secara permanen? Tiket yang telah berstatus ditutup tidak dapat diubah kembali (BR-12)."}
+            </p>
+
+            <div className="flex items-center justify-end gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => setConfirmAksiModal(null)}
+                disabled={isPending}
+                className="px-4 py-2 rounded-full bg-[#F6F7F9] hover:bg-[#E8EAEC] text-xs font-semibold text-[#26292E] transition cursor-pointer"
+              >
+                Batal
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  const actionTarget = confirmAksiModal === "setujui_biaya" ? "proses" : "tutup";
+                  setConfirmAksiModal(null);
+                  handleExecuteAction(actionTarget);
+                }}
+                disabled={isPending}
+                className="inline-flex items-center gap-1.5 px-5 py-2 rounded-full bg-[#1C1E22] hover:bg-[#26292E] text-white text-xs font-semibold shadow-sm transition disabled:opacity-50 cursor-pointer"
+              >
+                {isPending ? (
+                  <>
+                    <Loader2 className="w-3.5 h-3.5 animate-spin text-[#D2F367]" />
+                    <span>Memproses...</span>
+                  </>
+                ) : (
+                  <span>
+                    {confirmAksiModal === "setujui_biaya" ? "Ya, Setujui Biaya" : "Ya, Tutup Tiket"}
+                  </span>
+                )}
               </button>
             </div>
           </div>

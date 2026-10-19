@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState, useTransition } from "react";
+import React, { useState, useEffect, useTransition } from "react";
+import { useSearchParams } from "next/navigation";
 import { UserRole } from "@/lib/auth/guard";
 import {
   buatKontrakAction,
@@ -22,7 +23,12 @@ import {
   Clock,
   ArrowRight,
   ShieldAlert,
+  Loader2,
+  X,
 } from "lucide-react";
+import { AlertBanner } from "@/components/feedback/AlertBanner";
+import { EmptyState } from "@/components/feedback/EmptyState";
+import { HttpStatusCode } from "@/types/api";
 
 export interface KontrakItem {
   id: string;
@@ -70,10 +76,21 @@ export function KontrakClientView({
   availablePenyewa,
   userRole,
 }: KontrakClientViewProps) {
+  const searchParams = useSearchParams();
+  const qParam = searchParams.get("q") || "";
+  const targetIdParam = searchParams.get("targetId") || "";
+
   const [kontrakList, setKontrakList] = useState<KontrakItem[]>(initialKontrak);
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [filterBlok, setFilterBlok] = useState<string>("all");
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState(qParam);
+
+  // Sync if query param changes
+  useEffect(() => {
+    if (qParam) {
+      setSearchQuery(qParam);
+    }
+  }, [qParam]);
 
   // Modal Buat Kontrak Baru
   const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -87,9 +104,15 @@ export function KontrakClientView({
   const [activeKontrakTarget, setActiveKontrakTarget] = useState<KontrakItem | null>(null);
   const [alasanBerakhir, setAlasanBerakhir] = useState("");
 
+  // Modal Konfirmasi Eksplisit (Aktivasi, Pembatalan Draf, Penyelesaian)
+  const [confirmModal, setConfirmModal] = useState<{
+    action: "aktifkan" | "batalkan" | "selesaikan";
+    kontrak: KontrakItem;
+  } | null>(null);
+
   const [isPending, startTransition] = useTransition();
   const [feedback, setFeedback] = useState<{
-    type: "success" | "error";
+    statusCode: HttpStatusCode;
     message: string;
   } | null>(null);
 
@@ -111,7 +134,7 @@ export function KontrakClientView({
   // Action: Buat Kontrak Baru (Pengelola)
   const handleCreateContract = () => {
     if (!selectedUnitId || !selectedPenyewaId) {
-      setFeedback({ type: "error", message: "Silakan pilih unit dan penyewa terlebih dahulu." });
+      setFeedback({ statusCode: 400, message: "Silakan pilih unit dan penyewa terlebih dahulu." });
       return;
     }
 
@@ -125,7 +148,7 @@ export function KontrakClientView({
       });
 
       if (res.success && res.data) {
-        setFeedback({ type: "success", message: res.message });
+        setFeedback({ statusCode: res.statusCode, message: res.message });
         const selectedU = availableUnits.find((u) => u.id === selectedUnitId);
         const selectedP = availablePenyewa.find((p) => p.id === selectedPenyewaId);
 
@@ -152,56 +175,44 @@ export function KontrakClientView({
           setFeedback(null);
         }, 1500);
       } else {
-        setFeedback({ type: "error", message: res.message });
+        setFeedback({ statusCode: res.statusCode, message: res.message });
       }
     });
   };
 
-  // Action: Aktifkan Kontrak (Pengelola)
-  const handleAktifkan = (k: KontrakItem) => {
-    startTransition(async () => {
-      setFeedback(null);
-      const res = await aktifkanKontrakAction(k.id);
-      if (res.success) {
-        setKontrakList((prev) =>
-          prev.map((item) => (item.id === k.id ? { ...item, status: "aktif" } : item))
-        );
-        setFeedback({ type: "success", message: res.message });
-      } else {
-        setFeedback({ type: "error", message: res.message });
-      }
-    });
-  };
+  // Action: Eksekusi Modal Konfirmasi Eksplisit
+  const handleExecuteConfirmedAction = () => {
+    if (!confirmModal) return;
+    const { action, kontrak } = confirmModal;
 
-  // Action: Batalkan Kontrak Draf (Pengelola)
-  const handleBatalkan = (k: KontrakItem) => {
     startTransition(async () => {
       setFeedback(null);
-      const res = await batalkanKontrakDrafAction(k.id);
-      if (res.success) {
-        setKontrakList((prev) =>
-          prev.map((item) => (item.id === k.id ? { ...item, status: "dibatalkan" } : item))
-        );
-        setFeedback({ type: "success", message: res.message });
-      } else {
-        setFeedback({ type: "error", message: res.message });
+      if (action === "aktifkan") {
+        const res = await aktifkanKontrakAction(kontrak.id);
+        if (res.success) {
+          setKontrakList((prev) =>
+            prev.map((item) => (item.id === kontrak.id ? { ...item, status: "aktif" } : item))
+          );
+        }
+        setFeedback({ statusCode: res.statusCode, message: res.message });
+      } else if (action === "batalkan") {
+        const res = await batalkanKontrakDrafAction(kontrak.id);
+        if (res.success) {
+          setKontrakList((prev) =>
+            prev.map((item) => (item.id === kontrak.id ? { ...item, status: "dibatalkan" } : item))
+          );
+        }
+        setFeedback({ statusCode: res.statusCode, message: res.message });
+      } else if (action === "selesaikan") {
+        const res = await selesaikanKontrakAction(kontrak.id);
+        if (res.success) {
+          setKontrakList((prev) =>
+            prev.map((item) => (item.id === kontrak.id ? { ...item, status: "selesai" } : item))
+          );
+        }
+        setFeedback({ statusCode: res.statusCode, message: res.message });
       }
-    });
-  };
-
-  // Action: Selesaikan Kontrak (Pengelola)
-  const handleSelesaikan = (k: KontrakItem) => {
-    startTransition(async () => {
-      setFeedback(null);
-      const res = await selesaikanKontrakAction(k.id);
-      if (res.success) {
-        setKontrakList((prev) =>
-          prev.map((item) => (item.id === k.id ? { ...item, status: "selesai" } : item))
-        );
-        setFeedback({ type: "success", message: res.message });
-      } else {
-        setFeedback({ type: "error", message: res.message });
-      }
+      setConfirmModal(null);
     });
   };
 
@@ -222,13 +233,13 @@ export function KontrakClientView({
               : item
           )
         );
-        setFeedback({ type: "success", message: res.message });
+        setFeedback({ statusCode: res.statusCode, message: res.message });
         setTimeout(() => {
           setIsAkhiriOpen(false);
           setActiveKontrakTarget(null);
         }, 1500);
       } else {
-        setFeedback({ type: "error", message: res.message });
+        setFeedback({ statusCode: res.statusCode, message: res.message });
       }
     });
   };
@@ -278,13 +289,25 @@ export function KontrakClientView({
             <option value="C">Blok C (Lt 3)</option>
           </select>
 
-          <input
-            type="text"
-            placeholder="Cari nomor / unit / nama..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="px-3.5 py-1.5 rounded-full bg-[#F6F7F9] text-xs text-[#26292E] placeholder-[#737A84] border border-[#E8EAEC] focus:outline-none w-48 sm:w-56"
-          />
+          <div className="relative w-48 sm:w-56">
+            <input
+              type="text"
+              placeholder="Cari nomor / unit / nama..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="px-3.5 pr-8 py-1.5 rounded-full bg-[#F6F7F9] text-xs text-[#26292E] placeholder-[#737A84] border border-[#E8EAEC] focus:outline-none w-full"
+            />
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => setSearchQuery("")}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#737A84] hover:text-[#26292E] p-0.5 rounded-full"
+                title="Reset pencarian"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
 
           {userRole === "pengelola" && (
             <button
@@ -303,26 +326,29 @@ export function KontrakClientView({
       </div>
 
       {feedback && (
-        <div
-          className={`p-4 rounded-2xl text-xs font-medium flex items-center gap-2 ${
-            feedback.type === "success"
-              ? "bg-[#EAFCD6] text-[#2F6B12] border border-[#C8F296]"
-              : "bg-[#FFF0F0] text-[#D32F2F] border border-[#FFCDD2]"
-          }`}
-        >
-          <AlertCircle className="w-4 h-4 shrink-0" />
-          <span>{feedback.message}</span>
-        </div>
+        <AlertBanner
+          statusCode={feedback.statusCode}
+          message={feedback.message}
+          onDismiss={() => setFeedback(null)}
+        />
       )}
 
       {/* DAFTAR KARTU KONTRAK BERGAYA MONTE X TERRA */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {filteredList.length === 0 ? (
+        <EmptyState
+          icon={FileText}
+          title="Tidak Ada Kontrak Ditemukan"
+          description="Tidak ada data kontrak yang sesuai dengan filter status atau kata kunci pencarian Anda."
+        />
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredList.map((k) => {
           const isAktif = k.status === "aktif";
           const isDraf = k.status === "draf";
           const isSelesai = k.status === "selesai";
           const isDiakhiri = k.status === "diakhiri";
           const isDibatalkan = k.status === "dibatalkan";
+          const isTargeted = targetIdParam && k.id === targetIdParam;
 
           const statusBadge = isAktif
             ? "bg-[#EAFCD6] text-[#2F6B12] border-[#C8F296]"
@@ -335,7 +361,11 @@ export function KontrakClientView({
           return (
             <div
               key={k.id}
-              className="rounded-[28px] bg-white p-5 border border-[#E8EAEC] shadow-[0_8px_30px_rgba(38,41,46,0.04)] hover:shadow-md transition flex flex-col justify-between space-y-4"
+              className={`rounded-[28px] bg-white p-5 border transition flex flex-col justify-between space-y-4 ${
+                isTargeted
+                  ? "border-[#26292E] shadow-xl ring-2 ring-[#26292E]/20 bg-[#F6F7F9]/30"
+                  : "border-[#E8EAEC] shadow-[0_8px_30px_rgba(38,41,46,0.04)] hover:shadow-md"
+              }`}
             >
               <div className="space-y-3">
                 {/* Header Kontrak: Nomor & Badge Status */}
@@ -404,18 +434,18 @@ export function KontrakClientView({
                   <>
                     <button
                       type="button"
-                      onClick={() => handleAktifkan(k)}
+                      onClick={() => setConfirmModal({ action: "aktifkan", kontrak: k })}
                       disabled={isPending}
-                      className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-full bg-[#1C1E22] hover:bg-[#26292E] text-white text-xs font-semibold shadow-sm transition disabled:opacity-50"
+                      className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-full bg-[#1C1E22] hover:bg-[#26292E] text-white text-xs font-semibold shadow-sm transition disabled:opacity-50 cursor-pointer"
                     >
                       <CheckCircle2 className="w-3.5 h-3.5 text-[#D2F367]" />
                       <span>Aktifkan</span>
                     </button>
                     <button
                       type="button"
-                      onClick={() => handleBatalkan(k)}
+                      onClick={() => setConfirmModal({ action: "batalkan", kontrak: k })}
                       disabled={isPending}
-                      className="px-3 py-2 rounded-full bg-[#FFF0F0] hover:bg-[#FFE5E5] text-[#D32F2F] text-xs font-semibold border border-[#FFCDD2] transition disabled:opacity-50"
+                      className="px-3 py-2 rounded-full bg-[#FFF0F0] hover:bg-[#FFE5E5] text-[#D32F2F] text-xs font-semibold border border-[#FFCDD2] transition disabled:opacity-50 cursor-pointer"
                     >
                       Batalkan
                     </button>
@@ -426,9 +456,9 @@ export function KontrakClientView({
                 {userRole === "pengelola" && isAktif && (
                   <button
                     type="button"
-                    onClick={() => handleSelesaikan(k)}
+                    onClick={() => setConfirmModal({ action: "selesaikan", kontrak: k })}
                     disabled={isPending}
-                    className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-full bg-[#F6F7F9] hover:bg-[#E8EAEC] text-[#26292E] text-xs font-semibold border border-[#E8EAEC] transition disabled:opacity-50"
+                    className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-full bg-[#F6F7F9] hover:bg-[#E8EAEC] text-[#26292E] text-xs font-semibold border border-[#E8EAEC] transition disabled:opacity-50 cursor-pointer"
                   >
                     <span>Selesaikan Kontrak (BR-05)</span>
                   </button>
@@ -463,6 +493,7 @@ export function KontrakClientView({
           );
         })}
       </div>
+      )}
 
       {/* MODAL BUAT KONTRAK BARU (PENGELOLA) */}
       {isCreateOpen && (
@@ -475,9 +506,18 @@ export function KontrakClientView({
                 </span>
                 <h2 className="text-xl font-bold text-[#26292E]">Buat Kontrak Baru</h2>
               </div>
-              <span className="w-9 h-9 rounded-full bg-[#1C1E22] text-[#D2F367] flex items-center justify-center font-bold text-xs">
-                KTR
-              </span>
+              <button
+                type="button"
+                onClick={() => {
+                  setIsCreateOpen(false);
+                  setFeedback(null);
+                }}
+                disabled={isPending}
+                className="w-8 h-8 rounded-full bg-[#F6F7F9] hover:bg-[#E8EAEC] text-[#737A84] hover:text-[#26292E] flex items-center justify-center transition cursor-pointer"
+                title="Tutup Modal"
+              >
+                <X className="w-4 h-4" />
+              </button>
             </div>
 
             <div className="space-y-4">
@@ -593,9 +633,19 @@ export function KontrakClientView({
                   Akhiri Kontrak {activeKontrakTarget.nomor}
                 </h2>
               </div>
-              <span className="w-9 h-9 rounded-full bg-[#FFF0F0] text-[#D32F2F] flex items-center justify-center font-bold text-xs">
-                !
-              </span>
+              <button
+                type="button"
+                onClick={() => {
+                  setIsAkhiriOpen(false);
+                  setActiveKontrakTarget(null);
+                  setAlasanBerakhir("");
+                }}
+                disabled={isPending}
+                className="w-8 h-8 rounded-full bg-[#FFF0F0] hover:bg-[#FFE5E5] text-[#D32F2F] flex items-center justify-center transition cursor-pointer"
+                title="Tutup Modal"
+              >
+                <X className="w-4 h-4" />
+              </button>
             </div>
 
             <div className="p-3 rounded-2xl bg-[#FFF9E6] border border-[#FFE8A3] text-xs text-[#8A6D14]">
@@ -634,6 +684,100 @@ export function KontrakClientView({
                 className="inline-flex items-center gap-1.5 px-5 py-2 rounded-full bg-[#D32F2F] hover:bg-[#B71C1C] text-white text-xs font-semibold shadow-sm transition disabled:opacity-50"
               >
                 {isPending ? "Memproses..." : "Konfirmasi Pengakhiran"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL KONFIRMASI EKSPLISIT (AKTIVASI, PEMBATALAN, PENYELESAIAN) */}
+      {confirmModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-in fade-in">
+          <div className="w-full max-w-md rounded-[28px] bg-white p-6 shadow-2xl border border-[#E8EAEC] space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <span className="text-[10px] font-bold text-[#737A84] uppercase tracking-widest">
+                  Konfirmasi Tindakan
+                </span>
+                <h3 className="text-lg font-bold text-[#26292E]">
+                  {confirmModal.action === "aktifkan"
+                    ? "Aktivasi Kontrak Sewa"
+                    : confirmModal.action === "batalkan"
+                    ? "Batalkan Draf Kontrak"
+                    : "Selesaikan Kontrak Sewa"}
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setConfirmModal(null)}
+                disabled={isPending}
+                className={`w-8 h-8 rounded-full flex items-center justify-center transition cursor-pointer ${
+                  confirmModal.action === "batalkan"
+                    ? "bg-[#FFF0F0] hover:bg-[#FFE5E5] text-[#D32F2F]"
+                    : "bg-[#F6F7F9] hover:bg-[#E8EAEC] text-[#737A84] hover:text-[#26292E]"
+                }`}
+                title="Tutup Modal"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="p-3.5 rounded-2xl bg-[#F6F7F9] border border-[#E8EAEC] text-xs text-[#26292E] space-y-1.5">
+              <div className="flex justify-between">
+                <span className="text-[#737A84]">Nomor Kontrak:</span>
+                <span className="font-mono font-bold">{confirmModal.kontrak.nomor}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-[#737A84]">Unit:</span>
+                <span className="font-semibold">{confirmModal.kontrak.unit_kode} ({confirmModal.kontrak.unit_tipe.toUpperCase()})</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-[#737A84]">Penyewa:</span>
+                <span className="font-semibold">{confirmModal.kontrak.penyewa_nama}</span>
+              </div>
+            </div>
+
+            <p className="text-xs text-[#737A84] leading-relaxed">
+              {confirmModal.action === "aktifkan"
+                ? "Apakah Anda yakin ingin mengaktifkan kontrak ini? Sistem akan memvalidasi bahwa identitas penyewa sudah diverifikasi oleh Pengelola dan tidak ada kontrak aktif lain (BR-03)."
+                : confirmModal.action === "batalkan"
+                ? "Apakah Anda yakin ingin membatalkan draf kontrak ini? Draf yang dibatalkan tidak dapat diaktifkan kembali."
+                : "Apakah Anda yakin ingin menandai kontrak ini sebagai selesai (BR-05)? Pastikan seluruh kewajiban sewa telah tuntas."}
+            </p>
+
+            <div className="flex items-center justify-end gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => setConfirmModal(null)}
+                disabled={isPending}
+                className="px-4 py-2 rounded-full bg-[#F6F7F9] hover:bg-[#E8EAEC] text-xs font-semibold text-[#26292E] transition cursor-pointer"
+              >
+                Batal
+              </button>
+              <button
+                type="button"
+                onClick={handleExecuteConfirmedAction}
+                disabled={isPending}
+                className={`inline-flex items-center gap-1.5 px-5 py-2 rounded-full text-xs font-semibold shadow-sm transition disabled:opacity-50 cursor-pointer ${
+                  confirmModal.action === "batalkan"
+                    ? "bg-[#D32F2F] hover:bg-[#B71C1C] text-white"
+                    : "bg-[#1C1E22] hover:bg-[#26292E] text-white"
+                }`}
+              >
+                {isPending ? (
+                  <>
+                    <Loader2 className="w-3.5 h-3.5 animate-spin text-[#D2F367]" />
+                    <span>Memproses...</span>
+                  </>
+                ) : (
+                  <span>
+                    {confirmModal.action === "aktifkan"
+                      ? "Ya, Aktifkan Kontrak"
+                      : confirmModal.action === "batalkan"
+                      ? "Ya, Batalkan Draf"
+                      : "Ya, Selesaikan Kontrak"}
+                  </span>
+                )}
               </button>
             </div>
           </div>

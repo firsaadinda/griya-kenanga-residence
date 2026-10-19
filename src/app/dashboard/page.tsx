@@ -46,17 +46,51 @@ export default async function DashboardPage() {
 
   // =========================================================================
   // JIKA ROLE PENYEWA: TAMPILKAN PORTAL BERANDA PENYEWA (US-01 / US-02)
+  // Eksekusi paralel via Promise.all untuk responsivitas instan
   // =========================================================================
   if (profile.peran === "penyewa") {
-    // 1. Ambil Kontrak Sewa Penyewa (Status Aktif MAUPUN Draf - Kasus Fajar KTR-2026-0022)
-    const { data: rawContracts } = await supabase
-      .from("kontrak")
-      .select(`
-        id, nomor, status, tanggal_mulai, tanggal_selesai, harga_sewa_bulanan,
-        unit:unit_id ( kode, tipe )
-      `)
-      .eq("penyewa_id", profile.id)
-      .order("dibuat_pada", { ascending: false });
+    const [contractsResult, billsResult, reportsResult, identityResult] = await Promise.all([
+      // 1. Ambil Kontrak Sewa Penyewa (Status Aktif MAUPUN Draf - Kasus Fajar KTR-2026-0022)
+      supabase
+        .from("kontrak")
+        .select(`
+          id, nomor, status, tanggal_mulai, tanggal_selesai, harga_sewa_bulanan,
+          unit:unit_id ( kode, tipe )
+        `)
+        .eq("penyewa_id", profile.id)
+        .order("dibuat_pada", { ascending: false }),
+
+      // 2. Ambil Tagihan Sewa Penyewa
+      supabase
+        .from("tagihan")
+        .select(`
+          id, nomor, nominal_sewa, denda, terbayar, status, periode,
+          kontrak:kontrak_id!inner (
+            penyewa_id
+          )
+        `)
+        .eq("kontrak.penyewa_id", profile.id)
+        .order("periode", { ascending: false }),
+
+      // 3. Ambil Laporan Kerusakan Penyewa
+      supabase
+        .from("laporan_kerusakan")
+        .select("id, nomor, kategori, deskripsi, status, dibuat_pada")
+        .eq("pelapor_id", profile.id)
+        .order("dibuat_pada", { ascending: false }),
+
+      // 4. Ambil Data Identitas Penyewa
+      supabase
+        .from("identitas_penyewa")
+        .select("nik, alamat_asal, foto_ktp_path, kontak_darurat_nama, kontak_darurat_hp, status_verifikasi, alasan_tolak")
+        .eq("penyewa_id", profile.id)
+        .maybeSingle(),
+    ]);
+
+    const rawContracts = contractsResult.data;
+    const rawBills = billsResult.data;
+    const rawReports = reportsResult.data;
+    const rawIdentity = identityResult.data;
 
     const contracts: PenyewaContractInfo[] = (rawContracts || []).map((k: any) => ({
       id: k.id,
@@ -68,18 +102,6 @@ export default async function DashboardPage() {
       hargaPerBulan: Number(k.harga_sewa_bulanan || 0),
       status: k.status,
     }));
-
-    // 2. Ambil Tagihan Sewa Penyewa
-    const { data: rawBills } = await supabase
-      .from("tagihan")
-      .select(`
-        id, nomor, nominal_sewa, denda, terbayar, status, periode,
-        kontrak:kontrak_id!inner (
-          penyewa_id
-        )
-      `)
-      .eq("kontrak.penyewa_id", profile.id)
-      .order("periode", { ascending: false });
 
     const bills: PenyewaBillInfo[] = (rawBills || []).map((b: any) => {
       const sewa = Number(b.nominal_sewa || 0);
@@ -104,13 +126,6 @@ export default async function DashboardPage() {
       };
     });
 
-    // 3. Ambil Laporan Kerusakan Penyewa
-    const { data: rawReports } = await supabase
-      .from("laporan_kerusakan")
-      .select("id, nomor, kategori, deskripsi, status, dibuat_pada")
-      .eq("pelapor_id", profile.id)
-      .order("dibuat_pada", { ascending: false });
-
     const reports: PenyewaReportInfo[] = (rawReports || []).map((r: any) => ({
       id: r.id,
       nomor: r.nomor,
@@ -119,13 +134,6 @@ export default async function DashboardPage() {
       status: r.status,
       dibuatPada: r.dibuat_pada,
     }));
-
-    // 4. Ambil Data Identitas Penyewa
-    const { data: rawIdentity } = await supabase
-      .from("identitas_penyewa")
-      .select("nik, alamat_asal, foto_ktp_path, kontak_darurat_nama, kontak_darurat_hp, status_verifikasi, alasan_tolak")
-      .eq("penyewa_id", profile.id)
-      .maybeSingle();
 
     const identity: PenyewaIdentityInfo | null = rawIdentity
       ? {
@@ -154,22 +162,38 @@ export default async function DashboardPage() {
   // =========================================================================
   // JIKA ROLE PEMILIK ATAU PENGELOLA: TAMPILKAN BERANDA OPERASIONAL
   // Data acuan per 15 Oktober 2026 (PRD Bagian 9 & Wireframe Hal 1)
+  // Eksekusi paralel via Promise.all
   // =========================================================================
 
-  // 1. Ambil 7 Tagihan Lewat Jatuh Tempo (per 15 Okt 2026)
-  const { data: overdueBillsRaw } = await supabase
-    .from("tagihan")
-    .select(`
-      id, nomor, nominal_sewa, denda, terbayar, jatuh_tempo, status, periode,
-      kontrak:kontrak_id (
-        unit:unit_id ( kode ),
-        penyewa:penyewa_id ( nama_lengkap )
-      )
-    `)
-    .in("status", ["belum_bayar", "sebagian"])
-    .lte("periode", "2026-10-01")
-    .order("jatuh_tempo", { ascending: true })
-    .order("nomor", { ascending: true });
+  const [overdueBillsRes, openReportsRes] = await Promise.all([
+    // 1. Ambil 7 Tagihan Lewat Jatuh Tempo (per 15 Okt 2026)
+    supabase
+      .from("tagihan")
+      .select(`
+        id, nomor, nominal_sewa, denda, terbayar, jatuh_tempo, status, periode,
+        kontrak:kontrak_id (
+          unit:unit_id ( kode ),
+          penyewa:penyewa_id ( nama_lengkap )
+        )
+      `)
+      .in("status", ["belum_bayar", "sebagian"])
+      .lte("periode", "2026-10-01")
+      .order("jatuh_tempo", { ascending: true })
+      .order("nomor", { ascending: true }),
+
+    // 2. Ambil 5 Laporan Kerusakan Terbuka
+    supabase
+      .from("laporan_kerusakan")
+      .select(`
+        id, nomor, deskripsi, status,
+        unit:unit_id ( kode )
+      `)
+      .in("status", ["dilaporkan", "diproses", "menunggu_persetujuan"])
+      .order("nomor", { ascending: true }),
+  ]);
+
+  const overdueBillsRaw = overdueBillsRes.data;
+  const openReportsRaw = openReportsRes.data;
 
   const overdueBills: OverdueBillItem[] = (overdueBillsRaw || []).map((b: any) => {
     const nominalSewa = Number(b.nominal_sewa || 0);
@@ -199,16 +223,6 @@ export default async function DashboardPage() {
       status: b.status as "belum_bayar" | "sebagian",
     };
   });
-
-  // 2. Ambil 5 Laporan Kerusakan Terbuka
-  const { data: openReportsRaw } = await supabase
-    .from("laporan_kerusakan")
-    .select(`
-      id, nomor, deskripsi, status,
-      unit:unit_id ( kode )
-    `)
-    .in("status", ["dilaporkan", "diproses", "menunggu_persetujuan"])
-    .order("nomor", { ascending: true });
 
   const openReports: OpenDamageReportItem[] = (openReportsRaw || []).map((r: any) => ({
     id: r.id,

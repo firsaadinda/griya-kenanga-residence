@@ -30,7 +30,11 @@ import {
   Layers,
   ArrowRight,
   RefreshCw,
+  Loader2,
+  X,
 } from "lucide-react";
+import { AlertBanner } from "@/components/feedback/AlertBanner";
+import { HttpStatusCode } from "@/types/api";
 
 interface LaporanClientViewProps {
   initialData: LaporanKeuanganData;
@@ -73,7 +77,7 @@ export function LaporanClientView({
   const [selectedUser, setSelectedUser] = useState<UserManagementItem | null>(null);
   const [targetNewRole, setTargetNewRole] = useState<"pengelola" | "penyewa">("pengelola");
   const [roleModalOpen, setRoleModalOpen] = useState(false);
-  const [roleFeedback, setRoleFeedback] = useState<{ type: "success" | "error"; message: string } | null>(null);
+  const [roleFeedback, setRoleFeedback] = useState<{ statusCode: HttpStatusCode; message: string } | null>(null);
   const [isPendingRole, startRoleTransition] = useTransition();
 
   // Helper format rupiah
@@ -201,7 +205,7 @@ export function LaporanClientView({
     startRoleTransition(async () => {
       const res = await updateUserRoleAction(selectedUser.id, targetNewRole);
       if (res.success) {
-        setRoleFeedback({ type: "success", message: res.message });
+        setRoleFeedback({ statusCode: res.statusCode, message: res.message });
         setUsersList((prev) =>
           prev.map((u) => (u.id === selectedUser.id ? { ...u, peran: targetNewRole } : u))
         );
@@ -210,7 +214,7 @@ export function LaporanClientView({
           setSelectedUser(null);
         }, 1200);
       } else {
-        setRoleFeedback({ type: "error", message: res.message });
+        setRoleFeedback({ statusCode: res.statusCode, message: res.message });
       }
     });
   };
@@ -820,9 +824,10 @@ export function LaporanClientView({
               <button
                 type="button"
                 onClick={() => setRoleModalOpen(false)}
-                className="w-8 h-8 rounded-full bg-[#F6F7F9] hover:bg-[#E8EAEC] text-[#26292E] flex items-center justify-center text-xs font-bold"
+                className="w-8 h-8 rounded-full bg-[#F6F7F9] hover:bg-[#E8EAEC] text-[#737A84] hover:text-[#26292E] flex items-center justify-center transition cursor-pointer"
+                title="Tutup Modal"
               >
-                ✕
+                <X className="w-4 h-4" />
               </button>
             </div>
 
@@ -845,16 +850,16 @@ export function LaporanClientView({
               </select>
             </div>
 
+            <div className="p-3 rounded-2xl bg-[#FFF9E6] border border-[#FFE8A3] text-xs text-[#8A6D14]">
+              <strong>Perhatian Pemilik (BR-10):</strong> Mengubah peran akun akan langsung memengaruhi hak akses modul operasional dan batasan Row Level Security (RLS) di database.
+            </div>
+
             {roleFeedback && (
-              <div
-                className={`p-3 rounded-xl text-xs font-medium ${
-                  roleFeedback.type === "success"
-                    ? "bg-emerald-50 text-emerald-900 border border-emerald-200"
-                    : "bg-rose-50 text-rose-900 border border-rose-200"
-                }`}
-              >
-                {roleFeedback.message}
-              </div>
+              <AlertBanner
+                statusCode={roleFeedback.statusCode}
+                message={roleFeedback.message}
+                onDismiss={() => setRoleFeedback(null)}
+              />
             )}
 
             <div className="flex items-center justify-end gap-2 pt-2">
@@ -862,7 +867,7 @@ export function LaporanClientView({
                 type="button"
                 disabled={isPendingRole}
                 onClick={() => setRoleModalOpen(false)}
-                className="px-4 py-2 rounded-full bg-[#F6F7F9] hover:bg-[#E8EAEC] text-xs font-semibold text-[#26292E] transition"
+                className="px-4 py-2 rounded-full bg-[#F6F7F9] hover:bg-[#E8EAEC] text-xs font-semibold text-[#26292E] transition cursor-pointer"
               >
                 Batal
               </button>
@@ -870,9 +875,16 @@ export function LaporanClientView({
                 type="button"
                 disabled={isPendingRole}
                 onClick={handleConfirmRoleChange}
-                className="px-5 py-2 rounded-full bg-[#1C1E22] hover:bg-[#26292E] text-white text-xs font-semibold transition disabled:opacity-50"
+                className="inline-flex items-center gap-1.5 px-5 py-2 rounded-full bg-[#1C1E22] hover:bg-[#26292E] text-white text-xs font-semibold transition disabled:opacity-50 cursor-pointer"
               >
-                {isPendingRole ? "Menyimpan..." : "Simpan Perubahan Peran"}
+                {isPendingRole ? (
+                  <>
+                    <Loader2 className="w-3.5 h-3.5 animate-spin text-[#D2F367]" />
+                    <span>Menyimpan...</span>
+                  </>
+                ) : (
+                  <span>Simpan Perubahan Peran</span>
+                )}
               </button>
             </div>
           </div>

@@ -1,3 +1,4 @@
+import React, { Suspense } from "react";
 import { requireRole } from "@/lib/auth/guard";
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
@@ -10,36 +11,63 @@ export default async function KontrakPage() {
 
   const supabase = await createClient();
 
-  // 1. Ambil daftar kontrak dengan relasi unit dan penyewa
-  const { data: rawKontrak } = await supabase
-    .from("kontrak")
-    .select(`
-      id,
-      nomor,
-      status,
-      tanggal_mulai,
-      durasi_bulan,
-      tanggal_selesai,
-      harga_sewa_bulanan,
-      alasan_berakhir,
-      tanggal_berakhir_aktual,
-      unit:unit_id (
+  // Eksekusi paralel 3 kueri: kontrak, unit, penyewa
+  const [kontrakResult, unitsResult, penyewaResult] = await Promise.all([
+    // 1. Ambil daftar kontrak dengan relasi unit dan penyewa
+    supabase
+      .from("kontrak")
+      .select(`
         id,
-        kode,
-        lantai,
-        tipe
-      ),
-      penyewa:penyewa_id (
+        nomor,
+        status,
+        tanggal_mulai,
+        durasi_bulan,
+        tanggal_selesai,
+        harga_sewa_bulanan,
+        alasan_berakhir,
+        tanggal_berakhir_aktual,
+        unit:unit_id (
+          id,
+          kode,
+          lantai,
+          tipe
+        ),
+        penyewa:penyewa_id (
+          id,
+          nama_lengkap,
+          email
+        ),
+        tagihan (
+          id,
+          status
+        )
+      `)
+      .order("nomor", { ascending: false }),
+
+    // 2. Ambil daftar unit untuk opsi pembuatan kontrak baru
+    supabase
+      .from("unit")
+      .select("id, kode, harga_sewa_bulanan, status")
+      .order("kode", { ascending: true }),
+
+    // 3. Ambil daftar penyewa untuk opsi pembuatan kontrak baru
+    supabase
+      .from("profiles")
+      .select(`
         id,
         nama_lengkap,
-        email
-      ),
-      tagihan (
-        id,
-        status
-      )
-    `)
-    .order("nomor", { ascending: false });
+        email,
+        identitas_penyewa:identitas_penyewa!penyewa_id (
+          status_verifikasi
+        )
+      `)
+      .eq("peran", "penyewa")
+      .order("nama_lengkap", { ascending: true }),
+  ]);
+
+  const rawKontrak = kontrakResult.data;
+  const rawUnits = unitsResult.data;
+  const rawPenyewa = penyewaResult.data;
 
   const kontrakList: KontrakItem[] = (rawKontrak || []).map((k: any) => {
     const unpaidCount = Array.isArray(k.tagihan)
@@ -66,32 +94,12 @@ export default async function KontrakPage() {
     };
   });
 
-  // 2. Ambil daftar unit untuk opsi pembuatan kontrak baru
-  const { data: rawUnits } = await supabase
-    .from("unit")
-    .select("id, kode, harga_sewa_bulanan, status")
-    .order("kode", { ascending: true });
-
   const availableUnits: UnitOption[] = (rawUnits || []).map((u: any) => ({
     id: u.id,
     kode: u.kode,
     harga_sewa_bulanan: u.harga_sewa_bulanan,
     status: u.status,
   }));
-
-  // 3. Ambil daftar penyewa untuk opsi pembuatan kontrak baru
-  const { data: rawPenyewa } = await supabase
-    .from("profiles")
-    .select(`
-      id,
-      nama_lengkap,
-      email,
-      identitas_penyewa:identitas_penyewa!penyewa_id (
-        status_verifikasi
-      )
-    `)
-    .eq("peran", "penyewa")
-    .order("nama_lengkap", { ascending: true });
 
   const availablePenyewa: PenyewaOption[] = (rawPenyewa || []).map((p: any) => {
     const identitas = Array.isArray(p.identitas_penyewa)
@@ -134,12 +142,14 @@ export default async function KontrakPage() {
       </div>
 
       {/* VIEW CLIENT KONTRAK */}
-      <KontrakClientView
-        initialKontrak={kontrakList}
-        availableUnits={availableUnits}
-        availablePenyewa={availablePenyewa}
-        userRole={profile.peran}
-      />
+      <Suspense fallback={<div className="p-12 text-center text-xs text-[#737A84]">Memuat data kontrak sewa...</div>}>
+        <KontrakClientView
+          initialKontrak={kontrakList}
+          availableUnits={availableUnits}
+          availablePenyewa={availablePenyewa}
+          userRole={profile.peran}
+        />
+      </Suspense>
     </div>
   );
 }

@@ -18,7 +18,10 @@ import {
   Receipt,
   Home,
   UserCheck,
+  Loader2,
 } from "lucide-react";
+import { AlertBanner } from "@/components/feedback/AlertBanner";
+import { HttpStatusCode } from "@/types/api";
 
 export interface PenyewaContractInfo {
   id: string;
@@ -88,7 +91,7 @@ export function PenyewaHomeView({
   const [kontakNama, setKontakNama] = useState(identity?.kontakDaruratNama || "");
   const [kontakHp, setKontakHp] = useState(identity?.kontakDaruratHp || "");
   const [fotoKtpBase64, setFotoKtpBase64] = useState<string | null>(null);
-  const [feedback, setFeedback] = useState<{ type: "success" | "error"; message: string } | null>(null);
+  const [feedback, setFeedback] = useState<{ statusCode: HttpStatusCode; message: string } | null>(null);
 
   const formatRupiah = (val: number) => {
     return new Intl.NumberFormat("id-ID", {
@@ -108,7 +111,7 @@ export function PenyewaHomeView({
     if (!file) return;
 
     if (file.size > 2 * 1024 * 1024) {
-      setFeedback({ type: "error", message: "Ukuran foto KTP maksimal 2 MB." });
+      setFeedback({ statusCode: 400, message: "Ukuran foto KTP maksimal 2 MB." });
       return;
     }
 
@@ -125,17 +128,17 @@ export function PenyewaHomeView({
     setFeedback(null);
 
     if (!nik || nik.length !== 16 || !/^\d{16}$/.test(nik)) {
-      setFeedback({ type: "error", message: "NIK wajib 16 digit angka sesuai KTP resmi." });
+      setFeedback({ statusCode: 400, message: "NIK wajib 16 digit angka sesuai KTP resmi." });
       return;
     }
 
     if (!alamatAsal.trim()) {
-      setFeedback({ type: "error", message: "Alamat asal wajib diisi." });
+      setFeedback({ statusCode: 400, message: "Alamat asal wajib diisi." });
       return;
     }
 
     if (!kontakNama.trim() || !kontakHp.trim()) {
-      setFeedback({ type: "error", message: "Nama dan nomor HP kontak darurat wajib diisi." });
+      setFeedback({ statusCode: 400, message: "Nama dan nomor HP kontak darurat wajib diisi." });
       return;
     }
 
@@ -150,12 +153,12 @@ export function PenyewaHomeView({
 
       if (res.success) {
         setFeedback({
-          type: "success",
+          statusCode: res.statusCode || 200,
           message: "Data identitas berhasil disimpan. Menunggu verifikasi dari Pengelola.",
         });
         router.refresh();
       } else {
-        setFeedback({ type: "error", message: res.message });
+        setFeedback({ statusCode: res.statusCode || 400, message: res.message });
       }
     });
   };
@@ -383,24 +386,21 @@ export function PenyewaHomeView({
             </div>
 
             {feedback && (
-              <div
-                className={`p-3 rounded-xl text-xs font-medium ${
-                  feedback.type === "success"
-                    ? "bg-emerald-50 text-emerald-900 border border-emerald-200"
-                    : "bg-rose-50 text-rose-900 border border-rose-200"
-                }`}
-              >
-                {feedback.message}
-              </div>
+              <AlertBanner
+                statusCode={feedback.statusCode}
+                message={feedback.message}
+                onDismiss={() => setFeedback(null)}
+              />
             )}
 
             <div className="flex justify-end pt-2">
               <button
                 type="submit"
                 disabled={isPending}
-                className="px-6 py-2.5 rounded-full bg-[#1C1E22] hover:bg-[#26292E] text-white text-xs font-semibold transition disabled:opacity-50 shadow-sm"
+                className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-[#1C1E22] hover:bg-[#26292E] text-white text-xs font-semibold transition disabled:opacity-50 shadow-sm"
               >
-                {isPending ? "Menyimpan Data..." : "Kirim Data Identitas untuk Verifikasi"}
+                {isPending && <Loader2 className="w-3.5 h-3.5 animate-spin text-[#D2F367]" />}
+                <span>{isPending ? "Menyimpan Data..." : "Kirim Data Identitas untuk Verifikasi"}</span>
               </button>
             </div>
           </form>

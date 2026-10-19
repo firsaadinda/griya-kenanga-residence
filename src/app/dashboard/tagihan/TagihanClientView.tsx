@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState, useTransition, useMemo } from "react";
+import React, { useState, useEffect, useTransition, useMemo } from "react";
+import { useSearchParams } from "next/navigation";
 import { UserRole } from "@/lib/auth/guard";
 import {
   buatTagihanBulananAction,
@@ -9,6 +10,8 @@ import {
   batalkanTagihanAction,
   getTagihanDetailAction,
 } from "@/lib/actions/tagihan-actions";
+import { AlertBanner } from "@/components/feedback/AlertBanner";
+import { HttpStatusCode } from "@/types/api";
 import {
   Search,
   Plus,
@@ -81,10 +84,37 @@ export function TagihanClientView({
   activePeriode,
   availablePeriodes,
 }: TagihanClientViewProps) {
+  const searchParams = useSearchParams();
+  const qParam = searchParams.get("q") || "";
+  const targetIdParam = searchParams.get("targetId") || "";
+
   const [tagihanList, setTagihanList] = useState<TagihanItem[]>(initialTagihanList);
   const [selectedPeriode, setSelectedPeriode] = useState<string>(activePeriode);
   const [statusFilter, setStatusFilter] = useState<string>("semua");
-  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [searchQuery, setSearchQuery] = useState<string>(qParam);
+
+  // Sync if query param or targetId changes
+  useEffect(() => {
+    if (qParam || targetIdParam) {
+      if (qParam) setSearchQuery(qParam);
+      const target = tagihanList.find(
+        (t) =>
+          (targetIdParam && t.id === targetIdParam) ||
+          (qParam && (
+            t.nomor.toLowerCase().includes(qParam.toLowerCase()) ||
+            t.penyewa_nama.toLowerCase().includes(qParam.toLowerCase()) ||
+            t.unit_kode.toLowerCase().includes(qParam.toLowerCase())
+          ))
+      );
+      if (target) {
+        if (target.periode) {
+          setSelectedPeriode(target.periode);
+        }
+        setStatusFilter("semua");
+        handleOpenDetailModal(target);
+      }
+    }
+  }, [qParam, targetIdParam, tagihanList]);
 
   // Modal Catat Pembayaran States
   const [isCatatModalOpen, setIsCatatModalOpen] = useState(false);
@@ -118,10 +148,14 @@ export function TagihanClientView({
   const [targetTagihanId, setTargetTagihanId] = useState<string | null>(null);
   const [alasanBatalInput, setAlasanBatalInput] = useState("");
 
+  // Modal Konfirmasi Buat Tagihan Bulanan (Pengelola / Pemilik)
+  const [isConfirmBuatTagihanOpen, setIsConfirmBuatTagihanOpen] = useState(false);
+
   // Feedback Notification & Double Submit State
   const [alertState, setAlertState] = useState<{
-    type: "success" | "error" | "rate_limit";
+    statusCode: HttpStatusCode;
     message: string;
+    errors?: any;
   } | null>(null);
   const [isPending, startTransition] = useTransition();
 
@@ -284,7 +318,7 @@ export function TagihanClientView({
       const res = await buatTagihanBulananAction(nextPeriode);
       if (res.statusCode === 429) {
         setAlertState({
-          type: "rate_limit",
+          statusCode: 429,
           message: res.message,
         });
         return;
@@ -292,12 +326,12 @@ export function TagihanClientView({
 
       if (!res.success) {
         setAlertState({
-          type: "error",
+          statusCode: res.statusCode || 400,
           message: res.message,
         });
       } else {
         setAlertState({
-          type: "success",
+          statusCode: 200,
           message: res.message,
         });
         // Beralih ke periode yang baru dibuat
@@ -345,21 +379,21 @@ export function TagihanClientView({
     if (paymentMetode === "transfer") {
       if (!effectiveBank) {
         setAlertState({
-          type: "error",
+          statusCode: 400,
           message: "Nama bank pengirim wajib dipilih (BCA, Mandiri, BNI, Mayar, QRIS, Gopay).",
         });
         return;
       }
       if (!paymentNamaRekening.trim()) {
         setAlertState({
-          type: "error",
+          statusCode: 400,
           message: "Nama pemilik rekening pengirim wajib diisi.",
         });
         return;
       }
       if (!paymentBuktiFile) {
         setAlertState({
-          type: "error",
+          statusCode: 400,
           message: "Foto bukti transfer wajib diunggah untuk metode transfer (BR-08).",
         });
         return;
@@ -384,7 +418,7 @@ export function TagihanClientView({
 
       if (res.statusCode === 429) {
         setAlertState({
-          type: "rate_limit",
+          statusCode: 429,
           message: res.message,
         });
         return;
@@ -392,12 +426,13 @@ export function TagihanClientView({
 
       if (!res.success) {
         setAlertState({
-          type: "error",
+          statusCode: res.statusCode || 400,
           message: res.message,
+          errors: res.errors,
         });
       } else {
         setAlertState({
-          type: "success",
+          statusCode: 200,
           message: res.message,
         });
         setIsCatatModalOpen(false);
@@ -443,14 +478,14 @@ export function TagihanClientView({
     startTransition(async () => {
       const res = await batalkanPembayaranAction(targetPembayaranId, alasanBatalInput);
       if (res.statusCode === 429) {
-        setAlertState({ type: "rate_limit", message: res.message });
+        setAlertState({ statusCode: 429, message: res.message });
         return;
       }
 
       if (!res.success) {
-        setAlertState({ type: "error", message: res.message });
+        setAlertState({ statusCode: res.statusCode || 400, message: res.message });
       } else {
-        setAlertState({ type: "success", message: res.message });
+        setAlertState({ statusCode: 200, message: res.message });
         setIsBatalBayarModalOpen(false);
         setAlasanBatalInput("");
 
@@ -470,14 +505,14 @@ export function TagihanClientView({
     startTransition(async () => {
       const res = await batalkanTagihanAction(targetTagihanId, alasanBatalInput);
       if (res.statusCode === 429) {
-        setAlertState({ type: "rate_limit", message: res.message });
+        setAlertState({ statusCode: 429, message: res.message });
         return;
       }
 
       if (!res.success) {
-        setAlertState({ type: "error", message: res.message });
+        setAlertState({ statusCode: res.statusCode || 400, message: res.message });
       } else {
-        setAlertState({ type: "success", message: res.message });
+        setAlertState({ statusCode: 200, message: res.message });
         setIsBatalTagihanModalOpen(false);
         setAlasanBatalInput("");
         setIsDetailModalOpen(false);
@@ -538,7 +573,7 @@ export function TagihanClientView({
           {["pengelola", "pemilik"].includes(userRole) && (
             <button
               type="button"
-              onClick={handleBuatTagihanBulanan}
+              onClick={() => setIsConfirmBuatTagihanOpen(true)}
               disabled={isPending}
               className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#1C1E22] hover:bg-[#26292E] text-white text-xs font-semibold shadow-sm transition disabled:opacity-50 disabled:cursor-not-allowed group cursor-pointer"
             >
@@ -558,42 +593,14 @@ export function TagihanClientView({
         </div>
       </div>
 
-      {/* Notifikasi Alert Feedback / Proteksi 429 */}
+      {/* Notifikasi Alert Feedback Standar 7 Kode Status */}
       {alertState && (
-        <div
-          className={`p-4 rounded-2xl text-xs flex items-start gap-3 animate-in fade-in duration-200 ${
-            alertState.type === "success"
-              ? "bg-emerald-50 border border-emerald-200 text-emerald-800"
-              : alertState.type === "rate_limit"
-              ? "bg-amber-50 border border-amber-300 text-amber-900 font-medium"
-              : "bg-rose-50 border border-rose-200 text-rose-700"
-          }`}
-        >
-          {alertState.type === "success" ? (
-            <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-          ) : alertState.type === "rate_limit" ? (
-            <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-          ) : (
-            <AlertCircle className="w-4 h-4 text-rose-500 shrink-0 mt-0.5" />
-          )}
-          <div className="flex-1">
-            <span className="font-bold block">
-              {alertState.type === "rate_limit"
-                ? "429: Terlalu Banyak Permintaan"
-                : alertState.type === "success"
-                ? "Berhasil"
-                : "Perhatian"}
-            </span>
-            <span>{alertState.message}</span>
-          </div>
-          <button
-            type="button"
-            onClick={() => setAlertState(null)}
-            className="text-slate-400 hover:text-slate-600 p-0.5"
-          >
-            <X className="w-3.5 h-3.5" />
-          </button>
-        </div>
+        <AlertBanner
+          statusCode={alertState.statusCode}
+          message={alertState.message}
+          errors={alertState.errors}
+          onDismiss={() => setAlertState(null)}
+        />
       )}
 
       {/* 2. Filter Pills / Tabs Sesuai Wireframe Hal 2 */}
@@ -666,8 +673,18 @@ export function TagihanClientView({
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Cari unit atau nama..."
-            className="w-full bg-white text-xs text-[#26292E] pl-10 pr-4 py-2 rounded-2xl border border-[#E8EAEC] focus:border-[#D5D9DE] focus:outline-none transition shadow-xs"
+            className="w-full bg-white text-xs text-[#26292E] pl-10 pr-9 py-2 rounded-2xl border border-[#E8EAEC] focus:border-[#D5D9DE] focus:outline-none transition shadow-xs"
           />
+          {searchQuery && (
+            <button
+              type="button"
+              onClick={() => setSearchQuery("")}
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#737A84] hover:text-[#26292E] p-0.5 rounded-full cursor-pointer"
+              title="Reset pencarian"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          )}
         </div>
       </div>
 
@@ -1403,13 +1420,24 @@ export function TagihanClientView({
       {isBatalBayarModalOpen && (
         <div className="fixed inset-0 z-60 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
           <div className="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-[#E8EAEC] space-y-4 animate-in fade-in zoom-in-95 duration-150">
-            <div className="space-y-1">
-              <h3 className="text-base font-bold text-[#1C1E22]">
-                Batalkan Pembayaran
-              </h3>
-              <p className="text-xs text-[#737A84]">
-                Masukkan alasan pembatalan pembayaran ini. Status tagihan akan dihitung ulang secara otomatis.
-              </p>
+            <div className="flex items-center justify-between">
+              <div className="space-y-1">
+                <h3 className="text-base font-bold text-[#1C1E22]">
+                  Batalkan Pembayaran
+                </h3>
+                <p className="text-xs text-[#737A84]">
+                  Masukkan alasan pembatalan pembayaran ini. Status tagihan akan dihitung ulang secara otomatis.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsBatalBayarModalOpen(false)}
+                disabled={isPending}
+                className="w-8 h-8 rounded-full bg-[#FFF0F0] hover:bg-[#FFE5E5] text-[#D32F2F] flex items-center justify-center transition cursor-pointer shrink-0 ml-2"
+                title="Tutup Modal"
+              >
+                <X className="w-4 h-4" />
+              </button>
             </div>
 
             <div>
@@ -1453,13 +1481,24 @@ export function TagihanClientView({
       {isBatalTagihanModalOpen && (
         <div className="fixed inset-0 z-60 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
           <div className="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-[#E8EAEC] space-y-4 animate-in fade-in zoom-in-95 duration-150">
-            <div className="space-y-1">
-              <h3 className="text-base font-bold text-[#1C1E22]">
-                Batalkan Tagihan
-              </h3>
-              <p className="text-xs text-[#737A84]">
-                Tagihan ini akan dibatalkan permanen. Aksi ini hanya dapat dilakukan bila belum ada pembayaran sah.
-              </p>
+            <div className="flex items-center justify-between">
+              <div className="space-y-1">
+                <h3 className="text-base font-bold text-[#1C1E22]">
+                  Batalkan Tagihan
+                </h3>
+                <p className="text-xs text-[#737A84]">
+                  Tagihan ini akan dibatalkan permanen. Aksi ini hanya dapat dilakukan bila belum ada pembayaran sah.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsBatalTagihanModalOpen(false)}
+                disabled={isPending}
+                className="w-8 h-8 rounded-full bg-[#FFF0F0] hover:bg-[#FFE5E5] text-[#D32F2F] flex items-center justify-center transition cursor-pointer shrink-0 ml-2"
+                title="Tutup Modal"
+              >
+                <X className="w-4 h-4" />
+              </button>
             </div>
 
             <div>
@@ -1560,6 +1599,81 @@ export function TagihanClientView({
               <span className="text-[11px] text-slate-400">
                 Dokumen Bukti Transaksi Resmi · Griya Kenanga Residence Sleman
               </span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL KONFIRMASI BUAT TAGIHAN BULANAN (PENGELOLA / PEMILIK - BR-06) */}
+      {isConfirmBuatTagihanOpen && (
+        <div className="fixed inset-0 z-60 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4 animate-in fade-in">
+          <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-[#E8EAEC] space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <span className="text-[10px] font-bold text-[#737A84] uppercase tracking-widest">
+                  Konfirmasi Pembuatan Tagihan
+                </span>
+                <h3 className="text-base font-bold text-[#1C1E22]">
+                  Buat Tagihan {getNextMonthLabel(selectedPeriode)}
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsConfirmBuatTagihanOpen(false)}
+                disabled={isPending}
+                className="w-8 h-8 rounded-full bg-[#F6F7F9] hover:bg-[#E8EAEC] text-[#737A84] hover:text-[#26292E] flex items-center justify-center transition cursor-pointer"
+                title="Tutup Modal"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="p-3.5 rounded-2xl bg-[#F6F7F9] border border-[#E8EAEC] text-xs space-y-1.5">
+              <div className="flex justify-between">
+                <span className="text-[#737A84]">Periode Tagihan:</span>
+                <span className="font-semibold text-[#1C1E22]">{getNextMonthLabel(selectedPeriode)}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-[#737A84]">Jatuh Tempo:</span>
+                <span className="font-semibold text-[#1C1E22]">Tanggal 10 (BR-06)</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-[#737A84]">Sasaran Tagihan:</span>
+                <span className="font-semibold text-[#1C1E22]">Seluruh unit dengan kontrak aktif</span>
+              </div>
+            </div>
+
+            <p className="text-xs text-[#737A84] leading-relaxed">
+              Sistem akan memvalidasi seluruh kontrak sewa berstatus aktif dan menerbitkan invoice bernomor urut resmi (INV-YYYYMM-XXXX). Unit yang sudah memiliki invoice pada periode ini tidak akan dibuatkan tagihan ganda (proteksi BR-06). Apakah Anda yakin ingin memproses?
+            </p>
+
+            <div className="flex items-center justify-end gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => setIsConfirmBuatTagihanOpen(false)}
+                disabled={isPending}
+                className="px-4 py-2 rounded-full bg-[#F6F7F9] hover:bg-[#E8EAEC] text-xs font-semibold text-[#26292E] transition cursor-pointer"
+              >
+                Batal
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setIsConfirmBuatTagihanOpen(false);
+                  handleBuatTagihanBulanan();
+                }}
+                disabled={isPending}
+                className="inline-flex items-center gap-1.5 px-5 py-2 rounded-full bg-[#1C1E22] hover:bg-[#26292E] text-white text-xs font-semibold shadow-sm transition disabled:opacity-50 cursor-pointer"
+              >
+                {isPending ? (
+                  <>
+                    <Loader2 className="w-3.5 h-3.5 animate-spin text-[#D2F367]" />
+                    <span>Memproses...</span>
+                  </>
+                ) : (
+                  <span>Ya, Terbitkan Tagihan</span>
+                )}
+              </button>
             </div>
           </div>
         </div>

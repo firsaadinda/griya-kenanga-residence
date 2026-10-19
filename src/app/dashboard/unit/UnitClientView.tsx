@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState, useTransition } from "react";
+import React, { useState, useEffect, useTransition } from "react";
+import { useSearchParams } from "next/navigation";
 import { UserRole } from "@/lib/auth/guard";
 import { updateUnitStatusAction, updateUnitHargaAction } from "@/lib/actions/unit-actions";
 import {
@@ -14,7 +15,12 @@ import {
   Home,
   User,
   Layers,
+  Loader2,
+  X,
 } from "lucide-react";
+import { AlertBanner } from "@/components/feedback/AlertBanner";
+import { EmptyState } from "@/components/feedback/EmptyState";
+import { HttpStatusCode } from "@/types/api";
 
 export interface UnitItem {
   id: string;
@@ -37,10 +43,21 @@ interface UnitClientViewProps {
 }
 
 export function UnitClientView({ initialUnits, userRole }: UnitClientViewProps) {
+  const searchParams = useSearchParams();
+  const qParam = searchParams.get("q") || "";
+  const targetIdParam = searchParams.get("targetId") || "";
+
   const [units, setUnits] = useState<UnitItem[]>(initialUnits);
   const [filterLantai, setFilterLantai] = useState<number | "all">("all");
   const [filterStatus, setFilterStatus] = useState<string>("all");
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState(qParam);
+
+  // Sync if query param changes
+  useEffect(() => {
+    if (qParam) {
+      setSearchQuery(qParam);
+    }
+  }, [qParam]);
 
   // Modal State
   const [selectedUnit, setSelectedUnit] = useState<UnitItem | null>(null);
@@ -51,7 +68,7 @@ export function UnitClientView({ initialUnits, userRole }: UnitClientViewProps) 
 
   const [isPending, startTransition] = useTransition();
   const [feedback, setFeedback] = useState<{
-    type: "success" | "error";
+    statusCode: HttpStatusCode;
     message: string;
   } | null>(null);
 
@@ -108,10 +125,10 @@ export function UnitClientView({ initialUnits, userRole }: UnitClientViewProps) 
               : item
           )
         );
-        setFeedback({ type: "success", message: res.message });
+        setFeedback({ statusCode: res.statusCode, message: res.message });
         setTimeout(() => closeModal(), 1500);
       } else {
-        setFeedback({ type: "error", message: res.message });
+        setFeedback({ statusCode: res.statusCode, message: res.message });
       }
     });
   };
@@ -133,10 +150,10 @@ export function UnitClientView({ initialUnits, userRole }: UnitClientViewProps) 
               : item
           )
         );
-        setFeedback({ type: "success", message: res.message });
+        setFeedback({ statusCode: res.statusCode, message: res.message });
         setTimeout(() => closeModal(), 1500);
       } else {
-        setFeedback({ type: "error", message: res.message });
+        setFeedback({ statusCode: res.statusCode, message: res.message });
       }
     });
   };
@@ -184,22 +201,51 @@ export function UnitClientView({ initialUnits, userRole }: UnitClientViewProps) 
             <option value="nonaktif">Nonaktif</option>
           </select>
 
-          <input
-            type="text"
-            placeholder="Cari kode unit / nama..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="px-3.5 py-1.5 rounded-full bg-[#F6F7F9] text-xs text-[#26292E] placeholder-[#737A84] border border-[#E8EAEC] focus:outline-none w-44 sm:w-56"
-          />
+          <div className="relative w-44 sm:w-56">
+            <input
+              type="text"
+              placeholder="Cari kode unit / nama..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="px-3.5 pr-8 py-1.5 rounded-full bg-[#F6F7F9] text-xs text-[#26292E] placeholder-[#737A84] border border-[#E8EAEC] focus:outline-none w-full"
+            />
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => setSearchQuery("")}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#737A84] hover:text-[#26292E] p-0.5 rounded-full"
+                title="Reset pencarian"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
+      {/* Notifikasi Alert Feedback Standar */}
+      {feedback && !modalMode && (
+        <AlertBanner
+          statusCode={feedback.statusCode}
+          message={feedback.message}
+          onDismiss={() => setFeedback(null)}
+        />
+      )}
+
       {/* GRID 24 UNIT KOS & STUDIO (MONTE X TERRA STYLING) */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      {filteredUnits.length === 0 ? (
+        <EmptyState
+          icon={Building2}
+          title="Tidak Ada Unit Ditemukan"
+          description="Tidak ada unit kamar atau studio yang sesuai dengan filter lantai atau kata kunci pencarian Anda."
+        />
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {filteredUnits.map((u) => {
           const isLantai1 = u.lantai === 1;
           const isLantai2 = u.lantai === 2;
           const isLantai3 = u.lantai === 3;
+          const isTargeted = targetIdParam && u.id === targetIdParam;
 
           const statusColor =
             u.status === "tersedia"
@@ -211,7 +257,11 @@ export function UnitClientView({ initialUnits, userRole }: UnitClientViewProps) 
           return (
             <div
               key={u.id}
-              className="relative rounded-[28px] bg-white p-3.5 border border-[#E8EAEC] shadow-[0_8px_30px_rgba(0,0,0,0.04)] hover:shadow-lg transition-all duration-300 flex flex-col justify-between group"
+              className={`relative rounded-[28px] bg-white p-3.5 border transition-all duration-300 flex flex-col justify-between group ${
+                isTargeted
+                  ? "border-[#26292E] shadow-xl ring-2 ring-[#26292E]/20 bg-[#F6F7F9]/30"
+                  : "border-[#E8EAEC] shadow-[0_8px_30px_rgba(0,0,0,0.04)] hover:shadow-lg"
+              }`}
             >
               {/* Wadah Visual Arsitektur dengan Lekukan Asimetris & Notch Monte x Terra */}
               <div className="relative w-full h-44 rounded-[22px] overflow-hidden bg-[#26292E] flex flex-col justify-between p-3.5">
@@ -328,6 +378,7 @@ export function UnitClientView({ initialUnits, userRole }: UnitClientViewProps) 
           );
         })}
       </div>
+      )}
 
       {/* MODAL UBAH STATUS (PENGELOLA - BR-04) */}
       {modalMode === "status" && selectedUnit && (
@@ -342,23 +393,16 @@ export function UnitClientView({ initialUnits, userRole }: UnitClientViewProps) 
                   Ubah Status Unit {selectedUnit.kode}
                 </h2>
               </div>
-              <span className="w-9 h-9 rounded-full bg-[#F6F7F9] text-[#26292E] flex items-center justify-center font-bold text-xs">
-                {selectedUnit.kode}
-              </span>
-            </div>
-
-            {feedback && (
-              <div
-                className={`p-3 rounded-2xl text-xs font-medium flex items-center gap-2 ${
-                  feedback.type === "success"
-                    ? "bg-[#EAFCD6] text-[#2F6B12] border border-[#C8F296]"
-                    : "bg-[#FFF0F0] text-[#D32F2F] border border-[#FFCDD2]"
-                }`}
+              <button
+                type="button"
+                onClick={closeModal}
+                disabled={isPending}
+                className="w-8 h-8 rounded-full bg-[#F6F7F9] hover:bg-[#E8EAEC] text-[#737A84] hover:text-[#26292E] flex items-center justify-center transition cursor-pointer"
+                title="Tutup Modal"
               >
-                <AlertCircle className="w-4 h-4 shrink-0" />
-                <span>{feedback.message}</span>
-              </div>
-            )}
+                <X className="w-4 h-4" />
+              </button>
+            </div>
 
             <div className="space-y-4">
               <div>
@@ -406,12 +450,20 @@ export function UnitClientView({ initialUnits, userRole }: UnitClientViewProps) 
               </div>
             </div>
 
+            {feedback && (
+              <AlertBanner
+                statusCode={feedback.statusCode}
+                message={feedback.message}
+                onDismiss={() => setFeedback(null)}
+              />
+            )}
+
             <div className="flex items-center justify-end gap-2 pt-2">
               <button
                 type="button"
                 onClick={closeModal}
                 disabled={isPending}
-                className="px-4 py-2 rounded-full bg-[#F6F7F9] hover:bg-[#E8EAEC] text-xs font-semibold text-[#26292E] transition"
+                className="px-4 py-2 rounded-full bg-[#F6F7F9] hover:bg-[#E8EAEC] text-xs font-semibold text-[#26292E] transition cursor-pointer"
               >
                 Batal
               </button>
@@ -419,9 +471,16 @@ export function UnitClientView({ initialUnits, userRole }: UnitClientViewProps) 
                 type="button"
                 onClick={handleSaveStatus}
                 disabled={isPending}
-                className="inline-flex items-center gap-1.5 px-5 py-2 rounded-full bg-[#1C1E22] hover:bg-[#26292E] text-white text-xs font-semibold shadow-sm transition disabled:opacity-50"
+                className="inline-flex items-center gap-1.5 px-5 py-2 rounded-full bg-[#1C1E22] hover:bg-[#26292E] text-white text-xs font-semibold shadow-sm transition disabled:opacity-50 cursor-pointer"
               >
-                {isPending ? "Menyimpan..." : "Simpan Status"}
+                {isPending ? (
+                  <>
+                    <Loader2 className="w-3.5 h-3.5 animate-spin text-[#D2F367]" />
+                    <span>Menyimpan...</span>
+                  </>
+                ) : (
+                  <span>Simpan Status</span>
+                )}
               </button>
             </div>
           </div>
@@ -441,22 +500,23 @@ export function UnitClientView({ initialUnits, userRole }: UnitClientViewProps) 
                   Ubah Harga Unit {selectedUnit.kode}
                 </h2>
               </div>
-              <span className="w-9 h-9 rounded-full bg-[#D2F367] text-[#1C1E22] flex items-center justify-center font-bold text-xs">
-                Rp
-              </span>
+              <button
+                type="button"
+                onClick={closeModal}
+                disabled={isPending}
+                className="w-8 h-8 rounded-full bg-[#F6F7F9] hover:bg-[#E8EAEC] text-[#737A84] hover:text-[#26292E] flex items-center justify-center transition cursor-pointer"
+                title="Tutup Modal"
+              >
+                <X className="w-4 h-4" />
+              </button>
             </div>
 
             {feedback && (
-              <div
-                className={`p-3 rounded-2xl text-xs font-medium flex items-center gap-2 ${
-                  feedback.type === "success"
-                    ? "bg-[#EAFCD6] text-[#2F6B12] border border-[#C8F296]"
-                    : "bg-[#FFF0F0] text-[#D32F2F] border border-[#FFCDD2]"
-                }`}
-              >
-                <AlertCircle className="w-4 h-4 shrink-0" />
-                <span>{feedback.message}</span>
-              </div>
+              <AlertBanner
+                statusCode={feedback.statusCode}
+                message={feedback.message}
+                onDismiss={() => setFeedback(null)}
+              />
             )}
 
             <div className="space-y-4">
@@ -498,9 +558,16 @@ export function UnitClientView({ initialUnits, userRole }: UnitClientViewProps) 
                 type="button"
                 onClick={handleSaveHarga}
                 disabled={isPending}
-                className="inline-flex items-center gap-1.5 px-5 py-2 rounded-full bg-[#1C1E22] hover:bg-[#26292E] text-white text-xs font-semibold shadow-sm transition disabled:opacity-50"
+                className="inline-flex items-center gap-1.5 px-5 py-2 rounded-full bg-[#1C1E22] hover:bg-[#26292E] text-white text-xs font-semibold shadow-sm transition disabled:opacity-50 cursor-pointer"
               >
-                {isPending ? "Menyimpan..." : "Simpan Harga Baru"}
+                {isPending ? (
+                  <>
+                    <Loader2 className="w-3.5 h-3.5 animate-spin text-[#D2F367]" />
+                    <span>Menyimpan...</span>
+                  </>
+                ) : (
+                  <span>Simpan Harga Baru</span>
+                )}
               </button>
             </div>
           </div>

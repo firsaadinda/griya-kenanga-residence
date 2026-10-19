@@ -1,3 +1,4 @@
+import React, { Suspense } from "react";
 import { getCurrentUserProfile } from "@/lib/auth/guard";
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
@@ -116,12 +117,14 @@ export default async function KerusakanPage() {
       </div>
 
       {/* VIEW CLIENT KERUSAKAN */}
-      <KerusakanClientView
-        initialLaporan={laporanList}
-        userRole={profile?.peran || "penyewa"}
-        currentUserId={profile?.id || ""}
-        activeContractUnit={activeContractUnit}
-      />
+      <Suspense fallback={<div className="p-12 text-center text-xs text-[#737A84]">Memuat data laporan kerusakan...</div>}>
+        <KerusakanClientView
+          initialLaporan={laporanList}
+          userRole={profile?.peran || "penyewa"}
+          currentUserId={profile?.id || ""}
+          activeContractUnit={activeContractUnit}
+        />
+      </Suspense>
     </div>
   );
 }

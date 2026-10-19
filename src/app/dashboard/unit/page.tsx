@@ -1,3 +1,4 @@
+import React, { Suspense } from "react";
 import { requireRole } from "@/lib/auth/guard";
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
@@ -84,7 +85,9 @@ export default async function UnitPage() {
       </div>
 
       {/* VIEW CLIENT INTERAKTIF */}
-      <UnitClientView initialUnits={units} userRole={profile.peran} />
+      <Suspense fallback={<div className="p-12 text-center text-xs text-[#737A84]">Memuat direktori unit hunian...</div>}>
+        <UnitClientView initialUnits={units} userRole={profile.peran} />
+      </Suspense>
     </div>
   );
 }

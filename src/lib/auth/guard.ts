@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 
@@ -15,8 +16,9 @@ export interface UserProfile {
 
 /**
  * Mengambil sesi autentikasi dan profil pengguna dari database Supabase
+ * Dibungkus dengan React cache() untuk mencegah N-roundtrip auth request dalam satu siklus render Next.js
  */
-export async function getCurrentUserProfile(): Promise<UserProfile | null> {
+export const getCurrentUserProfile = cache(async (): Promise<UserProfile | null> => {
   try {
     const supabase = await createClient();
     const {
@@ -49,7 +51,7 @@ export async function getCurrentUserProfile(): Promise<UserProfile | null> {
   } catch {
     return null;
   }
-}
+});
 
 /**
  * Matriks Hak Akses Halaman Internal Berdasarkan Peran

@@ -10,7 +10,7 @@ export async function updateSession(request: NextRequest) {
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
   if (!supabaseUrl || !supabaseAnonKey) {
-    return { supabaseResponse, user: null };
+    return supabaseResponse;
   }
 
   const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
@@ -24,16 +24,52 @@ export async function updateSession(request: NextRequest) {
           request,
         });
         cookiesToSet.forEach(({ name, value, options }) =>
-          supabaseResponse.cookies.set(name, value, options)
+          supabaseResponse.cookies.set(name, value, {
+            ...options,
+            sameSite: "lax",
+            secure: process.env.NODE_ENV === "production",
+          })
         );
       },
     },
   });
 
-  // Perbarui token sesi pengguna jika mendekati masa kedaluwarsa
+  // IMPORTANT: Memanggil getUser() akan me-refresh access token jika sudah kadaluwarsa,
+  // dan menyimpan token baru ke cookies melalui setAll di atas.
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  return { supabaseResponse, user };
+  const pathname = request.nextUrl.pathname;
+
+  // Proteksi rute internal /dashboard jika user tidak terautentikasi
+  if (pathname.startsWith("/dashboard")) {
+    if (!user) {
+      const loginUrl = new URL("/login", request.url);
+      loginUrl.searchParams.set("status", "401");
+      loginUrl.searchParams.set("returnUrl", pathname);
+      
+      const redirectResponse = NextResponse.redirect(loginUrl);
+      // Salin cookie yang mungkin baru di-refresh/dibersihkan ke response redirect
+      supabaseResponse.cookies.getAll().forEach((cookie) => {
+        redirectResponse.cookies.set(cookie.name, cookie.value);
+      });
+      return redirectResponse;
+    }
+  }
+
+  // Jika user sudah login dan mengakses login/register/lupa-password, arahkan ke dashboard
+  if (pathname === "/login" || pathname === "/register" || pathname === "/lupa-password") {
+    if (user) {
+      const dashboardUrl = new URL("/dashboard", request.url);
+      const redirectResponse = NextResponse.redirect(dashboardUrl);
+      supabaseResponse.cookies.getAll().forEach((cookie) => {
+        redirectResponse.cookies.set(cookie.name, cookie.value);
+      });
+      return redirectResponse;
+    }
+  }
+
+  return supabaseResponse;
 }
+

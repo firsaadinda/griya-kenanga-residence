@@ -1,3 +1,4 @@
+import React, { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { getCurrentUserProfile } from "@/lib/auth/guard";
 import { createClient } from "@/lib/supabase/server";
@@ -98,12 +99,14 @@ export default async function TagihanPage() {
     : availablePeriodes[0] || "2026-10-01";
 
   return (
-    <TagihanClientView
-      initialTagihanList={tagihanList}
-      userRole={profile.peran}
-      userName={profile.nama_lengkap}
-      activePeriode={activePeriode}
-      availablePeriodes={availablePeriodes}
-    />
+    <Suspense fallback={<div className="p-12 text-center text-xs text-[#737A84]">Memuat data tagihan & pembayaran...</div>}>
+      <TagihanClientView
+        initialTagihanList={tagihanList}
+        userRole={profile.peran}
+        userName={profile.nama_lengkap}
+        activePeriode={activePeriode}
+        availablePeriodes={availablePeriodes}
+      />
+    </Suspense>
   );
 }
