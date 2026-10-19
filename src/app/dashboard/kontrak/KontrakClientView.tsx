@@ -21,13 +21,15 @@ import {
   Building,
   User,
   Clock,
-  ArrowRight,
-  ShieldAlert,
   Loader2,
   X,
+  Printer,
+  ShieldAlert,
 } from "lucide-react";
 import { AlertBanner } from "@/components/feedback/AlertBanner";
 import { EmptyState } from "@/components/feedback/EmptyState";
+import { Pagination } from "@/components/ui/Pagination";
+import { PrintableDocumentModal, KontrakDocData } from "@/components/documents/PrintableDocumentModal";
 import { HttpStatusCode } from "@/types/api";
 
 export interface KontrakItem {
@@ -83,7 +85,21 @@ export function KontrakClientView({
   const [kontrakList, setKontrakList] = useState<KontrakItem[]>(initialKontrak);
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [filterBlok, setFilterBlok] = useState<string>("all");
+  const [filterDurasi, setFilterDurasi] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState(qParam);
+
+  // Pagination & Printable Modal
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const pageSize = 8;
+  const [printableDocState, setPrintableDocState] = useState<{
+    isOpen: boolean;
+    type: "kontrak";
+    kontrakData: KontrakDocData | null;
+  }>({
+    isOpen: false,
+    type: "kontrak",
+    kontrakData: null,
+  });
 
   // Sync if query param changes
   useEffect(() => {
@@ -91,6 +107,11 @@ export function KontrakClientView({
       setSearchQuery(qParam);
     }
   }, [qParam]);
+
+  // Reset pagination saat filter berubah
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filterStatus, filterBlok, filterDurasi, searchQuery]);
 
   // Modal Buat Kontrak Baru
   const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -120,6 +141,7 @@ export function KontrakClientView({
   const filteredList = kontrakList.filter((k) => {
     if (filterStatus !== "all" && k.status !== filterStatus) return false;
     if (filterBlok !== "all" && !k.unit_kode.startsWith(filterBlok)) return false;
+    if (filterDurasi !== "all" && String(k.durasi_bulan) !== filterDurasi) return false;
     if (
       searchQuery &&
       !k.nomor.toLowerCase().includes(searchQuery.toLowerCase()) &&
@@ -130,6 +152,9 @@ export function KontrakClientView({
     }
     return true;
   });
+
+  const totalPages = Math.ceil(filteredList.length / pageSize) || 1;
+  const paginatedList = filteredList.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
   // Action: Buat Kontrak Baru (Pengelola)
   const handleCreateContract = () => {
@@ -276,17 +301,29 @@ export function KontrakClientView({
           ))}
         </div>
 
-        {/* Filter Blok & Tombol Buat Kontrak */}
-        <div className="flex items-center gap-3">
+        {/* Filter Blok & Durasi */}
+        <div className="flex flex-wrap items-center gap-2">
           <select
             value={filterBlok}
             onChange={(e) => setFilterBlok(e.target.value)}
-            className="px-3 py-1.5 rounded-full bg-[#F6F7F9] text-xs font-medium text-[#26292E] border border-[#E8EAEC] focus:outline-none"
+            className="px-3 py-1.5 rounded-full bg-[#F6F7F9] text-xs font-medium text-[#26292E] border border-[#E8EAEC] focus:outline-none cursor-pointer"
           >
             <option value="all">Semua Blok</option>
             <option value="A">Blok A (Lt 1)</option>
             <option value="B">Blok B (Lt 2)</option>
             <option value="C">Blok C (Lt 3)</option>
+          </select>
+
+          <select
+            value={filterDurasi}
+            onChange={(e) => setFilterDurasi(e.target.value)}
+            className="px-3 py-1.5 rounded-full bg-[#F6F7F9] text-xs font-medium text-[#26292E] border border-[#E8EAEC] focus:outline-none cursor-pointer"
+          >
+            <option value="all">Semua Durasi</option>
+            <option value="1">1 Bulan</option>
+            <option value="3">3 Bulan</option>
+            <option value="6">6 Bulan</option>
+            <option value="12">12 Bulan</option>
           </select>
 
           <div className="relative w-48 sm:w-56">
@@ -341,8 +378,9 @@ export function KontrakClientView({
           description="Tidak ada data kontrak yang sesuai dengan filter status atau kata kunci pencarian Anda."
         />
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredList.map((k) => {
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {paginatedList.map((k) => {
           const isAktif = k.status === "aktif";
           const isDraf = k.status === "draf";
           const isSelesai = k.status === "selesai";
@@ -482,6 +520,34 @@ export function KontrakClientView({
                   </button>
                 )}
 
+                {/* Tombol Unduh PDF Ringkasan Kontrak (Peningkatan #2) */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setPrintableDocState({
+                      isOpen: true,
+                      type: "kontrak",
+                      kontrakData: {
+                        nomor: k.nomor,
+                        status: k.status,
+                        tanggal_mulai: k.tanggal_mulai,
+                        tanggal_selesai: k.tanggal_selesai,
+                        durasi_bulan: k.durasi_bulan,
+                        harga_sewa_bulanan: k.harga_sewa_bulanan,
+                        unit_kode: k.unit_kode,
+                        unit_tipe: k.unit_tipe,
+                        lantai: k.lantai,
+                        penyewa_nama: k.penyewa_nama,
+                        penyewa_email: k.penyewa_email,
+                      },
+                    });
+                  }}
+                  className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-full bg-white hover:bg-[#F6F7F9] text-[#26292E] text-xs font-semibold border border-[#E8EAEC] shadow-2xs transition cursor-pointer"
+                >
+                  <Printer className="w-3.5 h-3.5 text-[#737A84]" />
+                  <span>Unduh PDF Ringkasan</span>
+                </button>
+
                 {/* Status Selesai, Diakhiri, Dibatalkan adalah Status Akhir */}
                 {(isSelesai || isDiakhiri || isDibatalkan) && (
                   <span className="w-full text-center text-[11px] text-[#A6ABB2] italic py-1">
@@ -493,6 +559,19 @@ export function KontrakClientView({
           );
         })}
       </div>
+
+        {/* Pagination Kontrak */}
+        <div className="pt-2">
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalItems={filteredList.length}
+            pageSize={pageSize}
+            onPageChange={setCurrentPage}
+            itemName="kontrak"
+          />
+        </div>
+        </>
       )}
 
       {/* MODAL BUAT KONTRAK BARU (PENGELOLA) */}
@@ -783,6 +862,14 @@ export function KontrakClientView({
           </div>
         </div>
       )}
+
+      {/* MODAL: PRATINJAU DOKUMEN CETAK & SIMPAN SEBAGAI PDF */}
+      <PrintableDocumentModal
+        isOpen={printableDocState.isOpen}
+        onClose={() => setPrintableDocState({ isOpen: false, type: "kontrak", kontrakData: null })}
+        type={printableDocState.type}
+        kontrakData={printableDocState.kontrakData}
+      />
     </div>
   );
 }

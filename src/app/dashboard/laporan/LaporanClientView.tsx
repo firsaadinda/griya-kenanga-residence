@@ -133,7 +133,7 @@ export function LaporanClientView({
     ? sortedUnitRevenues
     : sortedUnitRevenues.slice(0, 9);
 
-  // Unduh CSV Tabel Pendapatan per Unit (Wireframe Hal 4)
+  // Unduh CSV Tabel Pendapatan per Unit (Wireframe Hal 4 dengan UTF-8 BOM untuk Excel)
   const handleDownloadCsv = () => {
     const headers = ["Unit", "Tipe", "Lantai", "Ditagihkan", "Diterima", "Tunggakan"];
     const rows = sortedUnitRevenues.map((u) => [
@@ -145,20 +145,20 @@ export function LaporanClientView({
       u.tunggakan,
     ]);
 
-    const csvContent =
-      "data:text/csv;charset=utf-8," +
-      [headers.join(","), ...rows.map((r) => r.join(","))].join("\n");
+    const csvRows = [
+      headers.join(","),
+      ...rows.map((r) => r.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(",")),
+    ].join("\r\n");
 
-    const encodedUri = encodeURI(csvContent);
+    const blob = new Blob(["\uFEFF" + csvRows], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute(
-      "download",
-      `laporan-pendapatan-griya-kenanga-agu-okt-2026.csv`
-    );
+    link.href = url;
+    link.download = `laporan-pendapatan-griya-kenanga-agu-okt-2026.csv`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   };
 
   // Filter Audit Log di Sisi Klien (Mencocokkan 100% dengan nilai kolom aksi di DB)

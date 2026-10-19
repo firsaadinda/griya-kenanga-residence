@@ -676,6 +676,14 @@ export type Database = {
             }
             Returns: Json
           }
+      rpc_update_tagihan_mayar: {
+        Args: {
+          p_mayar_invoice_id: string
+          p_mayar_link: string
+          p_tagihan_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
       kerusakan_kategori:

@@ -28,6 +28,7 @@ import {
 } from "lucide-react";
 import { AlertBanner } from "@/components/feedback/AlertBanner";
 import { EmptyState } from "@/components/feedback/EmptyState";
+import { Pagination } from "@/components/ui/Pagination";
 import { HttpStatusCode } from "@/types/api";
 
 export interface LaporanKerusakanItem {
@@ -160,6 +161,17 @@ export function KerusakanClientView({
     }
     return true;
   });
+
+  // Pagination Kerusakan
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const pageSize = 6;
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filterStatus, searchQuery]);
+
+  const totalPages = Math.ceil(filteredList.length / pageSize) || 1;
+  const paginatedList = filteredList.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
   // Action: Buat Laporan Kerusakan (Penyewa)
   const handleCreateReport = () => {
@@ -763,37 +775,51 @@ export function KerusakanClientView({
             description="Tidak ada tiket laporan kerusakan yang sesuai dengan filter status atau kata kunci pencarian Anda."
           />
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredList.map((lk) => {
-            const isSelected = selectedLaporan?.id === lk.id;
-            return (
-              <div
-                key={lk.id}
-                id={`laporan-item-${lk.id}`}
-                onClick={() => setSelectedLaporan(lk)}
-                className={`p-4 rounded-2xl border cursor-pointer transition flex flex-col justify-between space-y-3 ${isSelected
-                  ? "bg-white border-[#26292E] shadow-md ring-2 ring-[#26292E]/10"
-                  : "bg-white border-[#E8EAEC] hover:bg-[#F6F7F9]"
-                  }`}
-              >
-                <div className="flex items-start justify-between gap-2">
-                  <div>
-                    <span className="text-[10px] font-mono text-[#737A84] block">{lk.nomor}</span>
-                    <h4 className="text-sm font-bold text-[#26292E] line-clamp-1">{lk.judul}</h4>
-                  </div>
-                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#F6F7F9] text-[#26292E] border border-[#E8EAEC] uppercase">
-                    {lk.status.replace("_", " ")}
-                  </span>
-                </div>
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {paginatedList.map((lk) => {
+                const isSelected = selectedLaporan?.id === lk.id;
+                return (
+                  <div
+                    key={lk.id}
+                    id={`laporan-item-${lk.id}`}
+                    onClick={() => setSelectedLaporan(lk)}
+                    className={`p-4 rounded-2xl border cursor-pointer transition flex flex-col justify-between space-y-3 ${isSelected
+                      ? "bg-white border-[#26292E] shadow-md ring-2 ring-[#26292E]/10"
+                      : "bg-white border-[#E8EAEC] hover:bg-[#F6F7F9]"
+                      }`}
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div>
+                        <span className="text-[10px] font-mono text-[#737A84] block">{lk.nomor}</span>
+                        <h4 className="text-sm font-bold text-[#26292E] line-clamp-1">{lk.judul}</h4>
+                      </div>
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#F6F7F9] text-[#26292E] border border-[#E8EAEC] uppercase">
+                        {lk.status.replace("_", " ")}
+                      </span>
+                    </div>
 
-                <div className="flex items-center justify-between text-xs text-[#737A84] pt-2 border-t border-[#F1F3F5]">
-                  <span>Unit {lk.unit_kode}</span>
-                  <span className="font-semibold text-[#26292E]">{lk.pelapor_nama}</span>
-                </div>
-              </div>
-            );
-          })}
-        </div>
+                    <div className="flex items-center justify-between text-xs text-[#737A84] pt-2 border-t border-[#F1F3F5]">
+                      <span>Unit {lk.unit_kode}</span>
+                      <span className="font-semibold text-[#26292E]">{lk.pelapor_nama}</span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Pagination Laporan Kerusakan */}
+            <div className="pt-2">
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                totalItems={filteredList.length}
+                pageSize={pageSize}
+                onPageChange={setCurrentPage}
+                itemName="laporan"
+              />
+            </div>
+          </>
         )}
       </div>
 

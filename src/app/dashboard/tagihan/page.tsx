@@ -35,6 +35,8 @@ export default async function TagihanPage() {
       terbayar,
       status,
       alasan_batal,
+      mayar_invoice_id,
+      mayar_link,
       kontrak:kontrak_id (
         id,
         nomor,
@@ -76,6 +78,8 @@ export default async function TagihanPage() {
     terbayar: t.terbayar || 0,
     status: t.status,
     alasan_batal: t.alasan_batal,
+    mayar_invoice_id: t.mayar_invoice_id || null,
+    mayar_link: t.mayar_link || null,
     unit_kode: t.kontrak?.unit?.kode || "-",
     unit_tipe: t.kontrak?.unit?.tipe || "standar",
     penyewa_nama: t.kontrak?.penyewa?.nama_lengkap || "Penyewa",

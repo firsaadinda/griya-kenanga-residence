@@ -10,6 +10,9 @@ import {
   batalkanTagihanAction,
   getTagihanDetailAction,
 } from "@/lib/actions/tagihan-actions";
+import { buatInvoiceMayarAction } from "@/lib/actions/mayar-actions";
+import { Pagination } from "@/components/ui/Pagination";
+import { PrintableDocumentModal, InvoiceDocData } from "@/components/documents/PrintableDocumentModal";
 import { AlertBanner } from "@/components/feedback/AlertBanner";
 import { HttpStatusCode } from "@/types/api";
 import {
@@ -35,6 +38,9 @@ import {
   RefreshCw,
   Loader2,
   Check,
+  Printer,
+  ExternalLink,
+  Calculator,
 } from "lucide-react";
 
 export interface TagihanItem {
@@ -48,6 +54,8 @@ export interface TagihanItem {
   terbayar: number;
   status: "belum_bayar" | "sebagian" | "lunas" | "dibatalkan";
   alasan_batal?: string | null;
+  mayar_invoice_id?: string | null;
+  mayar_link?: string | null;
   unit_kode: string;
   unit_tipe: string;
   penyewa_nama: string;
@@ -87,19 +95,21 @@ export function TagihanClientView({
   const searchParams = useSearchParams();
   const qParam = searchParams.get("q") || "";
   const targetIdParam = searchParams.get("targetId") || "";
+  const nomorParam = searchParams.get("nomor") || "";
 
   const [tagihanList, setTagihanList] = useState<TagihanItem[]>(initialTagihanList);
   const [selectedPeriode, setSelectedPeriode] = useState<string>(activePeriode);
   const [statusFilter, setStatusFilter] = useState<string>("semua");
   const [searchQuery, setSearchQuery] = useState<string>(qParam);
 
-  // Sync if query param or targetId changes
+  // Sync if query param, targetId, or nomor changes
   useEffect(() => {
-    if (qParam || targetIdParam) {
+    if (qParam || targetIdParam || nomorParam) {
       if (qParam) setSearchQuery(qParam);
       const target = tagihanList.find(
         (t) =>
           (targetIdParam && t.id === targetIdParam) ||
+          (nomorParam && t.nomor.toLowerCase() === nomorParam.toLowerCase()) ||
           (qParam && (
             t.nomor.toLowerCase().includes(qParam.toLowerCase()) ||
             t.penyewa_nama.toLowerCase().includes(qParam.toLowerCase()) ||
@@ -114,7 +124,7 @@ export function TagihanClientView({
         handleOpenDetailModal(target);
       }
     }
-  }, [qParam, targetIdParam, tagihanList]);
+  }, [qParam, targetIdParam, nomorParam, tagihanList]);
 
   // Modal Catat Pembayaran States
   const [isCatatModalOpen, setIsCatatModalOpen] = useState(false);
@@ -158,6 +168,26 @@ export function TagihanClientView({
     errors?: any;
   } | null>(null);
   const [isPending, startTransition] = useTransition();
+
+  // Filter Blok Unit & Pagination
+  const [blokFilter, setBlokFilter] = useState<string>("semua");
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const pageSize = 10;
+
+  // Mayar Payment State & Denda Simulator
+  const [isGeneratingMayar, setIsGeneratingMayar] = useState(false);
+  const [simulasiTanggal, setSimulasiTanggal] = useState<string>("2026-10-15");
+
+  // Printable Document Modal State
+  const [printableDocState, setPrintableDocState] = useState<{
+    isOpen: boolean;
+    type: "invoice" | "kontrak";
+    invoiceData?: InvoiceDocData | null;
+  }>({
+    isOpen: false,
+    type: "invoice",
+    invoiceData: null,
+  });
 
   // Pemetaan Bukti Transfer Resmi per Penyewa (21 Lembar Portrait)
   const TENANT_BUKTI_MAP: Record<string, { url: string; bank: string; owner: string }> = {
@@ -285,6 +315,13 @@ export function TagihanClientView({
       // Filter status
       if (statusFilter !== "semua" && item.status !== statusFilter) return false;
 
+      // Filter blok unit (A, B, C)
+      if (blokFilter !== "semua") {
+        if (!item.unit_kode.toUpperCase().startsWith(blokFilter.toUpperCase())) {
+          return false;
+        }
+      }
+
       // Filter query pencarian
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
@@ -295,7 +332,84 @@ export function TagihanClientView({
       }
       return true;
     });
-  }, [tagihanList, selectedPeriode, statusFilter, searchQuery]);
+  }, [tagihanList, selectedPeriode, statusFilter, blokFilter, searchQuery]);
+
+  // Reset pagination saat filter berubah
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedPeriode, statusFilter, blokFilter, searchQuery]);
+
+  const totalPages = Math.ceil(filteredTagihan.length / pageSize) || 1;
+  const paginatedTagihan = useMemo(() => {
+    const start = (currentPage - 1) * pageSize;
+    return filteredTagihan.slice(start, start + pageSize);
+  }, [filteredTagihan, currentPage, pageSize]);
+
+  // Kalkulasi Simulasi Denda Interaktif pada Detail Tagihan (BR-07)
+  const simulasiHasil = useMemo(() => {
+    if (!detailTagihan) return { hariTerlambat: 0, denda: 0, sisaPokok: 0, totalKewajiban: 0 };
+    const sisaPokok = Math.max(0, detailTagihan.nominal_sewa - detailTagihan.terbayar);
+    const jtDate = new Date(detailTagihan.jatuh_tempo);
+    const simDate = new Date(simulasiTanggal);
+    let hariTerlambat = 0;
+    let denda = 0;
+
+    if (simDate > jtDate) {
+      const diffTime = simDate.getTime() - jtDate.getTime();
+      hariTerlambat = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      denda = Math.min(hariTerlambat * 20000, 200000);
+    }
+    return {
+      hariTerlambat,
+      denda,
+      sisaPokok,
+      totalKewajiban: sisaPokok + denda,
+    };
+  }, [detailTagihan, simulasiTanggal]);
+
+  // Handler: Bayar Online via Mayar API V2 Otomatis (Headless API)
+  const handleBayarMayarOnline = async () => {
+    if (!detailTagihan) return;
+    setIsGeneratingMayar(true);
+    setAlertState(null);
+
+    try {
+      const res = await buatInvoiceMayarAction(detailTagihan.id);
+      if (!res.success || !res.data) {
+        setAlertState({
+          statusCode: res.statusCode || 400,
+          message: res.message || "Gagal membuat invoice Mayar.",
+        });
+      } else {
+        const { paymentUrl, invoiceId } = res.data;
+        setDetailTagihan((prev) =>
+          prev ? { ...prev, mayar_link: paymentUrl, mayar_invoice_id: invoiceId } : prev
+        );
+        setTagihanList((prev) =>
+          prev.map((t) =>
+            t.id === detailTagihan.id
+              ? { ...t, mayar_link: paymentUrl, mayar_invoice_id: invoiceId }
+              : t
+          )
+        );
+        setAlertState({
+          statusCode: 200,
+          message: "Tautan pembayaran Mayar resmi berhasil digenerate otomatis! Mengarahkan ke halaman pembayaran...",
+        });
+
+        if (paymentUrl) {
+          window.open(paymentUrl, "_blank", "noopener,noreferrer");
+        }
+      }
+    } catch {
+      setAlertState({
+        statusCode: 500,
+        message: "Terjadi kesalahan saat memproses pembayaran Mayar.",
+      });
+    } finally {
+      setIsGeneratingMayar(false);
+    }
+  };
 
   // Hitung jumlah tagihan per status untuk tab filter
   const counts = useMemo(() => {
@@ -605,64 +719,86 @@ export function TagihanClientView({
 
       {/* 2. Filter Pills / Tabs Sesuai Wireframe Hal 2 */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2">
-        <div className="flex flex-wrap items-center gap-1.5 p-1 rounded-2xl bg-[#F6F7F9] border border-[#E8EAEC] text-xs font-semibold">
-          <button
-            type="button"
-            onClick={() => setStatusFilter("semua")}
-            className={`px-3.5 py-1.5 rounded-xl transition ${
-              statusFilter === "semua"
-                ? "bg-white text-[#1C1E22] shadow-xs font-bold"
-                : "text-[#737A84] hover:text-[#1C1E22]"
-            }`}
-          >
-            Semua ({counts.semua})
-          </button>
-          <button
-            type="button"
-            onClick={() => setStatusFilter("belum_bayar")}
-            className={`px-3.5 py-1.5 rounded-xl transition ${
-              statusFilter === "belum_bayar"
-                ? "bg-white text-rose-700 shadow-xs font-bold"
-                : "text-[#737A84] hover:text-rose-700"
-            }`}
-          >
-            Belum bayar ({counts.belum_bayar})
-          </button>
-          <button
-            type="button"
-            onClick={() => setStatusFilter("sebagian")}
-            className={`px-3.5 py-1.5 rounded-xl transition ${
-              statusFilter === "sebagian"
-                ? "bg-white text-amber-700 shadow-xs font-bold"
-                : "text-[#737A84] hover:text-amber-700"
-            }`}
-          >
-            Sebagian ({counts.sebagian})
-          </button>
-          <button
-            type="button"
-            onClick={() => setStatusFilter("lunas")}
-            className={`px-3.5 py-1.5 rounded-xl transition ${
-              statusFilter === "lunas"
-                ? "bg-white text-emerald-800 shadow-xs font-bold"
-                : "text-[#737A84] hover:text-emerald-800"
-            }`}
-          >
-            Lunas ({counts.lunas})
-          </button>
-          {counts.dibatalkan > 0 && (
+        <div className="flex flex-wrap items-center gap-2">
+          {/* Status Filter */}
+          <div className="flex flex-wrap items-center gap-1.5 p-1 rounded-2xl bg-[#F6F7F9] border border-[#E8EAEC] text-xs font-semibold">
             <button
               type="button"
-              onClick={() => setStatusFilter("dibatalkan")}
+              onClick={() => setStatusFilter("semua")}
               className={`px-3.5 py-1.5 rounded-xl transition ${
-                statusFilter === "dibatalkan"
-                  ? "bg-white text-slate-700 shadow-xs font-bold"
-                  : "text-[#737A84] hover:text-slate-700"
+                statusFilter === "semua"
+                  ? "bg-white text-[#1C1E22] shadow-xs font-bold"
+                  : "text-[#737A84] hover:text-[#1C1E22]"
               }`}
             >
-              Dibatalkan ({counts.dibatalkan})
+              Semua ({counts.semua})
             </button>
-          )}
+            <button
+              type="button"
+              onClick={() => setStatusFilter("belum_bayar")}
+              className={`px-3.5 py-1.5 rounded-xl transition ${
+                statusFilter === "belum_bayar"
+                  ? "bg-white text-rose-700 shadow-xs font-bold"
+                  : "text-[#737A84] hover:text-rose-700"
+              }`}
+            >
+              Belum bayar ({counts.belum_bayar})
+            </button>
+            <button
+              type="button"
+              onClick={() => setStatusFilter("sebagian")}
+              className={`px-3.5 py-1.5 rounded-xl transition ${
+                statusFilter === "sebagian"
+                  ? "bg-white text-amber-700 shadow-xs font-bold"
+                  : "text-[#737A84] hover:text-amber-700"
+              }`}
+            >
+              Sebagian ({counts.sebagian})
+            </button>
+            <button
+              type="button"
+              onClick={() => setStatusFilter("lunas")}
+              className={`px-3.5 py-1.5 rounded-xl transition ${
+                statusFilter === "lunas"
+                  ? "bg-white text-emerald-800 shadow-xs font-bold"
+                  : "text-[#737A84] hover:text-emerald-800"
+              }`}
+            >
+              Lunas ({counts.lunas})
+            </button>
+            {counts.dibatalkan > 0 && (
+              <button
+                type="button"
+                onClick={() => setStatusFilter("dibatalkan")}
+                className={`px-3.5 py-1.5 rounded-xl transition ${
+                  statusFilter === "dibatalkan"
+                    ? "bg-white text-slate-700 shadow-xs font-bold"
+                    : "text-[#737A84] hover:text-slate-700"
+                }`}
+              >
+                Dibatalkan ({counts.dibatalkan})
+              </button>
+            )}
+          </div>
+
+          {/* Filter Blok Unit (A, B, C) */}
+          <div className="flex items-center gap-1 p-1 rounded-2xl bg-[#F6F7F9] border border-[#E8EAEC] text-xs font-semibold">
+            <span className="text-[10px] text-[#737A84] px-2 uppercase font-bold">Blok:</span>
+            {["semua", "A", "B", "C"].map((b) => (
+              <button
+                key={b}
+                type="button"
+                onClick={() => setBlokFilter(b)}
+                className={`px-2.5 py-1 rounded-xl transition cursor-pointer ${
+                  blokFilter === b
+                    ? "bg-white text-[#1C1E22] shadow-xs font-bold"
+                    : "text-[#737A84] hover:text-[#1C1E22]"
+                }`}
+              >
+                {b === "semua" ? "Semua" : `Blok ${b}`}
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Input Pencarian Cepat */}
@@ -705,14 +841,14 @@ export function TagihanClientView({
               </tr>
             </thead>
             <tbody className="divide-y divide-[#E8EAEC] text-[#26292E]">
-              {filteredTagihan.length === 0 ? (
+              {paginatedTagihan.length === 0 ? (
                 <tr>
                   <td colSpan={8} className="py-12 text-center text-[#737A84]">
                     Tidak ada data tagihan yang sesuai dengan filter atau periode ini.
                   </td>
                 </tr>
               ) : (
-                filteredTagihan.map((item) => (
+                paginatedTagihan.map((item) => (
                   <tr key={item.id} className="hover:bg-[#F6F7F9]/80 transition-colors">
                     {/* Nomor Tagihan */}
                     <td className="py-3.5 px-4 sm:px-6 font-mono font-semibold text-[#1C1E22]">
@@ -818,6 +954,18 @@ export function TagihanClientView({
               )}
             </tbody>
           </table>
+        </div>
+
+        {/* Pagination Table Footer */}
+        <div className="px-6 py-4 bg-white border-t border-[#E8EAEC]">
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalItems={filteredTagihan.length}
+            pageSize={pageSize}
+            onPageChange={setCurrentPage}
+            itemName="tagihan"
+          />
         </div>
       </div>
 
@@ -1199,6 +1347,133 @@ export function TagihanClientView({
                     {formatRupiah(detailTagihan.terbayar)}
                   </span>
                 </span>
+              </div>
+            </div>
+
+            {/* Tombol Aksi: Unduh PDF / E-Kwitansi & Bayar Online Mayar */}
+            <div className="flex flex-wrap items-center gap-2 pt-1">
+              <button
+                type="button"
+                onClick={() => {
+                  setPrintableDocState({
+                    isOpen: true,
+                    type: "invoice",
+                    invoiceData: {
+                      nomor: detailTagihan.nomor,
+                      periode: detailTagihan.periode,
+                      jatuh_tempo: detailTagihan.jatuh_tempo,
+                      unit_kode: detailTagihan.unit_kode,
+                      unit_tipe: detailTagihan.unit_tipe,
+                      penyewa_nama: detailTagihan.penyewa_nama,
+                      penyewa_email: detailTagihan.penyewa_email,
+                      penyewa_hp: detailTagihan.penyewa_hp,
+                      nominal_sewa: detailTagihan.nominal_sewa,
+                      denda: detailTagihan.denda,
+                      terbayar: detailTagihan.terbayar,
+                      status: detailTagihan.status,
+                      pembayaranList: detailPembayaranList.filter((p) => p.status === "sah"),
+                    },
+                  });
+                }}
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full border border-[#E8EAEC] bg-white hover:bg-[#F6F7F9] text-xs font-semibold text-[#26292E] shadow-2xs transition cursor-pointer"
+              >
+                <Printer className="w-3.5 h-3.5 text-[#737A84]" />
+                <span>Unduh PDF / E-Kwitansi</span>
+              </button>
+
+              {detailTagihan.status !== "lunas" && detailTagihan.status !== "dibatalkan" && (
+                <button
+                  type="button"
+                  onClick={handleBayarMayarOnline}
+                  disabled={isGeneratingMayar}
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#1C1E22] hover:bg-[#26292E] text-white text-xs font-semibold shadow-sm transition disabled:opacity-50 cursor-pointer"
+                >
+                  {isGeneratingMayar ? (
+                    <>
+                      <Loader2 className="w-3.5 h-3.5 animate-spin text-[#D2F367]" />
+                      <span>Memproses Link Mayar...</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>Bayar Online via Mayar</span>
+                      <ExternalLink className="w-3 h-3 text-[#D2F367]" />
+                    </>
+                  )}
+                </button>
+              )}
+            </div>
+
+            {/* Tautan Mayar Aktif (jika sudah digenerate) */}
+            {detailTagihan.mayar_link && detailTagihan.status !== "lunas" && (
+              <div className="p-3 rounded-2xl bg-[#FAFBFB] border border-[#E8EAEC] flex items-center justify-between gap-3 text-xs">
+                <div className="truncate min-w-0">
+                  <span className="text-[10px] font-bold text-[#737A84] block uppercase">
+                    Tautan Pembayaran Mayar Resmi (Otomatis)
+                  </span>
+                  <a
+                    href={detailTagihan.mayar_link}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-xs text-blue-600 hover:underline font-mono truncate block"
+                  >
+                    {detailTagihan.mayar_link}
+                  </a>
+                </div>
+                <a
+                  href={detailTagihan.mayar_link}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-[#1C1E22] text-[#D2F367] text-[11px] font-semibold shrink-0 hover:bg-[#26292E] transition"
+                >
+                  <span>Buka</span>
+                  <ExternalLink className="w-3 h-3" />
+                </a>
+              </div>
+            )}
+
+            {/* Kalkulator Pratinjau Denda Interaktif (BR-07) */}
+            <div className="p-3.5 rounded-2xl bg-[#F6F7F9] border border-[#E8EAEC] space-y-2.5">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1.5 font-bold text-xs text-[#1C1E22]">
+                  <Calculator className="w-4 h-4 text-[#737A84]" />
+                  <span>Kalkulator Simulasi Denda (BR-07)</span>
+                </div>
+                <span className="text-[10px] text-[#737A84]">
+                  Rp20.000/hari &bull; Maks Rp200.000
+                </span>
+              </div>
+
+              <div className="flex flex-col sm:flex-row items-center gap-3">
+                <div className="w-full sm:w-auto flex-1">
+                  <label className="block text-[10px] font-semibold text-[#737A84] mb-1">
+                    Simulasi Tanggal Pembayaran
+                  </label>
+                  <input
+                    type="date"
+                    value={simulasiTanggal}
+                    onChange={(e) => setSimulasiTanggal(e.target.value)}
+                    className="w-full bg-white text-xs text-[#1C1E22] p-2 rounded-xl border border-[#D5D9DE] focus:outline-none"
+                  />
+                </div>
+
+                <div className="w-full sm:w-auto flex-1 bg-white p-2.5 rounded-xl border border-[#E8EAEC] text-right">
+                  <span className="text-[10px] text-[#737A84] block">
+                    Keterlambatan: <strong>{simulasiHasil.hariTerlambat} hari</strong>
+                  </span>
+                  <div className="flex items-center justify-between sm:justify-end gap-2">
+                    <span className="text-xs font-bold text-rose-600">
+                      Denda: {formatRupiah(simulasiHasil.denda)}
+                    </span>
+                    {simulasiHasil.denda >= 200000 && (
+                      <span className="text-[9px] bg-rose-100 text-rose-700 px-1.5 py-0.5 rounded font-bold">
+                        MAKS
+                      </span>
+                    )}
+                  </div>
+                  <span className="text-[11px] font-black text-[#1C1E22] block">
+                    Total: {formatRupiah(simulasiHasil.totalKewajiban)}
+                  </span>
+                </div>
               </div>
             </div>
 
@@ -1678,6 +1953,16 @@ export function TagihanClientView({
           </div>
         </div>
       )}
+
+      {/* =========================================================================
+          MODAL: PRATINJAU DOKUMEN CETAK & SIMPAN SEBAGAI PDF (A4 PRINT STYLESHEET)
+          ========================================================================= */}
+      <PrintableDocumentModal
+        isOpen={printableDocState.isOpen}
+        onClose={() => setPrintableDocState({ isOpen: false, type: "invoice", invoiceData: null })}
+        type={printableDocState.type}
+        invoiceData={printableDocState.invoiceData}
+      />
     </div>
   );
 }

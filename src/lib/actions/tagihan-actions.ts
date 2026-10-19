@@ -460,6 +460,8 @@ export async function getTagihanDetailAction(tagihanId: string) {
         terbayar,
         status,
         alasan_batal,
+        mayar_invoice_id,
+        mayar_link,
         kontrak:kontrak_id (
           id,
           nomor,

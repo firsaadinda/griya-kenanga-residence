@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { AlertBanner } from "@/components/feedback/AlertBanner";
 import { EmptyState } from "@/components/feedback/EmptyState";
+import { Pagination } from "@/components/ui/Pagination";
 import { HttpStatusCode } from "@/types/api";
 
 export interface UnitItem {
@@ -85,6 +86,17 @@ export function UnitClientView({ initialUnits, userRole }: UnitClientViewProps) 
     }
     return true;
   });
+
+  // Pagination Unit
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const pageSize = 8;
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filterLantai, filterStatus, searchQuery]);
+
+  const totalPages = Math.ceil(filteredUnits.length / pageSize) || 1;
+  const paginatedUnits = filteredUnits.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
   const openStatusModal = (unit: UnitItem) => {
     setSelectedUnit(unit);
@@ -240,8 +252,9 @@ export function UnitClientView({ initialUnits, userRole }: UnitClientViewProps) 
           description="Tidak ada unit kamar atau studio yang sesuai dengan filter lantai atau kata kunci pencarian Anda."
         />
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {filteredUnits.map((u) => {
+        <>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        {paginatedUnits.map((u) => {
           const isLantai1 = u.lantai === 1;
           const isLantai2 = u.lantai === 2;
           const isLantai3 = u.lantai === 3;
@@ -378,6 +391,19 @@ export function UnitClientView({ initialUnits, userRole }: UnitClientViewProps) 
           );
         })}
       </div>
+
+        {/* Pagination Unit */}
+        <div className="pt-2">
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalItems={filteredUnits.length}
+            pageSize={pageSize}
+            onPageChange={setCurrentPage}
+            itemName="unit"
+          />
+        </div>
+        </>
       )}
 
       {/* MODAL UBAH STATUS (PENGELOLA - BR-04) */}
