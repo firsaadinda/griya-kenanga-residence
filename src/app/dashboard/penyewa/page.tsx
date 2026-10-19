@@ -30,9 +30,9 @@ export default async function PenyewaPage() {
       foto_ktp_path: null,
       kontak_darurat_nama: null,
       kontak_darurat_hp: null,
-      status_verifikasi: row.status_verifikasi,
-      alasan_tolak: row.alasan_tolak,
-      diverifikasi_pada: row.diverifikasi_pada,
+      status_verifikasi: row.status_verifikasi || "belum",
+      alasan_tolak: row.alasan_tolak || null,
+      diverifikasi_pada: row.diverifikasi_pada || null,
     }));
   } else {
     // Pengelola: Melihat profil penyewa lengkap beserta identitas_penyewa

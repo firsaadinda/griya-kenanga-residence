@@ -61,8 +61,13 @@ export function isRouteAllowed(role: UserRole, pathname: string): boolean {
     return true;
   }
 
-  // 2. Laporan Pendapatan & Audit Log: HANYA Pemilik (BR-10)
-  if (pathname.startsWith("/dashboard/laporan")) {
+  // 2. Laporan Pendapatan, Audit Log & Pengaturan Peran: HANYA Pemilik (BR-10)
+  if (
+    pathname.startsWith("/dashboard/laporan") ||
+    pathname.startsWith("/laporan") ||
+    pathname.startsWith("/dashboard/pengaturan") ||
+    pathname.startsWith("/pengaturan")
+  ) {
     return role === "pemilik";
   }
 

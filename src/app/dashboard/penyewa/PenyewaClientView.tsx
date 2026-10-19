@@ -299,7 +299,31 @@ export function PenyewaClientView({ initialPenyewa, userRole }: PenyewaClientVie
                   )}
 
                   <div className="flex items-center gap-1.5 ml-auto">
-                    {statusVerif !== "terverifikasi" && (
+                    {/* Tombol Verifikasi & Tolak HANYA untuk penyewa yang berstatus Menunggu (belum terverifikasi) */}
+                    {statusVerif === "belum" && (
+                      <>
+                        <button
+                          type="button"
+                          onClick={() => handleOpenActionModal(p, "verifikasi")}
+                          className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-[#1C1E22] hover:bg-[#26292E] text-white text-xs font-semibold shadow-sm transition"
+                        >
+                          <Check className="w-3 h-3 text-[#D2F367]" />
+                          <span>Verifikasi</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => handleOpenActionModal(p, "tolak")}
+                          className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-[#FFF0F0] hover:bg-[#FFE5E5] text-[#D32F2F] text-xs font-semibold border border-[#FFCDD2] transition"
+                        >
+                          <X className="w-3 h-3" />
+                          <span>Tolak</span>
+                        </button>
+                      </>
+                    )}
+
+                    {/* Jika status Ditolak, berikan opsi untuk Verifikasi Ulang */}
+                    {statusVerif === "ditolak" && (
                       <button
                         type="button"
                         onClick={() => handleOpenActionModal(p, "verifikasi")}
@@ -307,17 +331,6 @@ export function PenyewaClientView({ initialPenyewa, userRole }: PenyewaClientVie
                       >
                         <Check className="w-3 h-3 text-[#D2F367]" />
                         <span>Verifikasi</span>
-                      </button>
-                    )}
-
-                    {statusVerif !== "ditolak" && (
-                      <button
-                        type="button"
-                        onClick={() => handleOpenActionModal(p, "tolak")}
-                        className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-[#FFF0F0] hover:bg-[#FFE5E5] text-[#D32F2F] text-xs font-semibold border border-[#FFCDD2] transition"
-                      >
-                        <X className="w-3 h-3" />
-                        <span>Tolak</span>
                       </button>
                     )}
                   </div>

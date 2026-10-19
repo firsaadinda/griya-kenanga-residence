@@ -127,11 +127,11 @@ export async function catatPembayaranAction(formData: FormData): Promise<ApiResp
       };
     }
 
-    if (!["pengelola", "pemilik"].includes(profile.peran)) {
+    if (profile.peran !== "pengelola") {
       return {
         success: false,
         statusCode: 403,
-        message: "Akses ditolak. Hanya staf operasional yang berhak mencatat pembayaran (BR-08).",
+        message: "Akses ditolak. Hanya Pengelola yang berhak mencatat pembayaran manual (BR-08 & PRD Bagian 3).",
         timestamp: new Date().toISOString(),
       };
     }

@@ -777,7 +777,7 @@ export function TagihanClientView({
                         </button>
                       ) : (
                         <div className="flex items-center justify-end gap-1.5">
-                          {["pengelola", "pemilik"].includes(userRole) && (
+                          {userRole === "pengelola" && (
                             <button
                               type="button"
                               onClick={() => handleOpenCatatModal(item)}

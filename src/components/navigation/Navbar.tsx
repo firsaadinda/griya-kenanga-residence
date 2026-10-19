@@ -30,16 +30,23 @@ export function Navbar({ userProfile }: NavbarProps) {
 
   const role = userProfile?.peran || "penyewa";
 
-  // Menu navigasi berdasarkan peran dengan ikon khas masing-masing
-  const navigationItems = [
+  // Menu navigasi utama berdasarkan peran
+  const mainItems = [
     { label: "Beranda", href: "/dashboard", icon: LayoutDashboard, show: true },
     { label: "Unit", href: "/dashboard/unit", icon: Home, show: role === "pemilik" || role === "pengelola" },
     { label: "Penyewa", href: "/dashboard/penyewa", icon: Users, show: role === "pemilik" || role === "pengelola" },
     { label: "Kontrak", href: "/dashboard/kontrak", icon: FileSignature, show: role === "pemilik" || role === "pengelola" },
     { label: "Tagihan", href: "/dashboard/tagihan", icon: RupiahIcon, show: true },
     { label: "Kerusakan", href: "/dashboard/kerusakan", icon: Wrench, show: true },
-    { label: "Laporan", href: "/dashboard/laporan", icon: BarChart3, show: role === "pemilik" },
   ].filter((item) => item.show);
+
+  // Menu Khusus Pemilik (PRD Bagian 7 & Wireframe Hal 3 & 4)
+  const ownerItems = [
+    { label: "Laporan", href: "/dashboard/laporan", icon: BarChart3, show: role === "pemilik" },
+    { label: "Pengaturan", href: "/dashboard/pengaturan", icon: Shield, show: role === "pemilik" },
+  ].filter((item) => item.show);
+
+  const allItems = [...mainItems, ...ownerItems];
 
   const getInitials = (name?: string) => {
     if (!name) return "GK";
@@ -88,7 +95,7 @@ export function Navbar({ userProfile }: NavbarProps) {
 
           {/* Menu Dropdown / Navigasi Cepat */}
           {(() => {
-            const currentItem = navigationItems.find(
+            const currentItem = allItems.find(
               (item) => pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(item.href))
             );
             const activeLabel = currentItem ? currentItem.label : "Menu";
@@ -111,14 +118,16 @@ export function Navbar({ userProfile }: NavbarProps) {
                     <div className="px-4 py-1.5 mb-1 border-b border-[#E8EAEC]">
                       <span className="text-[10px] font-bold text-[#737A84] uppercase tracking-wider">Navigasi Halaman</span>
                     </div>
-                    {navigationItems.map((item) => {
+
+                    {/* Menu Utama */}
+                    {mainItems.map((item) => {
                       const isActive = pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(item.href));
                       return (
                         <Link
                           key={item.href}
                           href={item.href}
                           onClick={() => setIsDropdownOpen(false)}
-                          className={`flex items-center justify-between px-4 py-2.5 text-xs font-medium transition ${
+                          className={`flex items-center justify-between px-4 py-2 text-xs font-medium transition ${
                             isActive
                               ? "bg-[#1C1E22] text-white font-semibold rounded-xl mx-2"
                               : "text-[#737A84] hover:bg-[#F6F7F9] hover:text-[#26292E] rounded-xl mx-2"
@@ -134,6 +143,40 @@ export function Navbar({ userProfile }: NavbarProps) {
                         </Link>
                       );
                     })}
+
+                    {/* Bagian KHUSUS PEMILIK (Hanya tampil untuk Pemilik, Wireframe Hal 3 & 4) */}
+                    {role === "pemilik" && ownerItems.length > 0 && (
+                      <>
+                        <div className="px-4 pt-3 pb-1 mt-1 border-t border-[#E8EAEC]">
+                          <span className="text-[9px] font-bold text-[#1B5E20] uppercase tracking-wider bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200 inline-block">
+                            KHUSUS PEMILIK
+                          </span>
+                        </div>
+                        {ownerItems.map((item) => {
+                          const isActive = pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(item.href));
+                          return (
+                            <Link
+                              key={item.href}
+                              href={item.href}
+                              onClick={() => setIsDropdownOpen(false)}
+                              className={`flex items-center justify-between px-4 py-2 text-xs font-medium transition ${
+                                isActive
+                                  ? "bg-[#1C1E22] text-white font-semibold rounded-xl mx-2"
+                                  : "text-[#737A84] hover:bg-[#F6F7F9] hover:text-[#26292E] rounded-xl mx-2"
+                              }`}
+                            >
+                              <div className="flex items-center gap-2.5">
+                                <item.icon className={`w-4 h-4 ${isActive ? "text-[#D2F367]" : "text-[#737A84]"}`} />
+                                <span>{item.label}</span>
+                              </div>
+                              {isActive && (
+                                <span className="w-1.5 h-1.5 rounded-full bg-[#D2F367]"></span>
+                              )}
+                            </Link>
+                          );
+                        })}
+                      </>
+                    )}
                   </div>
                 )}
               </div>
