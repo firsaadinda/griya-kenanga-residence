@@ -68,7 +68,8 @@ export function isRouteAllowed(role: UserRole, pathname: string): boolean {
     pathname.startsWith("/dashboard/laporan") ||
     pathname.startsWith("/laporan") ||
     pathname.startsWith("/dashboard/pengaturan") ||
-    pathname.startsWith("/pengaturan")
+    pathname.startsWith("/pengaturan") ||
+    pathname.startsWith("/setelan")
   ) {
     return role === "pemilik";
   }

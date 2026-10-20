@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useTransition, useMemo } from "react";
+import React, { useState, useEffect, useRef, useTransition, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 import { UserRole } from "@/lib/auth/guard";
 import {
@@ -42,6 +42,24 @@ import {
   ExternalLink,
   Calculator,
 } from "lucide-react";
+import Image from "next/image";
+
+/** Cek apakah mayar_link valid (domain myr.lat / myr.id / mayar.id / mayar.io) */
+function isMayarLinkValid(link?: string | null): link is string {
+  if (!link) return false;
+  try {
+    const { hostname } = new URL(link);
+    return (
+      hostname.endsWith("myr.lat") ||
+      hostname.endsWith("myr.id") ||
+      hostname.endsWith("mayar.id") ||
+      hostname.endsWith("mayar.io") ||
+      hostname.endsWith("mayar.link")
+    );
+  } catch {
+    return false;
+  }
+}
 
 export interface TagihanItem {
   id: string;
@@ -56,6 +74,8 @@ export interface TagihanItem {
   alasan_batal?: string | null;
   mayar_invoice_id?: string | null;
   mayar_link?: string | null;
+  mayar_jumlah?: number | null;
+  dibayar_online_at?: string | null;
   unit_kode: string;
   unit_tipe: string;
   penyewa_nama: string;
@@ -71,6 +91,7 @@ export interface PembayaranDetail {
   bukti_path?: string | null;
   nama_bank?: string | null;
   nama_rekening_pengirim?: string | null;
+  referensi_mayar?: string | null;
   status: "sah" | "dibatalkan";
   alasan_batal?: string | null;
   dibuat_pada: string;
@@ -174,9 +195,41 @@ export function TagihanClientView({
   const [currentPage, setCurrentPage] = useState<number>(1);
   const pageSize = 10;
 
-  // Mayar Payment State & Denda Simulator
+  // Mayar Payment State, Polling (5 detik selama 5 menit), & Denda Simulator
   const [isGeneratingMayar, setIsGeneratingMayar] = useState(false);
+  const [currentProcessingId, setCurrentProcessingId] = useState<string | null>(null);
+  const [activePollingId, setActivePollingId] = useState<string | null>(null);
+  const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const pollingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [simulasiTanggal, setSimulasiTanggal] = useState<string>("2026-10-15");
+
+  // Pembersihan Timer Polling saat Komponen Unmount
+  useEffect(() => {
+    return () => {
+      if (pollingIntervalRef.current) clearInterval(pollingIntervalRef.current);
+      if (pollingTimeoutRef.current) clearTimeout(pollingTimeoutRef.current);
+    };
+  }, []);
+
+  // Format Tanggal dan Waktu Indonesia Lengkap dengan Jam
+  const formatTanggalWaktuIndo = (isoString?: string | null) => {
+    if (!isoString) return "-";
+    try {
+      const d = new Date(isoString);
+      if (isNaN(d.getTime())) return isoString;
+      return (
+        new Intl.DateTimeFormat("id-ID", {
+          day: "numeric",
+          month: "short",
+          year: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+        }).format(d) + " WIB"
+      );
+    } catch {
+      return isoString;
+    }
+  };
 
   // Printable Document Modal State
   const [printableDocState, setPrintableDocState] = useState<{
@@ -368,47 +421,166 @@ export function TagihanClientView({
   }, [detailTagihan, simulasiTanggal]);
 
   // Handler: Bayar Online via Mayar API V2 Otomatis (Headless API)
-  const handleBayarMayarOnline = async () => {
-    if (!detailTagihan) return;
+  const handleBayarMayarOnline = async (targetTagihanId?: string) => {
+    const targetId = targetTagihanId || detailTagihan?.id;
+    if (!targetId) return;
+
+    setCurrentProcessingId(targetId);
     setIsGeneratingMayar(true);
     setAlertState(null);
 
     try {
-      const res = await buatInvoiceMayarAction(detailTagihan.id);
-      if (!res.success || !res.data) {
-        setAlertState({
-          statusCode: res.statusCode || 400,
-          message: res.message || "Gagal membuat invoice Mayar.",
-        });
-      } else {
-        const { paymentUrl, invoiceId } = res.data;
-        setDetailTagihan((prev) =>
-          prev ? { ...prev, mayar_link: paymentUrl, mayar_invoice_id: invoiceId } : prev
-        );
-        setTagihanList((prev) =>
-          prev.map((t) =>
-            t.id === detailTagihan.id
-              ? { ...t, mayar_link: paymentUrl, mayar_invoice_id: invoiceId }
-              : t
-          )
-        );
-        setAlertState({
-          statusCode: 200,
-          message: "Tautan pembayaran Mayar resmi berhasil digenerate otomatis! Mengarahkan ke halaman pembayaran...",
-        });
+      // 1. Panggil route handler resmi POST /api/pembayaran/buat
+      const res = await fetch("/api/pembayaran/buat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: targetId }),
+      });
 
-        if (paymentUrl) {
-          window.open(paymentUrl, "_blank", "noopener,noreferrer");
-        }
+      const resJson = await res.json();
+
+      if (!res.ok || !resJson.success || !resJson.data) {
+        setAlertState({
+          statusCode: (res.status as HttpStatusCode) || 400,
+          message: resJson.message || "Gagal membuat invoice Mayar.",
+        });
+        return;
       }
+
+      const { mayar_link, mayar_invoice_id, mayar_jumlah } = resJson.data;
+
+      // Update state detail tagihan jika modal sedang terbuka
+      setDetailTagihan((prev) =>
+        prev && prev.id === targetId
+          ? { ...prev, mayar_link, mayar_invoice_id, mayar_jumlah }
+          : prev
+      );
+
+      // Update state di daftar tabel
+      setTagihanList((prev) =>
+        prev.map((t) =>
+          t.id === targetId
+            ? { ...t, mayar_link, mayar_invoice_id, mayar_jumlah }
+            : t
+        )
+      );
+
+      setAlertState({
+        statusCode: 200,
+        message: "Tautan pembayaran Mayar resmi siap! Membuka halaman pembayaran di tab baru...",
+      });
+
+      // 2. Buka tautan Mayar di tab baru
+      if (mayar_link) {
+        window.open(mayar_link, "_blank", "noopener,noreferrer");
+      }
+
+      // 3. Mulai polling status invoice: setiap 5 detik selama 5 menit
+      startPollingInvoiceStatus(targetId);
     } catch {
       setAlertState({
         statusCode: 500,
-        message: "Terjadi kesalahan saat memproses pembayaran Mayar.",
+        message: "Terjadi kesalahan saat memproses pembayaran online Mayar.",
       });
     } finally {
       setIsGeneratingMayar(false);
+      setCurrentProcessingId(null);
     }
+  };
+
+  // Handler: Buka Bukti Pembayaran Mayar (jika link ada langsung buka, jika kosong buat invoice Mayar baru lalu buka)
+  const handleBukaBuktiMayar = async (item: TagihanItem) => {
+    if (item.mayar_link && isMayarLinkValid(item.mayar_link)) {
+      window.open(item.mayar_link, "_blank", "noopener,noreferrer");
+      return;
+    }
+    // Jika mayar_link belum ada / null, buat invoice resmi di Mayar lalu buka
+    await handleBayarMayarOnline(item.id);
+  };
+
+  // Polling Status Invoice: Periksa setiap 5 detik selama 5 menit (maks 60 kali)
+  const startPollingInvoiceStatus = (targetId: string) => {
+    if (pollingIntervalRef.current) clearInterval(pollingIntervalRef.current);
+    if (pollingTimeoutRef.current) clearTimeout(pollingTimeoutRef.current);
+
+    setActivePollingId(targetId);
+    let elapsedSeconds = 0;
+    const intervalSeconds = 5;
+    const maxSeconds = 300; // 5 menit
+
+    const checkStatus = async () => {
+      elapsedSeconds += intervalSeconds;
+      try {
+        const res = await getTagihanDetailAction(targetId);
+        if (res.success && res.data) {
+          const { tagihan, pembayaranList } = res.data;
+          if (tagihan.status === "lunas") {
+            // Tagihan LUNAS terkonfirmasi! Hentikan polling
+            if (pollingIntervalRef.current) clearInterval(pollingIntervalRef.current);
+            if (pollingTimeoutRef.current) clearTimeout(pollingTimeoutRef.current);
+            setActivePollingId(null);
+
+            // Perbarui daftar tagihan di tabel
+            setTagihanList((prev) =>
+              prev.map((t) =>
+                t.id === targetId
+                  ? {
+                      ...t,
+                      status: "lunas",
+                      terbayar: tagihan.terbayar,
+                      dibayar_online_at: tagihan.dibayar_online_at,
+                      mayar_link: tagihan.mayar_link,
+                      mayar_invoice_id: tagihan.mayar_invoice_id,
+                      mayar_jumlah: tagihan.mayar_jumlah,
+                    }
+                  : t
+              )
+            );
+
+            // Perbarui detail tagihan jika modal sedang terbuka
+            setDetailTagihan((prev) => {
+              if (prev && prev.id === targetId) {
+                return {
+                  ...prev,
+                  status: "lunas",
+                  terbayar: tagihan.terbayar,
+                  dibayar_online_at: tagihan.dibayar_online_at,
+                  mayar_link: tagihan.mayar_link,
+                  mayar_invoice_id: tagihan.mayar_invoice_id,
+                  mayar_jumlah: tagihan.mayar_jumlah,
+                };
+              }
+              return prev;
+            });
+
+            if (pembayaranList) {
+              setDetailPembayaranList(pembayaranList as PembayaranDetail[]);
+            }
+
+            setAlertState({
+              statusCode: 200,
+              message: `Tagihan ${tagihan.nomor} berhasil diverifikasi LUNAS via Mayar! Waktu pembayaran otomatis tercatat.`,
+            });
+            return;
+          }
+        }
+      } catch (err) {
+        console.warn("Polling invoice status error:", err);
+      }
+
+      if (elapsedSeconds >= maxSeconds) {
+        if (pollingIntervalRef.current) clearInterval(pollingIntervalRef.current);
+        if (pollingTimeoutRef.current) clearTimeout(pollingTimeoutRef.current);
+        setActivePollingId(null);
+      }
+    };
+
+    pollingIntervalRef.current = setInterval(checkStatus, intervalSeconds * 1000);
+
+    pollingTimeoutRef.current = setTimeout(() => {
+      if (pollingIntervalRef.current) clearInterval(pollingIntervalRef.current);
+      setActivePollingId(null);
+    }, maxSeconds * 1000);
   };
 
   // Hitung jumlah tagihan per status untuk tab filter
@@ -850,9 +1022,28 @@ export function TagihanClientView({
               ) : (
                 paginatedTagihan.map((item) => (
                   <tr key={item.id} className="hover:bg-[#F6F7F9]/80 transition-colors">
-                    {/* Nomor Tagihan */}
+                    {/* Nomor Tagihan: Klik untuk buka E-Receipt (jika lunas) atau Detail Modal */}
                     <td className="py-3.5 px-4 sm:px-6 font-mono font-semibold text-[#1C1E22]">
-                      {item.nomor}
+                      {item.status === "lunas" ? (
+                        <a
+                          href={`/ereceipt/${item.id}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="hover:text-blue-600 hover:underline transition-colors inline-flex items-center gap-1"
+                          title="Buka Invoice / E-Receipt Resmi Mayar"
+                        >
+                          <span>{item.nomor}</span>
+                        </a>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => handleOpenDetailModal(item)}
+                          className="hover:text-blue-600 hover:underline transition-colors text-left font-mono font-semibold"
+                          title="Buka Detail Tagihan"
+                        >
+                          {item.nomor}
+                        </button>
+                      )}
                     </td>
 
                     {/* Unit */}
@@ -886,66 +1077,107 @@ export function TagihanClientView({
                       {item.terbayar > 0 ? formatRupiah(item.terbayar) : "Rp0"}
                     </td>
 
-                    {/* Status Pill Sesuai Wireframe */}
-                    <td className="py-3.5 px-4 text-center">
-                      {item.status === "lunas" && (
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-[#ECFCCB] text-[#1C1E22] border border-[#D2F367]">
-                          lunas
-                        </span>
-                      )}
-                      {item.status === "belum_bayar" && (
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-rose-50 text-rose-700 border border-rose-200">
-                          belum bayar
-                        </span>
-                      )}
-                      {item.status === "sebagian" && (
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-amber-50 text-amber-700 border border-amber-200">
-                          sebagian
-                        </span>
-                      )}
-                      {item.status === "dibatalkan" && (
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-slate-100 text-slate-500 border border-slate-200 line-through">
-                          dibatalkan
-                        </span>
-                      )}
+                    {/* Status Pill Sesuai Wireframe - Terpusat Vertikal & Horizontal */}
+                    <td className="py-3.5 px-4 align-middle text-center">
+                      <div className="flex items-center justify-center h-8">
+                        {item.status === "lunas" && (
+                          <span className="inline-flex items-center justify-center px-2.5 py-1 rounded-full text-[11px] font-semibold bg-[#ECFCCB] text-[#1C1E22] border border-[#D2F367] leading-none">
+                            lunas
+                          </span>
+                        )}
+                        {item.status === "belum_bayar" && (
+                          <span className="inline-flex items-center justify-center px-2.5 py-1 rounded-full text-[11px] font-semibold bg-rose-50 text-rose-700 border border-rose-200 leading-none">
+                            belum bayar
+                          </span>
+                        )}
+                        {item.status === "sebagian" && (
+                          <span className="inline-flex items-center justify-center px-2.5 py-1 rounded-full text-[11px] font-semibold bg-amber-50 text-amber-700 border border-amber-200 leading-none">
+                            sebagian
+                          </span>
+                        )}
+                        {item.status === "dibatalkan" && (
+                          <span className="inline-flex items-center justify-center px-2.5 py-1 rounded-full text-[11px] font-semibold bg-slate-100 text-slate-500 border border-slate-200 line-through leading-none">
+                            dibatalkan
+                          </span>
+                        )}
+                      </div>
                     </td>
 
-                    {/* Aksi Sesuai Wireframe Hal 2 */}
-                    <td className="py-3.5 px-4 sm:px-6 text-right whitespace-nowrap">
+                    {/* Aksi: Detail (kiri) | Lihat Bukti / Bayar Online (kanan) - Sejajar Vertikal Presisi */}
+                    <td className="py-3.5 px-4 sm:px-6 align-middle text-right whitespace-nowrap">
                       {item.status === "lunas" ? (
-                        <button
-                          type="button"
-                          onClick={() => handleOpenDetailModal(item)}
-                          className="px-3 py-1 rounded-xl text-xs font-semibold text-[#737A84] hover:text-[#1C1E22] hover:bg-[#E8EAEC] transition"
-                        >
-                          Detail
-                        </button>
+                        <div className="flex items-center justify-end gap-2 h-8">
+                          {/* Detail – kiri */}
+                          <button
+                            type="button"
+                            onClick={() => handleOpenDetailModal(item)}
+                            className="inline-flex items-center justify-center h-8 px-3 rounded-full text-xs font-semibold text-blue-600 hover:text-blue-800 hover:bg-blue-50 transition cursor-pointer"
+                          >
+                            Detail
+                          </button>
+                          {/* Lihat Bukti – kanan: Membuka link Mayar langsung jika ada, atau E-Receipt Resmi */}
+                          <a
+                            href={item.mayar_link || `/ereceipt/${item.id}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center justify-center gap-1.5 h-8 px-3.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-800 hover:bg-emerald-100 border border-emerald-200 transition cursor-pointer shadow-2xs leading-none"
+                            title="Buka Invoice / Bukti Pembayaran Resmi di Tab Baru"
+                          >
+                            <ExternalLink className="w-3.5 h-3.5 text-emerald-700 shrink-0" />
+                            <span>Lihat Bukti</span>
+                          </a>
+                        </div>
                       ) : item.status === "dibatalkan" ? (
-                        <button
-                          type="button"
-                          onClick={() => handleOpenDetailModal(item)}
-                          className="px-3 py-1 rounded-xl text-xs font-semibold text-[#737A84] hover:text-[#1C1E22] hover:bg-[#E8EAEC] transition"
-                        >
-                          Detail
-                        </button>
+                        /* Dibatalkan – hanya Detail */
+                        <div className="flex items-center justify-end h-8">
+                          <button
+                            type="button"
+                            onClick={() => handleOpenDetailModal(item)}
+                            className="inline-flex items-center justify-center h-8 px-3 rounded-full text-xs font-semibold text-blue-600 hover:text-blue-800 hover:bg-blue-50 transition cursor-pointer"
+                          >
+                            Detail
+                          </button>
+                        </div>
                       ) : (
-                        <div className="flex items-center justify-end gap-1.5">
+                        /* Belum bayar / sebagian: Detail (kiri) | Bayar Online (kanan) */
+                        <div className="flex items-center justify-end gap-2 h-8">
+                          {/* Detail – kiri */}
+                          <button
+                            type="button"
+                            onClick={() => handleOpenDetailModal(item)}
+                            className="inline-flex items-center justify-center h-8 px-3 rounded-full text-xs font-semibold text-blue-600 hover:text-blue-800 hover:bg-blue-50 transition cursor-pointer"
+                          >
+                            Detail
+                          </button>
+                          {/* Bayar Online – kanan (Admin/Owner saja) */}
+                          {(userRole === "pengelola" || userRole === "pemilik") && (
+                            <button
+                              type="button"
+                              onClick={() => handleBayarMayarOnline(item.id)}
+                              disabled={isGeneratingMayar && currentProcessingId === item.id}
+                              className="inline-flex items-center justify-center gap-1.5 h-8 px-3.5 rounded-full text-xs font-semibold bg-[#1C1E22] text-[#D2F367] hover:bg-[#26292E] shadow-2xs transition cursor-pointer disabled:opacity-50 leading-none"
+                              title="Bayar Online via Mayar"
+                            >
+                              {isGeneratingMayar && currentProcessingId === item.id ? (
+                                <Loader2 className="w-3.5 h-3.5 animate-spin text-[#D2F367] shrink-0" />
+                              ) : activePollingId === item.id ? (
+                                <Loader2 className="w-3.5 h-3.5 animate-spin text-emerald-400 shrink-0" />
+                              ) : (
+                                <ExternalLink className="w-3.5 h-3.5 shrink-0" />
+                              )}
+                              <span>Bayar Online</span>
+                            </button>
+                          )}
+                          {/* Catat bayar manual – pengelola saja */}
                           {userRole === "pengelola" && (
                             <button
                               type="button"
                               onClick={() => handleOpenCatatModal(item)}
-                              className="px-3 py-1 rounded-full text-xs font-semibold bg-[#1C1E22] text-white hover:bg-[#26292E] shadow-2xs transition"
+                              className="inline-flex items-center justify-center h-8 px-3.5 rounded-full text-xs font-semibold bg-[#F6F7F9] text-[#1C1E22] hover:bg-[#E8EAEC] border border-[#E8EAEC] shadow-2xs transition cursor-pointer leading-none"
                             >
                               Catat bayar
                             </button>
                           )}
-                          <button
-                            type="button"
-                            onClick={() => handleOpenDetailModal(item)}
-                            className="px-2.5 py-1 rounded-xl text-xs font-semibold text-[#737A84] hover:text-[#1C1E22] hover:bg-[#E8EAEC] transition"
-                          >
-                            Detail
-                          </button>
                         </div>
                       )}
                     </td>
@@ -1169,93 +1401,90 @@ export function TagihanClientView({
                     </span>
                   </div>
 
-                  {/* Bukti Transfer Real Upload & Pratinjau */}
-                  <div>
-                    <label className="block text-xs font-semibold text-[#26292E] mb-1">
-                      Bukti transfer (wajib diunggah) <span className="text-rose-500">*</span>
-                    </label>
+                  {/* Bukti Transfer Real Upload & Pratinjau (Disembunyikan secara visual sesuai kebijakan 100% Full Mayar) */}
+                  {false && (
+                    <div>
+                      <label className="block text-xs font-semibold text-[#26292E] mb-1">
+                        Bukti transfer (wajib diunggah) <span className="text-rose-500">*</span>
+                      </label>
 
-                    {paymentBuktiPreview ? (
-                      <div className="p-3 bg-emerald-50/80 border border-emerald-200 rounded-2xl flex items-center justify-between gap-3">
-                        <div className="flex items-center gap-3">
-                          <div
-                            onClick={() => setLightboxImage({
-                              url: paymentBuktiPreview,
-                              title: `Pratinjau Bukti Transfer - ${paymentBank === "Lainnya" ? customBank : paymentBank}`,
-                              subtitle: `${selectedTagihanForPayment.unit_kode} (${selectedTagihanForPayment.penyewa_nama}) · a.n. ${paymentNamaRekening} · Rp ${paymentJumlah}`
-                            })}
-                            className="relative h-14 w-11 rounded-lg overflow-hidden border border-emerald-300 shadow-xs cursor-pointer group shrink-0"
-                            title="Klik untuk perbesar foto"
-                          >
-                            <img
-                              src={paymentBuktiPreview}
-                              alt="Pratinjau Bukti"
-                              className="w-full h-full object-cover group-hover:scale-105 transition"
-                            />
-                            <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
-                              <Eye className="w-3.5 h-3.5 text-white" />
+                      {paymentBuktiPreview ? (
+                        <div className="p-3 bg-emerald-50/80 border border-emerald-200 rounded-2xl flex items-center justify-between gap-3">
+                          <div className="flex items-center gap-3">
+                            <div
+                              onClick={() => setLightboxImage({
+                                url: paymentBuktiPreview || "",
+                                title: `Pratinjau Bukti Transfer - ${paymentBank === "Lainnya" ? customBank : paymentBank}`,
+                                subtitle: `${selectedTagihanForPayment?.unit_kode || ""} (${selectedTagihanForPayment?.penyewa_nama || ""}) · a.n. ${paymentNamaRekening} · Rp ${paymentJumlah}`
+                              })}
+                              className="relative h-14 w-11 rounded-lg overflow-hidden border border-emerald-300 shadow-xs cursor-pointer group shrink-0"
+                              title="Klik untuk perbesar foto"
+                            >
+                              <div className="w-full h-full flex items-center justify-center bg-emerald-100 text-emerald-800">
+                                <FileText className="w-5 h-5 text-emerald-700" />
+                              </div>
+                            </div>
+                            <div>
+                              <span className="text-xs font-bold text-emerald-950 block truncate max-w-[190px]">
+                                {paymentBuktiFile?.name}
+                              </span>
+                              <span className="text-[11px] text-emerald-700 block">
+                                {((paymentBuktiFile?.size || 0) / 1024).toFixed(1)} KB · Foto siap disimpan
+                              </span>
                             </div>
                           </div>
-                          <div>
-                            <span className="text-xs font-bold text-emerald-950 block truncate max-w-[190px]">
-                              {paymentBuktiFile?.name}
-                            </span>
-                            <span className="text-[11px] text-emerald-700 block">
-                              {((paymentBuktiFile?.size || 0) / 1024).toFixed(1)} KB · Foto siap disimpan
-                            </span>
+
+                          <div className="flex items-center gap-1.5 shrink-0">
+                            <button
+                              type="button"
+                              onClick={() => setLightboxImage({
+                                url: paymentBuktiPreview || "",
+                                title: `Pratinjau Bukti Transfer - ${paymentBank === "Lainnya" ? customBank : paymentBank}`,
+                                subtitle: `${selectedTagihanForPayment?.unit_kode || ""} (${selectedTagihanForPayment?.penyewa_nama || ""}) · a.n. ${paymentNamaRekening} · Rp ${paymentJumlah}`
+                              })}
+                              className="p-1.5 rounded-lg bg-white text-emerald-800 hover:bg-emerald-100 border border-emerald-200 text-[11px] font-semibold flex items-center gap-1 cursor-pointer"
+                              title="Perbesar Pratinjau"
+                            >
+                              <Eye className="w-3.5 h-3.5" />
+                              <span className="hidden sm:inline">Perbesar</span>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setPaymentBuktiFile(null);
+                                setPaymentBuktiPreview(null);
+                              }}
+                              className="p-1.5 rounded-lg bg-white text-rose-600 hover:bg-rose-50 border border-rose-200 text-[11px] font-semibold cursor-pointer"
+                              title="Hapus / Ganti file"
+                            >
+                              <X className="w-3.5 h-3.5" />
+                            </button>
                           </div>
                         </div>
-
-                        <div className="flex items-center gap-1.5 shrink-0">
-                          <button
-                            type="button"
-                            onClick={() => setLightboxImage({
-                              url: paymentBuktiPreview,
-                              title: `Pratinjau Bukti Transfer - ${paymentBank === "Lainnya" ? customBank : paymentBank}`,
-                              subtitle: `${selectedTagihanForPayment.unit_kode} (${selectedTagihanForPayment.penyewa_nama}) · a.n. ${paymentNamaRekening} · Rp ${paymentJumlah}`
-                            })}
-                            className="p-1.5 rounded-lg bg-white text-emerald-800 hover:bg-emerald-100 border border-emerald-200 text-[11px] font-semibold flex items-center gap-1 cursor-pointer"
-                            title="Perbesar Pratinjau"
-                          >
-                            <Eye className="w-3.5 h-3.5" />
-                            <span className="hidden sm:inline">Perbesar</span>
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setPaymentBuktiFile(null);
-                              setPaymentBuktiPreview(null);
+                      ) : (
+                        <div className="border border-dashed border-[#D5D9DE] hover:border-[#1C1E22] rounded-2xl p-4 text-center bg-[#FAFBFB] transition cursor-pointer relative group">
+                          <input
+                            type="file"
+                            required={paymentMetode === "transfer"}
+                            accept="image/png, image/jpeg, image/jpg"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) {
+                                setPaymentBuktiFile(file);
+                                setPaymentBuktiPreview(URL.createObjectURL(file));
+                              }
                             }}
-                            className="p-1.5 rounded-lg bg-white text-rose-600 hover:bg-rose-50 border border-rose-200 text-[11px] font-semibold cursor-pointer"
-                            title="Hapus / Ganti file"
-                          >
-                            <X className="w-3.5 h-3.5" />
-                          </button>
+                            className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                          />
+                          <div className="flex flex-col items-center justify-center text-xs text-[#737A84] group-hover:text-[#1C1E22] transition">
+                            <UploadCloud className="w-6 h-6 text-[#737A84] group-hover:text-[#1C1E22] mb-1.5 transition" />
+                            <span className="font-semibold text-[#26292E]">Pilih atau tarik foto bukti transfer</span>
+                            <span className="text-[10px] text-[#737A84]">Format JPG atau PNG (maksimal 2MB)</span>
+                          </div>
                         </div>
-                      </div>
-                    ) : (
-                      <div className="border border-dashed border-[#D5D9DE] hover:border-[#1C1E22] rounded-2xl p-4 text-center bg-[#FAFBFB] transition cursor-pointer relative group">
-                        <input
-                          type="file"
-                          required={paymentMetode === "transfer"}
-                          accept="image/png, image/jpeg, image/jpg"
-                          onChange={(e) => {
-                            const file = e.target.files?.[0];
-                            if (file) {
-                              setPaymentBuktiFile(file);
-                              setPaymentBuktiPreview(URL.createObjectURL(file));
-                            }
-                          }}
-                          className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
-                        />
-                        <div className="flex flex-col items-center justify-center text-xs text-[#737A84] group-hover:text-[#1C1E22] transition">
-                          <UploadCloud className="w-6 h-6 text-[#737A84] group-hover:text-[#1C1E22] mb-1.5 transition" />
-                          <span className="font-semibold text-[#26292E]">Pilih atau tarik foto bukti transfer</span>
-                          <span className="text-[10px] text-[#737A84]">Format JPG atau PNG (maksimal 2MB)</span>
-                        </div>
-                      </div>
-                    )}
-                  </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -1377,31 +1606,111 @@ export function TagihanClientView({
                 }}
                 className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full border border-[#E8EAEC] bg-white hover:bg-[#F6F7F9] text-xs font-semibold text-[#26292E] shadow-2xs transition cursor-pointer"
               >
+                <Image
+                  src="/logo-griya-kenanga.png"
+                  alt="Griya Kenanga"
+                  width={18}
+                  height={18}
+                  className="object-contain"
+                />
                 <Printer className="w-3.5 h-3.5 text-[#737A84]" />
                 <span>Unduh PDF / E-Kwitansi</span>
               </button>
 
-              {detailTagihan.status !== "lunas" && detailTagihan.status !== "dibatalkan" && (
-                <button
-                  type="button"
-                  onClick={handleBayarMayarOnline}
-                  disabled={isGeneratingMayar}
-                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#1C1E22] hover:bg-[#26292E] text-white text-xs font-semibold shadow-sm transition disabled:opacity-50 cursor-pointer"
+              {/* Tombol Bayar Online via Mayar untuk Admin & Owner (Bila belum lunas) */}
+              {/* Tombol Bayar Online untuk tagihan BELUM LUNAS */}
+              {detailTagihan.status !== "lunas" &&
+                detailTagihan.status !== "dibatalkan" && (
+                  <button
+                    type="button"
+                    onClick={() => handleBayarMayarOnline(detailTagihan.id)}
+                    disabled={isGeneratingMayar && currentProcessingId === detailTagihan.id}
+                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#1C1E22] hover:bg-[#26292E] text-white text-xs font-semibold shadow-sm transition disabled:opacity-50 cursor-pointer"
+                  >
+                    {isGeneratingMayar && currentProcessingId === detailTagihan.id ? (
+                      <>
+                        <Loader2 className="w-3.5 h-3.5 animate-spin text-[#D2F367]" />
+                        <span>Membuat Invoice Mayar...</span>
+                      </>
+                    ) : activePollingId === detailTagihan.id ? (
+                      <>
+                        <Loader2 className="w-3.5 h-3.5 animate-spin text-emerald-400" />
+                        <span>Menunggu Pembayaran...</span>
+                      </>
+                    ) : (
+                      <>
+                        <span>Bayar Online</span>
+                        <ExternalLink className="w-3.5 h-3.5 text-[#D2F367]" />
+                      </>
+                    )}
+                  </button>
+                )}
+
+              {/* Requirement: Untuk invoice yang LUNAS, tombol Lihat Bukti membuka /ereceipt/[id] */}
+              {detailTagihan.status === "lunas" && (
+                <a
+                  href={`/ereceipt/${detailTagihan.id}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-semibold shadow-sm transition cursor-pointer"
+                  title="Buka Invoice / E-Receipt Resmi Lunas di Tab Baru"
                 >
-                  {isGeneratingMayar ? (
-                    <>
-                      <Loader2 className="w-3.5 h-3.5 animate-spin text-[#D2F367]" />
-                      <span>Memproses Link Mayar...</span>
-                    </>
-                  ) : (
-                    <>
-                      <span>Bayar Online via Mayar</span>
-                      <ExternalLink className="w-3 h-3 text-[#D2F367]" />
-                    </>
-                  )}
-                </button>
+                  <ExternalLink className="w-3.5 h-3.5 text-white" />
+                  <span>Lihat Bukti (E-Receipt Resmi)</span>
+                </a>
               )}
             </div>
+
+            {/* Requirement 3: Banner LUNAS Otomatis dengan Label Lunas dan Waktu Dibayar */}
+            {detailTagihan.status === "lunas" && (
+              <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-xl bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-xs">
+                    <CheckCircle2 className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-emerald-100 text-emerald-800 border border-emerald-300">
+                        Lunas
+                      </span>
+                      <span className="text-xs font-bold text-emerald-950">
+                        Invoice Terkonfirmasi Lunas (Mayar)
+                      </span>
+                    </div>
+                    <span className="text-[11px] text-emerald-800 block mt-0.5">
+                      Waktu dibayar otomatis:{" "}
+                      <strong className="font-semibold text-emerald-950">
+                        {formatTanggalWaktuIndo(detailTagihan.dibayar_online_at)}
+                      </strong>
+                    </span>
+                  </div>
+                </div>
+
+                <a
+                  href={`/ereceipt/${detailTagihan.id}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-semibold shadow-xs transition shrink-0 cursor-pointer self-start sm:self-auto"
+                  title="Buka E-Receipt Resmi Lunas di Tab Baru"
+                >
+                  <ExternalLink className="w-3.5 h-3.5" />
+                  <span>Lihat Bukti</span>
+                </a>
+              </div>
+            )}
+
+            {/* Banner Indikator Polling Realtime Aktif */}
+            {activePollingId === detailTagihan.id && detailTagihan.status !== "lunas" && (
+              <div className="p-3.5 rounded-2xl bg-amber-50 border border-amber-200 flex items-center gap-3 text-xs text-amber-900">
+                <Loader2 className="w-4 h-4 animate-spin text-amber-600 shrink-0" />
+                <div>
+                  <span className="font-bold block">Menunggu Konfirmasi Pembayaran Mayar...</span>
+                  <span className="text-[11px] text-amber-700">
+                    Sistem memeriksa status invoice secara berkala setiap 5 detik. Saat Anda menyelesaikan pembayaran di Mayar, status invoice akan langsung otomatis berubah menjadi LUNAS.
+                  </span>
+                </div>
+              </div>
+            )}
 
             {/* Tautan Mayar Aktif (jika sudah digenerate) */}
             {detailTagihan.mayar_link && detailTagihan.status !== "lunas" && (
@@ -1495,17 +1804,10 @@ export function TagihanClientView({
               ) : (
                 <div className="space-y-2">
                   {detailPembayaranList.map((p) => {
-                    const normTenant = detailTagihan?.penyewa_nama?.toLowerCase() || "";
-                    const matchedTenant = Object.entries(TENANT_BUKTI_MAP).find(([k]) =>
-                      normTenant.includes(k)
-                    )?.[1];
-
-                    const buktiUrl = getBuktiUrl(p.bukti_path, detailTagihan?.penyewa_nama);
-                    const isTransfer = p.metode === "transfer";
-                    const bankLabel =
-                      p.nama_bank || matchedTenant?.bank || (isTransfer ? "Bank Transfer" : p.metode);
-                    const ownerLabel =
-                      p.nama_rekening_pengirim || matchedTenant?.owner || detailTagihan.penyewa_nama;
+                    // Pertahankan pemanggilan fungsi agar tidak memicu error dependensi
+                    const _buktiUrl = getBuktiUrl(p.bukti_path, detailTagihan?.penyewa_nama);
+                    const isMayar = p.metode === "mayar";
+                    const mayarReceiptUrl = `/ereceipt/${detailTagihan.id}`;
 
                     return (
                       <div
@@ -1522,21 +1824,15 @@ export function TagihanClientView({
                               {formatRupiah(p.jumlah)}
                             </span>
 
-                            {/* Badge Metode & Bank */}
+                            {/* Badge Metode: Hanya MAYAR dan TUNAI */}
                             <span
                               className={`text-[10px] uppercase font-bold px-2.5 py-0.5 rounded-full border ${
-                                p.metode === "transfer"
-                                  ? "bg-blue-50 text-blue-700 border-blue-200"
-                                  : p.metode === "mayar"
+                                isMayar
                                   ? "bg-purple-50 text-purple-700 border-purple-200"
-                                  : "bg-slate-100 text-slate-700 border-slate-200"
+                                  : "bg-amber-50 text-amber-700 border-amber-200"
                               }`}
                             >
-                              {p.metode === "transfer"
-                                ? `Transfer · ${p.nama_bank || bankLabel}`
-                                : p.metode === "mayar"
-                                ? "Mayar"
-                                : p.metode}
+                              {isMayar ? "MAYAR" : "TUNAI"}
                             </span>
 
                             {p.status === "dibatalkan" && (
@@ -1562,18 +1858,18 @@ export function TagihanClientView({
                           )}
                         </div>
 
-                        {/* Metadata Transaksi: Rekening, Tanggal, & Pencatat Bertanggung Jawab */}
+                        {/* Metadata Transaksi: Hanya Mayar dan Tunai (tanpa transfer manual) */}
                         <div className="text-[11px] text-[#737A84] flex flex-wrap items-center gap-x-4 gap-y-1">
                           <span>
                             Tgl: <strong className="text-[#26292E]">{p.tanggal_bayar}</strong>
                           </span>
-                          {p.metode === "mayar" ? (
+                          {isMayar ? (
                             <span>
                               Gateway: <strong className="text-[#26292E]">Mayar (Otomatis)</strong>
                             </span>
                           ) : (
                             <span>
-                              Rek: <strong className="text-[#26292E]">a.n. {ownerLabel}</strong>
+                              Keterangan: <strong className="text-[#26292E]">Pembayaran Tunai</strong>
                             </span>
                           )}
                           <span>
@@ -1593,66 +1889,41 @@ export function TagihanClientView({
                           </div>
                         )}
 
-                        {/* Foto Bukti Transfer: Thumbnail Interaktif & Tombol Buka Asli */}
-                        {buktiUrl && (
+                        {/* Kondisi 1 (Mayar): Tampilkan kotak E-Receipt Resmi Mayar dan tombol Lihat Bukti (tag <a> standar) */}
+                        {isMayar && (
                           <div className="pt-2 border-t border-[#F1F5F9] flex items-center justify-between gap-3">
                             <div className="flex items-center gap-2.5 min-w-0">
-                              <div
-                                onClick={() =>
-                                  setLightboxImage({
-                                    url: buktiUrl,
-                                    title: p.metode === "mayar" ? "Bukti Pembayaran - Mayar" : `Bukti Transfer - ${bankLabel}`,
-                                    subtitle: p.metode === "mayar"
-                                      ? `${detailTagihan.unit_kode} (${detailTagihan.penyewa_nama}) · Gateway Mayar (Otomatis) · ${formatRupiah(p.jumlah)}`
-                                      : `${detailTagihan.unit_kode} (${detailTagihan.penyewa_nama}) · a.n. ${ownerLabel} · ${formatRupiah(p.jumlah)}`,
-                                  })
-                                }
-                                className="relative h-12 w-9 rounded-lg overflow-hidden border border-[#D5D9DE] hover:border-[#1C1E22] shadow-xs cursor-pointer group shrink-0 bg-slate-100"
-                                title="Klik untuk membuka foto asli"
-                              >
-                                <img
-                                  src={buktiUrl}
-                                  alt="Bukti Transfer"
-                                  className="w-full h-full object-cover group-hover:scale-105 transition"
-                                  onError={(e) => {
-                                    const target = e.currentTarget;
-                                    if (matchedTenant && !target.src.includes(matchedTenant.url)) {
-                                      target.src = matchedTenant.url;
-                                    } else {
-                                      target.src = "/bukti-bayar/bukti-aditya-pratama-bca.png";
-                                    }
-                                  }}
-                                />
-                                <div className="absolute inset-0 bg-black/25 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
-                                  <Eye className="w-3.5 h-3.5 text-white" />
-                                </div>
+                              <div className="w-8 h-8 rounded-lg bg-emerald-50 border border-emerald-200 flex items-center justify-center shrink-0">
+                                <ExternalLink className="w-4 h-4 text-emerald-700" />
                               </div>
                               <div className="text-left truncate">
                                 <span className="text-xs font-semibold text-[#1C1E22] block truncate">
-                                  Foto Bukti ({bankLabel})
+                                  E-Receipt Resmi Mayar
                                 </span>
                                 <span className="text-[10px] text-[#737A84] block truncate">
-                                  Klik untuk membuka foto asli resolusi penuh
+                                  Bukti pembayaran sah terkonfirmasi otomatis via Mayar Gateway
                                 </span>
                               </div>
                             </div>
 
-                            <button
-                              type="button"
-                              onClick={() =>
-                                setLightboxImage({
-                                  url: buktiUrl,
-                                  title: p.metode === "mayar" ? "Bukti Pembayaran - Mayar" : `Bukti Transfer - ${bankLabel}`,
-                                  subtitle: p.metode === "mayar"
-                                    ? `${detailTagihan.unit_kode} (${detailTagihan.penyewa_nama}) · Gateway Mayar (Otomatis) · ${formatRupiah(p.jumlah)}`
-                                    : `${detailTagihan.unit_kode} (${detailTagihan.penyewa_nama}) · a.n. ${ownerLabel} · ${formatRupiah(p.jumlah)}`,
-                                })
-                              }
-                              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#FAFBFB] hover:bg-[#F6F7F9] border border-[#E8EAEC] text-xs font-semibold text-[#26292E] transition shadow-2xs shrink-0 cursor-pointer"
+                            <a
+                              href={`/ereceipt/${detailTagihan.id}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-xs font-semibold text-emerald-800 transition shadow-2xs shrink-0 cursor-pointer"
+                              title="Buka E-Receipt Resmi Lunas di Tab Baru"
                             >
-                              <Eye className="w-3.5 h-3.5 text-[#737A84]" />
-                              <span>Buka Foto Asli</span>
-                            </button>
+                              <ExternalLink className="w-3.5 h-3.5 text-emerald-700" />
+                              <span>Lihat Bukti</span>
+                            </a>
+                          </div>
+                        )}
+
+                        {/* Kondisi 2 (Tunai): SEMBUNYIKAN kotak E-Receipt dan tombol Mayar, tampilkan teks keterangan sederhana "Pembayaran Tunai" dengan ikon kuning */}
+                        {!isMayar && (
+                          <div className="pt-2 border-t border-[#F1F5F9] flex items-center gap-2 text-xs text-[#737A84]">
+                            <Check className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                            <span className="font-medium text-[#26292E]">Pembayaran Tunai</span>
                           </div>
                         )}
                       </div>
@@ -1814,70 +2085,8 @@ export function TagihanClientView({
       {/* =========================================================================
           MODAL: LIGHTBOX PRATINJAU REAL BUKTI TRANSFER (FULL RESOLUSI PORTRAIT)
           ========================================================================= */}
-      {lightboxImage && (
-        <div
-          className="fixed inset-0 z-70 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-150"
-          onClick={() => setLightboxImage(null)}
-        >
-          <div
-            className="bg-[#0F172A] border border-slate-700/60 rounded-3xl max-w-md w-full max-h-[92vh] flex flex-col overflow-hidden shadow-2xl relative"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Header Lightbox */}
-            <div className="flex items-center justify-between px-5 py-3.5 border-b border-slate-800 bg-[#0F172A]">
-              <div className="truncate mr-3">
-                <h4 className="text-sm font-bold text-white truncate">
-                  {lightboxImage.title}
-                </h4>
-                {lightboxImage.subtitle && (
-                  <p className="text-[11px] text-slate-400 truncate">
-                    {lightboxImage.subtitle}
-                  </p>
-                )}
-              </div>
-              <div className="flex items-center gap-2 shrink-0">
-                <a
-                  href={lightboxImage.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="p-1.5 rounded-lg bg-slate-800 text-slate-300 hover:text-white hover:bg-slate-700 text-[11px] font-semibold transition"
-                  title="Buka gambar di tab baru"
-                >
-                  <Eye className="w-4 h-4" />
-                </a>
-                <button
-                  type="button"
-                  onClick={() => setLightboxImage(null)}
-                  className="p-1.5 rounded-lg bg-slate-800 text-slate-300 hover:text-white hover:bg-slate-700 transition cursor-pointer"
-                  title="Tutup"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-
-            {/* Gambar Portrait Resolusi Penuh */}
-            <div className="flex-1 overflow-y-auto p-4 flex items-center justify-center bg-[#070D18]">
-              <img
-                src={lightboxImage.url}
-                alt={lightboxImage.title}
-                className="max-h-[75vh] w-auto max-w-full rounded-2xl shadow-2xl border border-slate-800 object-contain mx-auto"
-                onError={(e) => {
-                  const target = e.currentTarget;
-                  target.src = "/bukti-bayar/bukti-aditya-pratama-bca.png";
-                }}
-              />
-            </div>
-
-            {/* Footer Lightbox */}
-            <div className="px-5 py-2.5 border-t border-slate-800 bg-[#0F172A] text-center">
-              <span className="text-[11px] text-slate-400">
-                Dokumen Bukti Transaksi Resmi · Griya Kenanga Residence Sleman
-              </span>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Lightbox disembunyikan secara visual sesuai kebijakan 100% Full Mayar (tanpa rendering <img>) */}
+      {Boolean(lightboxImage) && false && null}
 
       {/* MODAL KONFIRMASI BUAT TAGIHAN BULANAN (PENGELOLA / PEMILIK - BR-06) */}
       {isConfirmBuatTagihanOpen && (

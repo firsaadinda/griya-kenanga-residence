@@ -76,7 +76,7 @@ export async function POST(req: NextRequest) {
       payloadData.name ||
       "Pembayaran Online Mayar";
 
-    // Dapatkan instance Supabase client (prioritaskan admin client untuk bypass RLS)
+    // Dapatkan instance Supabase client (prioritaskan admin client untuk bypass RLS dan akses RPC berhak khusus)
     let supabase;
     try {
       supabase = createAdminClient();
@@ -86,6 +86,35 @@ export async function POST(req: NextRequest) {
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
       );
+    }
+
+    // 1b. Catat audit trail ke tabel mayar_webhook_log (hanya bisa dibaca oleh Owner)
+    let webhookLogId: string | null = null;
+    try {
+      const clientIp =
+        req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+        req.headers.get("x-real-ip") ||
+        null;
+
+      const { data: logEntry } = await supabase
+        .from("mayar_webhook_log")
+        .insert({
+          event: eventType,
+          invoice_id: invoiceId,
+          transaction_id: transactionId,
+          amount: paidAmount > 0 ? Math.round(paidAmount) : null,
+          payload: rawBody,
+          status: "received",
+          ip_address: clientIp,
+        })
+        .select("id")
+        .maybeSingle();
+
+      if (logEntry?.id) {
+        webhookLogId = logEntry.id;
+      }
+    } catch (logErr) {
+      console.warn("[Mayar Webhook] Gagal mencatat log ke mayar_webhook_log:", logErr);
     }
 
     // 2. Jaminan Idempotensi: Periksa apakah referensi transaksi Mayar ini sudah pernah dicatat
@@ -98,6 +127,12 @@ export async function POST(req: NextRequest) {
 
       if (existingPayment) {
         console.log(`[Mayar Webhook] Idempotent: Transaksi ${referenceMayar} sudah pernah diproses.`);
+        if (webhookLogId) {
+          await supabase
+            .from("mayar_webhook_log")
+            .update({ status: "success", error_message: "Idempotent: Transaksi sudah pernah diproses." })
+            .eq("id", webhookLogId);
+        }
         return NextResponse.json(
           {
             success: true,
@@ -111,9 +146,11 @@ export async function POST(req: NextRequest) {
 
     // 3. Verifikasi Aman ke API Mayar V2 (jika API Key tersedia & invoiceId tertera)
     const mayarApiKey = process.env.MAYAR_API_KEY;
+    const mayarBaseUrl = process.env.MAYAR_BASE_URL || "https://api.mayar.io/hl/v2";
     const hasValidApiKey =
       mayarApiKey &&
       !mayarApiKey.includes("your-mayar-api-key") &&
+      !mayarApiKey.includes("isi-sendiri") &&
       mayarApiKey.trim().length > 10;
 
     let apiVerifiedInvoice: any = null;
@@ -123,7 +160,7 @@ export async function POST(req: NextRequest) {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 5000);
 
-        const verifyRes = await fetch(`https://api.mayar.io/hl/v2/invoices/${invoiceId}`, {
+        const verifyRes = await fetch(`${mayarBaseUrl}/invoices/${invoiceId}`, {
           method: "GET",
           headers: {
             Authorization: `Bearer ${mayarApiKey}`,
@@ -292,72 +329,116 @@ export async function POST(req: NextRequest) {
     const nominalFinal = paidAmount > 0 ? paidAmount : (sisaPokok + (targetTagihan.denda || 0));
     const tanggalHariIni = new Date().toISOString().split("T")[0];
 
-    // 6. Catat Pembayaran Sah dengan Metode 'mayar'
-    const { data: newPembayaran, error: insertPayErr } = await supabase
-      .from("pembayaran")
-      .insert({
-        tagihan_id: targetTagihan.id,
-        jumlah: nominalFinal,
-        metode: "mayar",
-        tanggal_bayar: tanggalHariIni,
-        referensi_mayar: referenceMayar,
-        status: "sah",
-        nama_bank: "Mayar",
-        nama_rekening_pengirim: customerName,
-      })
-      .select("id")
-      .single();
+    // 6. Jalankan Pelunasan via RPC tandai_lunas_mayar (Atomic Locking FOR UPDATE)
+    let paymentProcessed = false;
+    let paymentId: string | null = null;
 
-    if (insertPayErr) {
-      console.error("[Mayar Webhook] Gagal mencatat pembayaran:", insertPayErr);
-      return NextResponse.json(
-        { success: false, message: "Gagal mencatat pembayaran ke database." },
-        { status: 500 }
-      );
-    }
-
-    // 7. Perbarui Status Tagihan Menjadi 'lunas' dan Terbayar Penuh
-    const totalTerbayarBaru = targetTagihan.nominal_sewa + (targetTagihan.denda || 0);
-    const { error: updateTagihanErr } = await supabase
-      .from("tagihan")
-      .update({
-        status: "lunas",
-        terbayar: totalTerbayarBaru,
-        mayar_invoice_id: invoiceId || targetTagihan.mayar_invoice_id,
-      })
-      .eq("id", targetTagihan.id);
-
-    if (updateTagihanErr) {
-      console.error("[Mayar Webhook] Gagal memperbarui status tagihan:", updateTagihanErr);
-    }
-
-    // 8. Catat ke Audit Log
     try {
-      await supabase.from("audit_log").insert({
-        pelaku_id: null, // Dipicu otomatis oleh webhook gateway Mayar
-        peran: "penyewa",
-        aksi: "pembayaran_mayar",
-        tabel: "pembayaran",
-        data_id: newPembayaran?.id || targetTagihan.id,
-        sebelum: {
-          tagihan_id: targetTagihan.id,
-          nomor: targetTagihan.nomor,
-          terbayar: targetTagihan.terbayar,
-          status: targetTagihan.status,
-        },
-        sesudah: {
-          tagihan_id: targetTagihan.id,
-          nomor: targetTagihan.nomor,
-          terbayar: totalTerbayarBaru,
-          status: "lunas",
-          metode: "mayar",
-          referensi_mayar: referenceMayar,
-          jumlah: nominalFinal,
-        },
-        dibuat_pada: new Date().toISOString(),
+      const { data: rpcLunas, error: rpcLunasErr } = await supabase.rpc("tandai_lunas_mayar", {
+        p_tagihan_id: targetTagihan.id,
+        p_referensi_mayar: referenceMayar,
+        p_jumlah: nominalFinal,
+        p_mayar_invoice_id: (invoiceId || targetTagihan.mayar_invoice_id) ?? undefined,
       });
-    } catch (auditErr) {
-      console.warn("[Mayar Webhook] Gagal mencatat audit log:", auditErr);
+
+      const lunasResult = rpcLunas as { success?: boolean; pembayaran_id?: string } | null;
+      if (!rpcLunasErr && lunasResult?.success) {
+        paymentProcessed = true;
+        paymentId = lunasResult.pembayaran_id || null;
+        console.log(`[Mayar Webhook] Pelunasan tagihan ${targetTagihan.nomor} via tandai_lunas_mayar berhasil.`);
+      } else if (rpcLunasErr) {
+        console.warn("[Mayar Webhook] tandai_lunas_mayar RPC error, trying direct update fallback:", rpcLunasErr);
+      }
+    } catch (rpcCatch) {
+      console.warn("[Mayar Webhook] Exception calling tandai_lunas_mayar:", rpcCatch);
+    }
+
+    // 7. Fallback Direct Database Update jika RPC tidak aktif
+    if (!paymentProcessed) {
+      const { data: newPembayaran, error: insertPayErr } = await supabase
+        .from("pembayaran")
+        .insert({
+          tagihan_id: targetTagihan.id,
+          jumlah: nominalFinal,
+          metode: "mayar",
+          tanggal_bayar: tanggalHariIni,
+          referensi_mayar: referenceMayar,
+          status: "sah",
+          nama_bank: "Mayar",
+          nama_rekening_pengirim: customerName,
+        })
+        .select("id")
+        .single();
+
+      if (insertPayErr) {
+        console.error("[Mayar Webhook] Gagal mencatat pembayaran:", insertPayErr);
+        if (webhookLogId) {
+          await supabase
+            .from("mayar_webhook_log")
+            .update({ status: "error", error_message: insertPayErr.message })
+            .eq("id", webhookLogId);
+        }
+        return NextResponse.json(
+          { success: false, message: "Gagal mencatat pembayaran ke database." },
+          { status: 500 }
+        );
+      }
+
+      paymentId = newPembayaran?.id || null;
+      const totalTerbayarBaru = targetTagihan.nominal_sewa + (targetTagihan.denda || 0);
+      await supabase
+        .from("tagihan")
+        .update({
+          status: "lunas",
+          terbayar: totalTerbayarBaru,
+          mayar_invoice_id: invoiceId || targetTagihan.mayar_invoice_id,
+          dibayar_online_at: new Date().toISOString(),
+        })
+        .eq("id", targetTagihan.id);
+    }
+
+    // 8. Update status mayar_webhook_log menjadi success
+    if (webhookLogId) {
+      await supabase
+        .from("mayar_webhook_log")
+        .update({
+          status: "success",
+          error_message: null,
+        })
+        .eq("id", webhookLogId);
+    }
+
+    // 8. Catat ke Audit Log jika belum dicatat oleh RPC
+    const totalTerbayarBaru = targetTagihan.nominal_sewa + (targetTagihan.denda || 0);
+
+    if (!paymentProcessed) {
+      try {
+        await supabase.from("audit_log").insert({
+          pelaku_id: null, // Dipicu otomatis oleh webhook gateway Mayar
+          peran: "penyewa",
+          aksi: "pembayaran_mayar",
+          tabel: "pembayaran",
+          data_id: paymentId || targetTagihan.id,
+          sebelum: {
+            tagihan_id: targetTagihan.id,
+            nomor: targetTagihan.nomor,
+            terbayar: targetTagihan.terbayar,
+            status: targetTagihan.status,
+          },
+          sesudah: {
+            tagihan_id: targetTagihan.id,
+            nomor: targetTagihan.nomor,
+            terbayar: totalTerbayarBaru,
+            status: "lunas",
+            metode: "mayar",
+            referensi_mayar: referenceMayar,
+            jumlah: nominalFinal,
+          },
+          dibuat_pada: new Date().toISOString(),
+        });
+      } catch (auditErr) {
+        console.warn("[Mayar Webhook] Gagal mencatat audit log:", auditErr);
+      }
     }
 
     console.log(`[Mayar Webhook] Sukses: Tagihan ${targetTagihan.nomor} berhasil dilunasi via Mayar.`);
@@ -367,7 +448,7 @@ export async function POST(req: NextRequest) {
         success: true,
         message: `Pembayaran online Mayar berhasil diproses untuk tagihan ${targetTagihan.nomor}.`,
         tagihanNomor: targetTagihan.nomor,
-        pembayaranId: newPembayaran?.id,
+        pembayaranId: paymentId,
         referensiMayar: referenceMayar,
         totalLunas: totalTerbayarBaru,
       },

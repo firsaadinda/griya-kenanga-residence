@@ -98,15 +98,6 @@ export async function buatInvoiceMayarAction(
       };
     }
 
-    if (tagihan.status === "lunas") {
-      return {
-        success: false,
-        statusCode: 400,
-        message: "Tagihan ini sudah berstatus lunas.",
-        timestamp: new Date().toISOString(),
-      };
-    }
-
     if (tagihan.status === "dibatalkan") {
       return {
         success: false,
@@ -117,7 +108,6 @@ export async function buatInvoiceMayarAction(
     }
 
     // 2. Hitung Denda Berjalan Hari Ini (Aturan Bisnis BR-07)
-    // Denda Rp20.000/hari setelah tanggal 10 hingga batas maksimal Rp200.000
     const today = new Date();
     const jatuhTempoDate = new Date(tagihan.jatuh_tempo);
     let dendaBerjalan = tagihan.denda || 0;
@@ -132,33 +122,41 @@ export async function buatInvoiceMayarAction(
     const sisaPokok = Math.max(0, tagihan.nominal_sewa - (tagihan.terbayar || 0));
     const totalKewajiban = sisaPokok + dendaBerjalan;
 
-    if (totalKewajiban <= 0) {
-      return {
-        success: false,
-        statusCode: 400,
-        message: "Sisa kewajiban tagihan adalah Rp0.",
-        timestamp: new Date().toISOString(),
-      };
-    }
+    const nominalToInvoice =
+      tagihan.status === "lunas" || totalKewajiban <= 0
+        ? (tagihan.terbayar > 0 ? tagihan.terbayar : (tagihan.nominal_sewa || 0) + dendaBerjalan || 100000)
+        : totalKewajiban;
 
     const tenantName = kontrakData?.penyewa?.nama_lengkap || "Penyewa Griya Kenanga";
     const tenantMobile = kontrakData?.penyewa?.no_hp || "081234567890";
     const unitCode = kontrakData?.unit?.kode || "Unit";
     const invoiceDesc = `Pembayaran Tagihan ${tagihan.nomor} (${unitCode}) - Griya Kenanga Residence`;
 
+    // Email fallback
+    const rawEmail = kontrakData?.penyewa?.email?.trim();
+    const safeSlug = tenantName.toLowerCase().replace(/[^a-z0-9]/g, ".");
+    const tenantEmail =
+      rawEmail && rawEmail.includes("@")
+        ? rawEmail
+        : `${safeSlug || "penyewa"}@gmail.com`;
+
     // 3. Panggil API Mayar V2 Sandbox (Headless Invoice Create)
     const mayarApiKey = process.env.MAYAR_API_KEY;
+    const mayarBaseUrl = process.env.MAYAR_BASE_URL || "https://api.mayar.io/hl/v2";
     const hasValidApiKey =
       mayarApiKey &&
       !mayarApiKey.includes("your-mayar-api-key") &&
+      !mayarApiKey.includes("isi-sendiri") &&
       mayarApiKey.trim().length > 10;
 
     let generatedInvoiceId = `inv_${Date.now()}`;
-    let generatedPaymentUrl = `https://mayar.link/pl/griya-kenanga-${tagihan.nomor.toLowerCase()}`;
+    let generatedPaymentUrl = "";
+
+    const expiryDateIso = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
 
     if (hasValidApiKey) {
       try {
-        const mayarRes = await fetch("https://api.mayar.io/hl/v2/invoices/create", {
+        const mayarRes = await fetch(`${mayarBaseUrl}/invoices/create`, {
           method: "POST",
           headers: {
             Authorization: `Bearer ${mayarApiKey}`,
@@ -166,10 +164,22 @@ export async function buatInvoiceMayarAction(
           },
           body: JSON.stringify({
             name: tenantName,
-            email: "parkjiesung20@gmail.com", // Akun resmi Mayar pengguna
+            email: tenantEmail,
             mobile: tenantMobile,
-            amount: totalKewajiban,
             description: invoiceDesc,
+            items: [
+              {
+                quantity: 1,
+                rate: nominalToInvoice,
+                description: invoiceDesc,
+              },
+            ],
+            expiredAt: expiryDateIso,
+            dueDate: expiryDateIso,
+            extraData: {
+              tagihanId: tagihan.id,
+              nomorTagihan: tagihan.nomor,
+            },
           }),
         });
 
@@ -184,41 +194,46 @@ export async function buatInvoiceMayarAction(
           } else if (invoiceData?.link) {
             generatedPaymentUrl = invoiceData.link.startsWith("http")
               ? invoiceData.link
-              : `https://mayar.link/${invoiceData.link}`;
+              : `https://griyakenangaresidence.myr.lat/invoices/${invoiceData.link}`;
+          } else if (invoiceData?.id) {
+            generatedPaymentUrl = `https://griyakenangaresidence.myr.lat/invoices/${invoiceData.id}`;
           }
         } else {
           const errText = await mayarRes.text();
           console.warn("[Mayar API] Response not ok:", mayarRes.status, errText);
-          generatedPaymentUrl = `https://mayar.link/pl/griya-kenanga-${tagihan.nomor.toLowerCase()}`;
+          throw new Error(`Gagal membuat invoice di server Mayar (${mayarRes.status}): ${errText}`);
         }
       } catch (fetchErr) {
         console.error("[Mayar API] Fetch error:", fetchErr);
-        generatedPaymentUrl = `https://mayar.link/pl/griya-kenanga-${tagihan.nomor.toLowerCase()}`;
+        throw fetchErr;
       }
     } else {
-      // Mode URL terstruktur jika sandbox offline
-      generatedPaymentUrl = `https://mayar.link/pl/griya-kenanga-${tagihan.nomor.toLowerCase()}`;
+      throw new Error("MAYAR_API_KEY belum dikonfigurasi dengan benar di environment server.");
     }
 
-    // 4. Simpan mayar_invoice_id dan mayar_link pada baris tagihan terkait di Supabase
-    // Menggunakan strategi multi-tier agar tersimpan dengan mulus tanpa kendala permission/RLS
+    // 4. Simpan mayar_invoice_id, mayar_link, & mayar_jumlah pada baris tagihan
     let savedSuccessfully = false;
 
-    // Tingkat 1: RPC Function Security Definer (bebas blokir RLS)
+    // Tingkat 1: RPC simpan_link_mayar via Admin Client (Bypass RLS dengan Secret Key)
     try {
-      const { data: rpcRes, error: rpcErr } = await supabase.rpc("rpc_update_tagihan_mayar", {
+      const adminSupabase = createAdminClient();
+      const { data: rpcRes, error: rpcErr } = await adminSupabase.rpc("simpan_link_mayar", {
         p_tagihan_id: tagihanId,
         p_mayar_invoice_id: generatedInvoiceId,
         p_mayar_link: generatedPaymentUrl,
+        p_mayar_jumlah: totalKewajiban,
       });
-      if (!rpcErr && rpcRes) {
+
+      if (!rpcErr && (rpcRes as { success?: boolean })?.success) {
         savedSuccessfully = true;
+      } else if (rpcErr) {
+        console.warn("[Mayar Action] RPC simpan_link_mayar returned error:", rpcErr);
       }
     } catch (rpcCatch) {
-      console.warn("[Mayar Action] RPC update caught exception, proceeding to fallback:", rpcCatch);
+      console.warn("[Mayar Action] RPC simpan_link_mayar caught exception:", rpcCatch);
     }
 
-    // Tingkat 2: Admin Client (Service Role Key)
+    // Tingkat 2: Fallback Direct Update via Admin Client
     if (!savedSuccessfully) {
       try {
         const adminSupabase = createAdminClient();
@@ -227,6 +242,7 @@ export async function buatInvoiceMayarAction(
           .update({
             mayar_invoice_id: generatedInvoiceId,
             mayar_link: generatedPaymentUrl,
+            mayar_jumlah: totalKewajiban,
           })
           .eq("id", tagihanId);
 

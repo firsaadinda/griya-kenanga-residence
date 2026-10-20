@@ -56,13 +56,6 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "audit_log_pelaku_id_fkey"
-            columns: ["pelaku_id"]
-            isOneToOne: false
-            referencedRelation: "v_identitas_penyewa_pemilik"
-            referencedColumns: ["penyewa_id"]
-          },
         ]
       }
       identitas_penyewa: {
@@ -114,25 +107,11 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "identitas_penyewa_diverifikasi_oleh_fkey"
-            columns: ["diverifikasi_oleh"]
-            isOneToOne: false
-            referencedRelation: "v_identitas_penyewa_pemilik"
-            referencedColumns: ["penyewa_id"]
-          },
-          {
             foreignKeyName: "identitas_penyewa_penyewa_id_fkey"
             columns: ["penyewa_id"]
             isOneToOne: true
             referencedRelation: "profiles"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "identitas_penyewa_penyewa_id_fkey"
-            columns: ["penyewa_id"]
-            isOneToOne: true
-            referencedRelation: "v_identitas_penyewa_pemilik"
-            referencedColumns: ["penyewa_id"]
           },
         ]
       }
@@ -194,25 +173,11 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "kontrak_dibuat_oleh_fkey"
-            columns: ["dibuat_oleh"]
-            isOneToOne: false
-            referencedRelation: "v_identitas_penyewa_pemilik"
-            referencedColumns: ["penyewa_id"]
-          },
-          {
             foreignKeyName: "kontrak_penyewa_id_fkey"
             columns: ["penyewa_id"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "kontrak_penyewa_id_fkey"
-            columns: ["penyewa_id"]
-            isOneToOne: false
-            referencedRelation: "v_identitas_penyewa_pemilik"
-            referencedColumns: ["penyewa_id"]
           },
           {
             foreignKeyName: "kontrak_unit_id_fkey"
@@ -299,13 +264,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "laporan_kerusakan_disetujui_oleh_fkey"
-            columns: ["disetujui_oleh"]
-            isOneToOne: false
-            referencedRelation: "v_identitas_penyewa_pemilik"
-            referencedColumns: ["penyewa_id"]
-          },
-          {
             foreignKeyName: "laporan_kerusakan_kontrak_id_fkey"
             columns: ["kontrak_id"]
             isOneToOne: false
@@ -320,13 +278,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "laporan_kerusakan_pelapor_id_fkey"
-            columns: ["pelapor_id"]
-            isOneToOne: false
-            referencedRelation: "v_identitas_penyewa_pemilik"
-            referencedColumns: ["penyewa_id"]
-          },
-          {
             foreignKeyName: "laporan_kerusakan_unit_id_fkey"
             columns: ["unit_id"]
             isOneToOne: false
@@ -334,6 +285,45 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      mayar_webhook_log: {
+        Row: {
+          amount: number | null
+          created_at: string
+          error_message: string | null
+          event: string
+          id: string
+          invoice_id: string | null
+          ip_address: string | null
+          payload: Json
+          status: string
+          transaction_id: string | null
+        }
+        Insert: {
+          amount?: number | null
+          created_at?: string
+          error_message?: string | null
+          event: string
+          id?: string
+          invoice_id?: string | null
+          ip_address?: string | null
+          payload: Json
+          status?: string
+          transaction_id?: string | null
+        }
+        Update: {
+          amount?: number | null
+          created_at?: string
+          error_message?: string | null
+          event?: string
+          id?: string
+          invoice_id?: string | null
+          ip_address?: string | null
+          payload?: Json
+          status?: string
+          transaction_id?: string | null
+        }
+        Relationships: []
       }
       nomor_urut: {
         Row: {
@@ -414,25 +404,11 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "pembayaran_dibatalkan_oleh_fkey"
-            columns: ["dibatalkan_oleh"]
-            isOneToOne: false
-            referencedRelation: "v_identitas_penyewa_pemilik"
-            referencedColumns: ["penyewa_id"]
-          },
-          {
             foreignKeyName: "pembayaran_dicatat_oleh_fkey"
             columns: ["dicatat_oleh"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "pembayaran_dicatat_oleh_fkey"
-            columns: ["dicatat_oleh"]
-            isOneToOne: false
-            referencedRelation: "v_identitas_penyewa_pemilik"
-            referencedColumns: ["penyewa_id"]
           },
           {
             foreignKeyName: "pembayaran_tagihan_id_fkey"
@@ -480,12 +456,14 @@ export type Database = {
         Row: {
           alasan_batal: string | null
           denda: number
+          dibayar_online_at: string | null
           dibuat_oleh: string | null
           dibuat_pada: string
           id: string
           jatuh_tempo: string
           kontrak_id: string
           mayar_invoice_id: string | null
+          mayar_jumlah: number | null
           mayar_link: string | null
           nominal_sewa: number
           nomor: string
@@ -496,12 +474,14 @@ export type Database = {
         Insert: {
           alasan_batal?: string | null
           denda?: number
+          dibayar_online_at?: string | null
           dibuat_oleh?: string | null
           dibuat_pada?: string
           id?: string
           jatuh_tempo: string
           kontrak_id: string
           mayar_invoice_id?: string | null
+          mayar_jumlah?: number | null
           mayar_link?: string | null
           nominal_sewa: number
           nomor: string
@@ -512,12 +492,14 @@ export type Database = {
         Update: {
           alasan_batal?: string | null
           denda?: number
+          dibayar_online_at?: string | null
           dibuat_oleh?: string | null
           dibuat_pada?: string
           id?: string
           jatuh_tempo?: string
           kontrak_id?: string
           mayar_invoice_id?: string | null
+          mayar_jumlah?: number | null
           mayar_link?: string | null
           nominal_sewa?: number
           nomor?: string
@@ -532,13 +514,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "tagihan_dibuat_oleh_fkey"
-            columns: ["dibuat_oleh"]
-            isOneToOne: false
-            referencedRelation: "v_identitas_penyewa_pemilik"
-            referencedColumns: ["penyewa_id"]
           },
           {
             foreignKeyName: "tagihan_kontrak_id_fkey"
@@ -602,22 +577,7 @@ export type Database = {
             | Database["public"]["Enums"]["verifikasi_status"]
             | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "identitas_penyewa_diverifikasi_oleh_fkey"
-            columns: ["diverifikasi_oleh"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "identitas_penyewa_diverifikasi_oleh_fkey"
-            columns: ["diverifikasi_oleh"]
-            isOneToOne: false
-            referencedRelation: "v_identitas_penyewa_pemilik"
-            referencedColumns: ["penyewa_id"]
-          },
-        ]
+        Relationships: []
       }
     }
     Functions: {
@@ -630,6 +590,22 @@ export type Database = {
           p_tabel: string
         }
         Returns: undefined
+      }
+      clean_audit_jsonb: { Args: { data: Json }; Returns: Json }
+      fn_get_identitas_penyewa_pemilik: {
+        Args: never
+        Returns: {
+          alasan_tolak: string
+          diperbarui_pada: string
+          diverifikasi_oleh: string
+          diverifikasi_pada: string
+          email: string
+          nama_lengkap: string
+          nik_tersamar: string
+          no_hp: string
+          penyewa_id: string
+          status_verifikasi: Database["public"]["Enums"]["verifikasi_status"]
+        }[]
       }
       get_current_user_role: {
         Args: never
@@ -683,6 +659,24 @@ export type Database = {
           p_tagihan_id: string
         }
         Returns: boolean
+      }
+      simpan_link_mayar: {
+        Args: {
+          p_mayar_invoice_id: string
+          p_mayar_jumlah?: number
+          p_mayar_link: string
+          p_tagihan_id: string
+        }
+        Returns: Json
+      }
+      tandai_lunas_mayar: {
+        Args: {
+          p_jumlah?: number
+          p_mayar_invoice_id?: string
+          p_referensi_mayar: string
+          p_tagihan_id: string
+        }
+        Returns: Json
       }
     }
     Enums: {

@@ -15,6 +15,7 @@ import {
   Wrench,
   BarChart3,
   Shield,
+  CreditCard,
   User,
   X,
   Loader2,
@@ -128,6 +129,7 @@ export function Navbar({ userProfile }: NavbarProps) {
   const ownerItems = [
     { label: "Laporan", href: "/dashboard/laporan", icon: BarChart3, show: role === "pemilik" },
     { label: "Pengaturan", href: "/dashboard/pengaturan", icon: Shield, show: role === "pemilik" },
+    { label: "Setelan Gateway", href: "/setelan", icon: CreditCard, show: role === "pemilik" },
   ].filter((item) => item.show);
 
   const allItems = [...mainItems, ...ownerItems];

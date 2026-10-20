@@ -462,6 +462,8 @@ export async function getTagihanDetailAction(tagihanId: string) {
         alasan_batal,
         mayar_invoice_id,
         mayar_link,
+        mayar_jumlah,
+        dibayar_online_at,
         kontrak:kontrak_id (
           id,
           nomor,
@@ -497,6 +499,7 @@ export async function getTagihanDetailAction(tagihanId: string) {
         bukti_path,
         nama_bank,
         nama_rekening_pengirim,
+        referensi_mayar,
         status,
         alasan_batal,
         dibuat_pada,
