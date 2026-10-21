@@ -320,7 +320,7 @@ export function LaporanClientView({
             </div>
             <div className="flex items-center gap-2">
               <span className="text-[11px] font-semibold text-[#737A84]">Status Hunian:</span>
-              <span className="px-2.5 py-0.5 rounded-full bg-[#D2F367] text-[#1C1E22] font-bold text-xs">
+              <span className="px-2.5 py-0.5 rounded-full bg-[#F2F7EC] text-[#4A6C2F] border border-[#5E8826]/30 font-bold text-xs">
                 82,6% Layak Sewa
               </span>
             </div>
@@ -400,7 +400,7 @@ export function LaporanClientView({
                       <span className="text-[11px] text-[#737A84]">Ditagihkan</span>
                     </div>
                     <div className="flex items-center gap-1.5">
-                      <span className="w-3 h-3 rounded-sm bg-[#D2F367] border border-[#26292E]"></span>
+                      <span className="w-3 h-3 rounded-sm bg-[#5E8826] border border-[#26292E]"></span>
                       <span className="text-[11px] text-[#737A84]">Diterima</span>
                     </div>
                   </div>
@@ -427,14 +427,14 @@ export function LaporanClientView({
                             ></div>
                           </div>
 
-                          {/* Bar Diterima (Hijau Muda #D2F367) */}
+                          {/* Bar Diterima (Griya Kenanga Olive Green #5E8826) */}
                           <div className="flex flex-col items-center w-5 sm:w-7">
                             <span className="text-[10px] font-bold text-emerald-800 mb-1 group-hover:scale-110 transition-transform">
                               {m.diterimaJt.toFixed(1)}
                             </span>
                             <div
                               style={{ height: `${hDiterima}%` }}
-                              className="w-full bg-[#D2F367] border border-[#26292E] rounded-t-md transition-all duration-500 shadow-xs"
+                              className="w-full bg-[#5E8826] rounded-t-md transition-all duration-500 shadow-xs"
                             ></div>
                           </div>
                         </div>
@@ -645,7 +645,7 @@ export function LaporanClientView({
                     <div key={log.id} className="py-3.5 space-y-2">
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                         <div className="flex items-start sm:items-center gap-2.5">
-                          <div className="w-7 h-7 rounded-full bg-[#1C1E22] text-[#D2F367] flex items-center justify-center font-bold text-[10px] shrink-0">
+                          <div className="w-7 h-7 rounded-full bg-[#1C1E22] text-[#88BC3C] border border-[#5E8826]/30 flex items-center justify-center font-bold text-[10px] shrink-0">
                             {log.id}
                           </div>
                           <div>
@@ -754,7 +754,7 @@ export function LaporanClientView({
                           <div className="flex items-center gap-2">
                             <span>{user.nama_lengkap}</span>
                             {isSelf && (
-                              <span className="px-2 py-0.5 rounded-full bg-[#1C1E22] text-[#D2F367] font-bold text-[9px] uppercase">
+                              <span className="px-2 py-0.5 rounded-full bg-[#1C1E22] text-[#88BC3C] border border-[#5E8826]/30 font-bold text-[9px] uppercase">
                                 Anda
                               </span>
                             )}
@@ -879,7 +879,7 @@ export function LaporanClientView({
               >
                 {isPendingRole ? (
                   <>
-                    <Loader2 className="w-3.5 h-3.5 animate-spin text-[#D2F367]" />
+                    <Loader2 className="w-3.5 h-3.5 animate-spin text-[#88BC3C]" />
                     <span>Menyimpan...</span>
                   </>
                 ) : (

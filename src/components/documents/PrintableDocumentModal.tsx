@@ -98,7 +98,7 @@ export function PrintableDocumentModal({
         {/* Header Aksi Modal (Disembunyikan saat window.print() berjalan) */}
         <div className="no-print sticky top-0 bg-white/95 backdrop-blur-xs z-10 px-6 py-4 border-b border-[#E8EAEC] flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-full bg-[#1C1E22] text-[#D2F367] flex items-center justify-center font-bold text-xs shadow-xs">
+            <div className="w-8 h-8 rounded-full bg-[#1C1E22] text-[#88BC3C] flex items-center justify-center font-bold text-xs shadow-xs border border-white/10">
               <FileText className="w-4 h-4" />
             </div>
             <div>
@@ -115,9 +115,9 @@ export function PrintableDocumentModal({
             <button
               type="button"
               onClick={handlePrint}
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#1C1E22] hover:bg-[#26292E] text-white text-xs font-semibold shadow-sm transition cursor-pointer active:scale-95"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#1C1E22] hover:bg-[#26292E] text-white text-xs font-semibold shadow-sm transition cursor-pointer active:scale-95 border border-white/10"
             >
-              <Printer className="w-3.5 h-3.5 text-[#D2F367]" />
+              <Printer className="w-3.5 h-3.5 text-[#88BC3C]" />
               <span>Simpan sebagai PDF / Cetak</span>
             </button>
             <button
@@ -139,14 +139,14 @@ export function PrintableDocumentModal({
           {/* KOP SURAT RESMI PERUMAHAN */}
           <div className="border-b-2 border-[#1C1E22] pb-5 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
             <div>
-              <div className="inline-block px-2.5 py-0.5 rounded bg-[#1C1E22] text-[#D2F367] font-bold text-[9px] tracking-widest uppercase mb-1">
+              <div className="inline-block px-2.5 py-0.5 rounded bg-[#1C1E22] text-[#88BC3C] font-bold text-[9px] tracking-widest uppercase mb-1">
                 Griya Kenanga Residence
               </div>
               <h1 className="text-2xl font-black tracking-tight text-[#1C1E22]">
                 GRIYA KENANGA RESIDENCE
               </h1>
               <p className="text-[#737A84] text-[11px] mt-0.5 font-medium">
-                Hunian Kost Eksklusif &amp; Studio Sewa Terpadu &bull; Sleman, D.I. Yogyakarta
+                Hunian Kos Eksklusif &amp; Studio Sewa Terpadu &bull; Sleman, D.I. Yogyakarta
               </p>
               <p className="text-[#737A84] text-[10px]">
                 Jl. Kenanga No. 45, Condongcatur, Sleman &bull; Email: billing@griyakenanga.id &bull; Telp: (0274) 889-102

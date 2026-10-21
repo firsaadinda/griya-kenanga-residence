@@ -81,7 +81,7 @@ export function ProfilePhotoUpload({
                 className="w-full h-full object-cover"
               />
             ) : (
-              <span className="tracking-wider text-base font-bold text-[#D2F367]">
+              <span className="tracking-wider text-base font-bold text-[#88BC3C]">
                 {initials}
               </span>
             )}

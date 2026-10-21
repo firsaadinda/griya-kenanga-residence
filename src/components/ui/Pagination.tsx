@@ -80,7 +80,7 @@ export function Pagination({
                 onClick={() => onPageChange(pageNum)}
                 className={`w-7 h-7 rounded-full text-xs font-semibold flex items-center justify-center transition cursor-pointer ${
                   isActive
-                    ? "bg-[#1C1E22] text-[#D2F367] shadow-xs"
+                    ? "bg-[#1C1E22] text-[#88BC3C] border border-[#5E8826]/40 shadow-xs"
                     : "text-[#26292E] hover:bg-[#F6F7F9] border border-transparent hover:border-[#E8EAEC]"
                 }`}
               >

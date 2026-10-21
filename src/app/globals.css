@@ -7,8 +7,27 @@
   --charcoal-medium: #26292E;
   --gray-medium: #737A84;
   --gray-light: #E8EAEC;
-  --lime-accent: #D2F367;
+  --lime-accent: #88BC3C;
   --lime-tint: #ECFCCB;
+
+  /* Palette Griya Kenanga: Disesuaikan Presisi dengan Logo Resmi */
+  --green-primary: #76A733;
+  --green-secondary: #5E8826;
+  --green-dark: #446419;
+  --green-soft: #F2F7EC;
+  --green-tint: #E5EED8;
+
+  --brown-warm: #BDA58B;
+  --brown-light: #D4C4B1;
+  --brown-soft: #F8F5F2;
+  --brown-accent: #A3876C;
+  --brown-dark: #7E644B;
+
+  --gray-charcoal: #424242;
+  --gray-warm: #F4F5F7;
+  --gray-border: #E3E6EB;
+  --gray-text: #70757D;
+  --gray-dark: #1E2024;
 }
 
 @theme inline {
@@ -18,8 +37,27 @@
   --color-charcoal-medium: #26292E;
   --color-gray-medium: #737A84;
   --color-gray-light: #E8EAEC;
-  --color-lime-accent: #D2F367;
+  --color-lime-accent: #88BC3C;
   --color-lime-tint: #ECFCCB;
+
+  --color-green-primary: var(--green-primary);
+  --color-green-secondary: var(--green-secondary);
+  --color-green-dark: var(--green-dark);
+  --color-green-soft: var(--green-soft);
+  --color-green-tint: var(--green-tint);
+
+  --color-brown-warm: var(--brown-warm);
+  --color-brown-light: var(--brown-light);
+  --color-brown-soft: var(--brown-soft);
+  --color-brown-accent: var(--brown-accent);
+  --color-brown-dark: var(--brown-dark);
+
+  --color-gray-charcoal: var(--gray-charcoal);
+  --color-gray-warm: var(--gray-warm);
+  --color-gray-border: var(--gray-border);
+  --color-gray-text: var(--gray-text);
+  --color-gray-dark: var(--gray-dark);
+
   --font-sans: var(--font-sans);
 }
 
@@ -46,19 +84,54 @@ body {
   clip-path: polygon(0 0, 100% 0, 100% calc(100% - 16px), calc(100% - 16px) 100%, 0 100%);
 }
 
-/* Custom Scrollbar Elegan */
+/* Custom Scrollbar Ukuran Normal & Transparan */
+/* Untuk Webkit browser (Chrome, Safari, Edge) */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 10px; /* Ukuran normal standar yang nyaman digunakan */
+  height: 10px;
 }
+
 ::-webkit-scrollbar-track {
-  background: #F6F7F9;
+  background: transparent !important; /* Jalur scrollbar 100% transparan */
 }
+
 ::-webkit-scrollbar-thumb {
-  background: #D5D9DE;
+  background: rgba(255, 255, 255, 0.25); /* Warna batang scrollbar transparan putih */
   border-radius: 9999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
 }
+
 ::-webkit-scrollbar-thumb:hover {
-  background: #737A84;
+  background: rgba(255, 255, 255, 0.5); /* Agak terang pas disorot mouse */
+  background-clip: padding-box;
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent !important;
+}
+
+/* Sembunyikan scrollbar khusus elemen dengan class .no-scrollbar */
+.no-scrollbar::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none !important;  /* IE and Edge */
+  scrollbar-width: none !important;  /* Firefox */
+}
+
+/* Landing Page Fullscreen Canvas: Background menyatu penuh tanpa garis putih */
+html.landing-page-active,
+html:has(.landing-page),
+body:has(.landing-page) {
+  background-color: #131E12 !important;
+  background-image: url('/images/griya-kenanga-12k-merapi.jpg?v=3') !important;
+  background-size: cover !important;
+  background-position: center !important;
+  background-attachment: fixed !important;
+  background-repeat: no-repeat !important;
 }
 

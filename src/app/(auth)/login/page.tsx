@@ -275,7 +275,7 @@ function LoginFormContent() {
             className="w-full flex items-center justify-center gap-2 py-3 px-6 rounded-full bg-[#1C1E22] hover:bg-[#26292E] text-white text-xs font-semibold shadow-sm transition disabled:opacity-50 mt-2"
           >
             <span>{isPending ? "Memverifikasi..." : "Masuk ke Sistem"}</span>
-            <ArrowRight className="w-3.5 h-3.5 text-[#D2F367]" />
+            <ArrowRight className="w-3.5 h-3.5 text-[#88BC3C]" />
           </button>
         </form>
 

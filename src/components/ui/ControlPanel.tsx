@@ -44,7 +44,7 @@ export function ControlPanel() {
       subtitle: "LK-2026-0010 • Pintu A-104 (Rp1.250.000)",
       href: "/dashboard/kerusakan",
       initials: "1P",
-      initialsBg: "bg-[#D2F367] text-[#1C1E22]",
+      initialsBg: "bg-[#5E8826] text-white",
     },
     {
       id: "laporan-omzet",
@@ -52,23 +52,23 @@ export function ControlPanel() {
       subtitle: "Ditagih Rp119,38 Jt • Diterima Rp102,88 Jt",
       href: "/dashboard/laporan",
       initials: "LP",
-      initialsBg: "bg-emerald-500",
+      initialsBg: "bg-emerald-600 text-white",
     },
   ];
 
   return (
-    <aside className="w-full rounded-[28px] bg-[#1C1E22] text-white p-5 sm:p-6 shadow-xl border border-[#26292E] flex flex-col justify-between space-y-5">
+    <aside className="w-full rounded-[28px] bg-[#1C1E22] text-white p-5 sm:p-6 shadow-[0_12px_45px_rgba(0,0,0,0.12)] border border-white/10 flex flex-col justify-between space-y-5">
       {/* Header Panel Pusat Kendali */}
       <div className="space-y-2">
-        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#26292E] text-[10px] uppercase tracking-wider text-[#D2F367] font-semibold border border-[#33383F]">
-          <BellRing className="w-3 h-3" />
-          <span>Pengingat & Aksi</span>
+        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#26292E] text-[10px] uppercase tracking-wider text-[#88BC3C] font-semibold border border-[#5E8826]/30">
+          <BellRing className="w-3 h-3 text-[#88BC3C]" />
+          <span>Pengingat &amp; Aksi</span>
         </div>
         <div>
           <h3 className="text-xl font-bold tracking-tight text-white">
             Pusat Kendali Operasional
           </h3>
-          <p className="text-xs text-[#737A84] mt-0.5">
+          <p className="text-xs text-[#A0A6AF] mt-0.5">
             Kamis, 15 Oktober 2026 • Real-Time Alert
           </p>
         </div>
@@ -80,7 +80,7 @@ export function ControlPanel() {
           <Link
             key={item.id}
             href={item.href}
-            className="flex items-center justify-between gap-3 bg-white text-[#26292E] hover:bg-[#F6F7F9] px-3.5 py-2.5 rounded-full shadow-sm transition group"
+            className="flex items-center justify-between gap-3 bg-white text-[#26292E] hover:bg-[#F6F7F9] px-3.5 py-2.5 rounded-full shadow-sm transition group border border-white/20"
           >
             {/* Thumbnail Bulat Kiri */}
             <div
@@ -102,7 +102,7 @@ export function ControlPanel() {
             </div>
 
             {/* Tombol Panah Kanan */}
-            <div className="w-7 h-7 rounded-full bg-[#F6F7F9] text-[#26292E] flex items-center justify-center group-hover:bg-[#1C1E22] group-hover:text-[#D2F367] transition shrink-0">
+            <div className="w-7 h-7 rounded-full bg-[#F6F7F9] text-[#26292E] flex items-center justify-center group-hover:bg-[#1C1E22] group-hover:text-[#88BC3C] transition shrink-0">
               <ChevronRight className="w-4 h-4" />
             </div>
           </Link>
@@ -110,12 +110,12 @@ export function ControlPanel() {
       </div>
 
       {/* Footer Tautan Cepat */}
-      <div className="pt-2 border-t border-[#26292E]/60 text-center">
+      <div className="pt-2 border-t border-white/10 text-center">
         <Link
           href="/dashboard/laporan"
-          className="inline-flex items-center gap-1.5 text-xs text-[#D2F367] hover:underline font-medium"
+          className="inline-flex items-center gap-1.5 text-xs text-[#88BC3C] hover:text-[#A2DB56] hover:underline font-semibold transition"
         >
-          <span>Buka Denah Lantai & Audit Log</span>
+          <span>Buka Denah Lantai &amp; Audit Log</span>
           <ArrowRight className="w-3.5 h-3.5" />
         </Link>
       </div>

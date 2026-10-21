@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { AlertBanner } from "@/components/feedback/AlertBanner";
 import { HttpStatusCode } from "@/types/api";
+import { PenyewaUnitShowcase } from "./PenyewaUnitShowcase";
 
 export interface PenyewaContractInfo {
   id: string;
@@ -165,40 +166,67 @@ export function PenyewaHomeView({
 
   return (
     <div className="space-y-8">
-      {/* HEADER BERANDA PENYEWA */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <span className="inline-block text-[11px] font-semibold text-[#737A84] tracking-widest uppercase">
-            portal penyewa [01]
-          </span>
-          <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-[#26292E] mt-0.5">
-            Selamat datang,{" "}
-            <span className="text-[#737A84] font-normal">{userName}</span>
-          </h1>
-          <p className="text-xs sm:text-sm text-[#737A84] mt-1">
-            Pantau kontrak sewa, status pembayaran tagihan, verifikasi identitas, dan pengajuan kerusakan.
-          </p>
-        </div>
+      {/* HEADER BERANDA PENYEWA: KARTU RESIDEN EKSEKUTIF */}
+      <div className="rounded-[30px] bg-gradient-to-r from-[#1C1E22] via-[#26292E] to-[#343A42] p-6 sm:p-8 text-white border border-white/10 shadow-[0_16px_50px_rgba(0,0,0,0.12)] relative overflow-hidden">
+        {/* Subtle decorative glow */}
+        <div className="absolute -top-12 -right-12 w-48 h-48 rounded-full bg-[#5E8826]/15 blur-2xl pointer-events-none" />
 
-        <div className="flex items-center gap-2">
-          {isIdentityVerified ? (
-            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-50 text-emerald-900 border border-emerald-200 text-xs font-bold">
-              <CheckCircle2 className="w-4 h-4 text-emerald-700" />
-              <span>Identitas Terverifikasi</span>
-            </span>
-          ) : isIdentityRejected ? (
-            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-rose-50 text-rose-900 border border-rose-200 text-xs font-bold">
-              <AlertTriangle className="w-4 h-4 text-rose-700" />
-              <span>Identitas Ditolak</span>
-            </span>
-          ) : (
-            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-50 text-amber-900 border border-amber-200 text-xs font-bold">
-              <Clock className="w-4 h-4 text-amber-700" />
-              <span>Menunggu Verifikasi</span>
-            </span>
-          )}
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div className="space-y-2 max-w-xl">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md text-[10px] font-bold text-[#88BC3C] border border-[#5E8826]/30 uppercase tracking-widest">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#88BC3C] animate-pulse" />
+              <span>Portal Residen Resmi • Griya Kenanga Residence</span>
+            </div>
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-white">
+              Selamat datang, <span className="text-[#88BC3C]">{userName}</span>
+            </h1>
+            <p className="text-xs sm:text-sm text-[#A0A6AF] leading-relaxed">
+              Pantau kontrak sewa, foto &amp; model 3D kamar Anda, lunasi tagihan tepat waktu via gateway resmi Mayar, dan kelola laporan fasilitas langsung dari satu tempat.
+            </p>
+          </div>
+
+          {/* Sisi Kanan: Status Verifikasi & Kontak */}
+          <div className="flex flex-col sm:flex-row md:flex-col items-start md:items-end gap-2.5 shrink-0">
+            {isIdentityVerified ? (
+              <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 text-xs font-bold backdrop-blur-md">
+                <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                <span>Identitas Terverifikasi</span>
+              </span>
+            ) : isIdentityRejected ? (
+              <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-rose-500/15 text-rose-300 border border-rose-500/30 text-xs font-bold backdrop-blur-md">
+                <AlertTriangle className="w-4 h-4 text-rose-400" />
+                <span>Identitas Ditolak</span>
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/30 text-xs font-bold backdrop-blur-md">
+                <Clock className="w-4 h-4 text-amber-400" />
+                <span>Menunggu Verifikasi KTP</span>
+              </span>
+            )}
+
+            <div className="flex items-center gap-2 text-xs text-[#A0A6AF]">
+              <span>Akun Terdaftar:</span>
+              <span className="text-white font-medium">{userEmail}</span>
+            </div>
+          </div>
         </div>
       </div>
+
+      {/* ========================================================================= */}
+      {/* SEKSI KHUSUS PENYEWA: FOTO 5 SUDUT & MODEL 3D UNIT YANG DISEWA            */}
+      {/* ========================================================================= */}
+      {contracts.length > 0 && (
+        <PenyewaUnitShowcase
+          units={contracts.map((k) => ({
+            id: k.id,
+            kode: k.unitKode,
+            tipe: k.unitTipe,
+            nomorKontrak: k.nomor,
+            status: k.status,
+            hargaPerBulan: k.hargaPerBulan,
+          }))}
+        />
+      )}
 
       {/* ========================================================================= */}
       {/* SEKSI 1: STATUS KONTRAK SEWA (AKTIF ATAU DRAF - KASUS FAJAR US-01/02)    */}
@@ -397,9 +425,9 @@ export function PenyewaHomeView({
               <button
                 type="submit"
                 disabled={isPending}
-                className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-[#1C1E22] hover:bg-[#26292E] text-white text-xs font-semibold transition disabled:opacity-50 shadow-sm"
+                className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-[#1C1E22] hover:bg-[#26292E] text-white text-xs font-semibold transition disabled:opacity-50 shadow-sm border border-white/10"
               >
-                {isPending && <Loader2 className="w-3.5 h-3.5 animate-spin text-[#D2F367]" />}
+                {isPending && <Loader2 className="w-3.5 h-3.5 animate-spin text-[#88BC3C]" />}
                 <span>{isPending ? "Menyimpan Data..." : "Kirim Data Identitas untuk Verifikasi"}</span>
               </button>
             </div>
@@ -424,6 +452,45 @@ export function PenyewaHomeView({
           </Link>
         </div>
 
+        {/* Banner Tagihan Belum Lunas dengan Tombol Bayar Mayar Instan */}
+        {(() => {
+          const unpaid = bills.filter((b) => b.status !== "lunas");
+          const totalUnpaid = unpaid.reduce((sum, b) => sum + b.sisaTotal, 0);
+          if (unpaid.length === 0) return null;
+
+          return (
+            <div className="rounded-[24px] bg-[#1C1E22] text-white p-5 sm:p-6 border border-white/10 shadow-md flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse" />
+                  <span className="text-[10px] font-bold text-rose-300 uppercase tracking-wider">
+                    Tagihan Perlu Dilunasi ({unpaid.length} Invoice)
+                  </span>
+                </div>
+                <div className="text-xl sm:text-2xl font-black text-white">
+                  Total Sisa: {formatRupiah(totalUnpaid)}
+                </div>
+                <p className="text-xs text-[#A0A6AF]">
+                  Pelunasan instan otomatis via Mayar Gateway (QRIS, VA Bank, E-Wallet). Bebas denda bertambah.
+                </p>
+              </div>
+
+              <div className="shrink-0 flex items-center gap-2">
+                <a
+                  href="https://mayar.link/pl/griya-kenanga"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#5E8826] hover:bg-[#76A733] text-white text-xs font-bold transition shadow-sm hover:scale-102"
+                >
+                  <CreditCard className="w-4 h-4" />
+                  <span>Bayar Cepat via Mayar</span>
+                  <ExternalLink className="w-3.5 h-3.5 text-white/80" />
+                </a>
+              </div>
+            </div>
+          );
+        })()}
+
         {bills.length === 0 ? (
           <div className="p-8 rounded-[24px] bg-white border border-[#E8EAEC] text-center text-xs text-[#737A84]">
             Tidak ada tagihan aktif saat ini.
@@ -432,7 +499,7 @@ export function PenyewaHomeView({
           <div className="rounded-[28px] bg-white p-5 border border-[#E8EAEC] shadow-xs overflow-x-auto">
             <table className="w-full text-left text-xs">
               <thead>
-                <tr className="border-b border-[#E8EAEC] text-[#737A84] text-[10px] uppercase font-bold tracking-wider">
+                <tr className="border-b border-[#E8EAEC] bg-[#F8F9FA] text-[#737A84] text-[10px] uppercase font-bold tracking-wider">
                   <th className="py-2.5 px-3">Nomor Tagihan</th>
                   <th className="py-2.5 px-3">Periode</th>
                   <th className="py-2.5 px-3 text-right">Nominal Sewa</th>
@@ -477,10 +544,10 @@ export function PenyewaHomeView({
                       {b.status !== "lunas" ? (
                         <Link
                           href={`/dashboard/tagihan?nomor=${encodeURIComponent(b.nomor)}&pay=online`}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#1C1E22] hover:bg-[#26292E] text-white text-[11px] font-semibold transition"
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#1C1E22] hover:bg-[#26292E] text-white text-[11px] font-semibold transition border border-white/10"
                         >
                           <span>Bayar Online</span>
-                          <ExternalLink className="w-3 h-3 text-[#D2F367]" />
+                          <ExternalLink className="w-3 h-3 text-[#88BC3C]" />
                         </Link>
                       ) : (
                         <span className="text-[11px] text-emerald-700 font-bold">

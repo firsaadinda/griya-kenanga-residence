@@ -345,9 +345,9 @@ export function KerusakanClientView({
                 setIsCreateOpen(true);
                 setFeedback(null);
               }}
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#1C1E22] hover:bg-[#26292E] text-white text-xs font-semibold shadow-sm transition shrink-0"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#1C1E22] hover:bg-[#26292E] text-white text-xs font-semibold shadow-sm transition shrink-0 border border-white/10"
             >
-              <Plus className="w-3.5 h-3.5 text-[#D2F367]" />
+              <Plus className="w-3.5 h-3.5 text-[#88BC3C]" />
               <span>Lapor Kerusakan</span>
             </button>
           )}
@@ -420,12 +420,12 @@ export function KerusakanClientView({
                     <div key={st.step} className="flex flex-col items-center text-center relative z-10">
                       <div
                         className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition ${isDone
-                          ? "bg-[#1C1E22] text-[#D2F367] shadow-sm"
+                          ? "bg-[#1C1E22] text-[#88BC3C] shadow-sm border border-white/10"
                           : "bg-white text-[#737A84] border border-[#E8EAEC]"
-                          } ${isCurrent ? "ring-4 ring-[#D2F367]/40 scale-110" : ""}`}
+                          } ${isCurrent ? "ring-4 ring-[#5E8826]/30 scale-110" : ""}`}
                       >
                         {isDone && !isCurrent && st.step < currentStep ? (
-                          <CheckCircle2 className="w-4 h-4 text-[#D2F367]" />
+                          <CheckCircle2 className="w-4 h-4 text-[#88BC3C]" />
                         ) : (
                           st.step
                         )}
@@ -598,7 +598,7 @@ export function KerusakanClientView({
                         disabled={isPending}
                         className="flex-1 inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-full bg-[#1C1E22] hover:bg-[#26292E] text-white text-xs font-bold shadow-sm transition disabled:opacity-50 cursor-pointer"
                       >
-                        <CheckCircle2 className="w-3.5 h-3.5 text-[#D2F367]" />
+                        <CheckCircle2 className="w-3.5 h-3.5 text-[#88BC3C]" />
                         <span>Setujui Biaya</span>
                       </button>
 
@@ -667,7 +667,7 @@ export function KerusakanClientView({
                           disabled={isPending || !inputEstimasi}
                           className="flex-1 inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-full bg-[#1C1E22] hover:bg-[#26292E] text-white text-xs font-bold shadow-sm transition disabled:opacity-50"
                         >
-                          <CheckCircle2 className="w-3.5 h-3.5 text-[#D2F367]" />
+                          <CheckCircle2 className="w-3.5 h-3.5 text-[#88BC3C]" />
                           <span>Proses Pengerjaan</span>
                         </button>
                       )}
@@ -712,7 +712,7 @@ export function KerusakanClientView({
                       disabled={isPending || !inputBiayaAktual}
                       className="w-full inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-full bg-[#1C1E22] hover:bg-[#26292E] text-white text-xs font-bold shadow-sm transition disabled:opacity-50"
                     >
-                      <CheckCircle2 className="w-3.5 h-3.5 text-[#D2F367]" />
+                      <CheckCircle2 className="w-3.5 h-3.5 text-[#88BC3C]" />
                       <span>Tandai Selesai (BR-12)</span>
                     </button>
                   </div>
@@ -732,7 +732,7 @@ export function KerusakanClientView({
                         disabled={isPending}
                         className="w-full inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-full bg-[#1C1E22] hover:bg-[#26292E] text-white text-xs font-bold shadow-sm transition disabled:opacity-50 cursor-pointer"
                       >
-                        <CheckCircle2 className="w-3.5 h-3.5 text-[#D2F367]" />
+                        <CheckCircle2 className="w-3.5 h-3.5 text-[#88BC3C]" />
                         <span>Tutup Laporan Kerusakan</span>
                       </button>
                     )}
@@ -1113,7 +1113,7 @@ export function KerusakanClientView({
               >
                 {isPending ? (
                   <>
-                    <Loader2 className="w-3.5 h-3.5 animate-spin text-[#D2F367]" />
+                    <Loader2 className="w-3.5 h-3.5 animate-spin text-[#88BC3C]" />
                     <span>Memproses...</span>
                   </>
                 ) : (

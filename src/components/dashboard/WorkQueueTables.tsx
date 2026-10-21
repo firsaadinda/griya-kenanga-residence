@@ -71,11 +71,11 @@ export function WorkQueueTables({
       {/* ========================================================================= */}
       {/* KOLOM KIRI (7 SPAN): TABEL TAGIHAN LEWAT JATUH TEMPO                      */}
       {/* ========================================================================= */}
-      <div className="lg:col-span-7 rounded-[28px] bg-white p-5 sm:p-6 border border-[#E8EAEC] shadow-xs space-y-4">
-        <div className="flex items-center justify-between pb-2 border-b border-[#F0F2F4]">
-          <div className="flex items-center gap-2">
+      <div className="lg:col-span-7 rounded-[26px] bg-white p-5 sm:p-6 border border-[#E8EAEC] shadow-[0_8px_30px_rgba(0,0,0,0.03)] space-y-4">
+        <div className="flex items-center justify-between pb-3 border-b border-[#F0F2F4]">
+          <div className="flex items-center gap-2.5">
             <span className="w-2.5 h-2.5 rounded-full bg-[#D32F2F] animate-pulse"></span>
-            <h3 className="text-sm font-bold text-[#26292E]">
+            <h3 className="text-sm font-bold text-[#1C1E22]">
               Tagihan lewat jatuh tempo
             </h3>
           </div>
@@ -88,13 +88,13 @@ export function WorkQueueTables({
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
             <thead>
-              <tr className="border-b border-[#E8EAEC] text-[#737A84] text-[10px] uppercase font-bold tracking-wider">
-                <th className="py-2.5 px-2">Nomor</th>
+              <tr className="border-b border-[#E8EAEC] bg-[#F8F9FA] text-[#737A84] text-[10px] uppercase font-bold tracking-wider">
+                <th className="py-2.5 px-3 rounded-l-xl">Nomor</th>
                 <th className="py-2.5 px-2">Unit</th>
                 <th className="py-2.5 px-2">Penyewa</th>
                 <th className="py-2.5 px-2 text-right">Sisa + denda hari ini</th>
                 <th className="py-2.5 px-2 text-center">Status</th>
-                <th className="py-2.5 px-2 text-right">Aksi</th>
+                <th className="py-2.5 px-3 text-right rounded-r-xl">Aksi</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#F0F2F4]">
@@ -107,18 +107,18 @@ export function WorkQueueTables({
                 </tr>
               ) : (
                 overdueBills.map((bill) => (
-                  <tr key={bill.id} className="hover:bg-[#F6F7F9] transition">
-                  <td className="py-3 px-2 font-mono text-[11px] font-bold text-[#26292E] whitespace-nowrap">
+                  <tr key={bill.id} className="hover:bg-[#F8F9FA] transition">
+                  <td className="py-3 px-3 font-mono text-[11px] font-bold text-[#1C1E22] whitespace-nowrap">
                     {bill.nomor}
                   </td>
-                  <td className="py-3 px-2 font-bold text-[#26292E] whitespace-nowrap">
+                  <td className="py-3 px-2 font-bold text-[#1C1E22] whitespace-nowrap">
                     {bill.unitKode}
                   </td>
                   <td className="py-3 px-2 font-medium text-[#26292E] whitespace-nowrap">
                     {bill.penyewaNama}
                   </td>
                   <td className="py-3 px-2 text-right whitespace-nowrap">
-                    <span className="font-bold text-[#26292E] block">
+                    <span className="font-bold text-[#1C1E22] block">
                       {formatRupiah(bill.totalHariIni)}
                     </span>
                     <span className="text-[10px] text-[#D32F2F] font-semibold block">
@@ -136,12 +136,12 @@ export function WorkQueueTables({
                       {bill.status === "sebagian" ? "sebagian" : "belum bayar"}
                     </span>
                   </td>
-                  <td className="py-3 px-2 text-right whitespace-nowrap">
+                  <td className="py-3 px-3 text-right whitespace-nowrap">
                     {userRole === "pengelola" ? (
                       /* Pengelola berhak mengeksekusi pencatatan pembayaran (BR-08) */
                       <Link
                         href={`/dashboard/tagihan?nomor=${encodeURIComponent(bill.nomor)}&action=pay`}
-                        className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-[#1C1E22] hover:bg-[#26292E] text-white text-[11px] font-semibold shadow-xs transition"
+                        className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-[#1C1E22] hover:bg-[#26292E] text-white text-[11px] font-semibold shadow-xs transition border border-white/10 hover:border-[#5E8826]/40"
                       >
                         <span>Catat bayar</span>
                       </Link>
@@ -149,11 +149,11 @@ export function WorkQueueTables({
                       /* Pemilik bersifat monitoring / melihat detail (BR-08 & PRD Bagian 3) */
                       <Link
                         href={`/dashboard/tagihan?nomor=${encodeURIComponent(bill.nomor)}`}
-                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#F6F7F9] hover:bg-[#E8EAEC] text-[#26292E] text-[11px] font-medium border border-[#E8EAEC] transition"
+                        className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 hover:bg-blue-100 text-blue-700 hover:text-blue-800 text-[11px] font-semibold border border-blue-200 transition shadow-2xs"
                         title="Pemilik: Mode monitoring tagihan"
                       >
                         <span>Detail</span>
-                        <ExternalLink className="w-3 h-3 text-[#737A84]" />
+                        <ExternalLink className="w-3 h-3 text-blue-600" />
                       </Link>
                     )}
                   </td>
@@ -170,11 +170,13 @@ export function WorkQueueTables({
       {/* ========================================================================= */}
       <div className="lg:col-span-5 space-y-6">
         {/* KOTAK 1: LAPORAN KERUSAKAN TERBUKA (5 LAPORAN) */}
-        <div className="rounded-[28px] bg-white p-5 sm:p-6 border border-[#E8EAEC] shadow-xs space-y-3.5">
-          <div className="flex items-center justify-between pb-2 border-b border-[#F0F2F4]">
+        <div className="rounded-[26px] bg-white p-5 sm:p-6 border border-[#E8EAEC] shadow-[0_8px_30px_rgba(0,0,0,0.03)] space-y-3.5">
+          <div className="flex items-center justify-between pb-3 border-b border-[#F0F2F4]">
             <div className="flex items-center gap-2">
-              <Wrench className="w-4 h-4 text-[#26292E]" />
-              <h3 className="text-sm font-bold text-[#26292E]">
+              <div className="w-7 h-7 rounded-lg bg-amber-50 text-amber-700 flex items-center justify-center border border-amber-200">
+                <Wrench className="w-3.5 h-3.5" />
+              </div>
+              <h3 className="text-sm font-bold text-[#1C1E22]">
                 Laporan kerusakan terbuka
               </h3>
             </div>
@@ -193,14 +195,14 @@ export function WorkQueueTables({
               <Link
                 key={report.id}
                 href="/dashboard/kerusakan"
-                className="py-2.5 flex items-center justify-between gap-2 hover:bg-[#F6F7F9] px-2 rounded-xl transition group"
+                className="py-2.5 flex items-center justify-between gap-2 hover:bg-[#F8F9FA] px-2 rounded-xl transition group"
               >
                 <div className="min-w-0">
-                  <span className="text-[11px] font-mono font-bold text-[#26292E] block">
+                  <span className="text-[11px] font-mono font-bold text-[#1C1E22] block">
                     {report.nomor}
                   </span>
                   <p className="text-xs text-[#737A84] truncate">
-                    <strong className="text-[#26292E] font-semibold">{report.unitKode}</strong> · {report.deskripsi}
+                    <strong className="text-[#1C1E22] font-semibold">{report.unitKode}</strong> · {report.deskripsi}
                   </p>
                 </div>
                 <div className="shrink-0">
@@ -227,11 +229,13 @@ export function WorkQueueTables({
         </div>
 
         {/* KOTAK 2: KONTRAK PERLU TINDAKAN (5 KONTRAK) */}
-        <div className="rounded-[28px] bg-white p-5 sm:p-6 border border-[#E8EAEC] shadow-xs space-y-3.5">
-          <div className="flex items-center justify-between pb-2 border-b border-[#F0F2F4]">
+        <div className="rounded-[26px] bg-white p-5 sm:p-6 border border-[#E8EAEC] shadow-[0_8px_30px_rgba(0,0,0,0.03)] space-y-3.5">
+          <div className="flex items-center justify-between pb-3 border-b border-[#F0F2F4]">
             <div className="flex items-center gap-2">
-              <FileSignature className="w-4 h-4 text-[#26292E]" />
-              <h3 className="text-sm font-bold text-[#26292E]">
+              <div className="w-7 h-7 rounded-lg bg-blue-50 text-blue-700 flex items-center justify-center border border-blue-200">
+                <FileSignature className="w-3.5 h-3.5" />
+              </div>
+              <h3 className="text-sm font-bold text-[#1C1E22]">
                 Kontrak perlu tindakan
               </h3>
             </div>
@@ -250,13 +254,13 @@ export function WorkQueueTables({
               <Link
                 key={contract.id}
                 href="/dashboard/kontrak"
-                className="py-2.5 flex items-center justify-between gap-2 hover:bg-[#F6F7F9] px-2 rounded-xl transition group"
+                className="py-2.5 flex items-center justify-between gap-2 hover:bg-[#F8F9FA] px-2 rounded-xl transition group"
               >
                 <div className="min-w-0">
-                  <span className="text-[11px] font-mono font-bold text-[#26292E] block">
+                  <span className="text-[11px] font-mono font-bold text-[#1C1E22] block">
                     {contract.nomor} · {contract.unitKode}
                   </span>
-                  <p className="text-xs text-[#26292E] font-medium truncate">
+                  <p className="text-xs text-[#1C1E22] font-medium truncate">
                     {contract.penyewaNama}
                   </p>
                 </div>

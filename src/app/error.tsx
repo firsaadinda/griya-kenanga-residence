@@ -61,7 +61,7 @@ export default function GlobalError({ error, reset }: ErrorProps) {
               onClick={() => reset()}
               className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#1C1E22] hover:bg-[#26292E] px-4 py-2.5 text-xs font-semibold text-white shadow-xs transition"
             >
-              <RefreshCw className="h-3.5 w-3.5 text-[#D2F367]" />
+              <RefreshCw className="h-3.5 w-3.5 text-[#88BC3C]" />
               <span>Muat Ulang</span>
             </button>
 

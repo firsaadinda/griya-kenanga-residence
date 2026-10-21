@@ -79,7 +79,7 @@ export function GlobalSearchDetailModal({ item, onClose }: GlobalSearchDetailMod
         {/* Header Modal */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-[#E8EAEC] bg-[#F6F7F9]/80">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-[#1C1E22] text-[#D2F367] flex items-center justify-center shrink-0 shadow-sm">
+            <div className="w-10 h-10 rounded-2xl bg-[#1C1E22] text-[#88BC3C] flex items-center justify-center shrink-0 shadow-sm border border-white/10">
               {item.category === "unit" && <Home className="w-5 h-5" />}
               {item.category === "penyewa" && <Users className="w-5 h-5" />}
               {item.category === "tagihan" && <Receipt className="w-5 h-5" />}
@@ -207,7 +207,7 @@ export function GlobalSearchDetailModal({ item, onClose }: GlobalSearchDetailMod
           {item.category === "penyewa" && raw.penyewa && (
             <div className="space-y-4">
               <div className="flex items-center gap-4 bg-[#F6F7F9] p-4 rounded-2xl border border-[#E8EAEC]">
-                <div className="w-14 h-14 rounded-2xl bg-[#1C1E22] text-[#D2F367] flex items-center justify-center font-bold text-lg border border-[#D2F367]/40 shadow-xs">
+                <div className="w-14 h-14 rounded-2xl bg-[#1C1E22] text-[#88BC3C] flex items-center justify-center font-bold text-lg border border-[#5E8826]/40 shadow-xs">
                   {raw.penyewa.nama_lengkap
                     .split(" ")
                     .slice(0, 2)
@@ -225,7 +225,7 @@ export function GlobalSearchDetailModal({ item, onClose }: GlobalSearchDetailMod
                       {raw.penyewa.peran}
                     </span>
                     {raw.penyewa.unit_kode && (
-                      <span className="text-[10px] font-bold bg-[#1C1E22] text-[#D2F367] px-2 py-0.5 rounded-md">
+                      <span className="text-[10px] font-bold bg-[#1C1E22] text-[#88BC3C] px-2 py-0.5 rounded-md">
                         Unit {raw.penyewa.unit_kode}
                       </span>
                     )}
@@ -320,7 +320,7 @@ export function GlobalSearchDetailModal({ item, onClose }: GlobalSearchDetailMod
                   <span className="text-[10px] font-bold text-[#A0A6AF] uppercase tracking-wider block">
                     Sisa Belum Bayar
                   </span>
-                  <span className="text-base font-black text-[#D2F367] mt-0.5 block">
+                  <span className="text-base font-black text-[#88BC3C] mt-0.5 block">
                     Rp{raw.tagihan.sisa.toLocaleString("id-ID")}
                   </span>
                   <span className="text-[11px] text-[#A0A6AF]">

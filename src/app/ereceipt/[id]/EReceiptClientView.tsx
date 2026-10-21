@@ -147,7 +147,7 @@ export function EReceiptClientView({ data }: { data: EReceiptData }) {
                 Griya Kenanga Residence
               </h1>
               <p className="text-xs text-slate-500 font-medium tracking-wide">
-                Kost Eksklusif & Hunian Nyaman Sleman
+                Kos Eksklusif & Hunian Nyaman Sleman
               </p>
             </div>
           </div>

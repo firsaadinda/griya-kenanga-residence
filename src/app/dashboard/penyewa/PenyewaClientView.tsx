@@ -428,9 +428,9 @@ export function PenyewaClientView({ initialPenyewa, userRole }: PenyewaClientVie
                         <button
                           type="button"
                           onClick={() => handleOpenActionModal(p, "verifikasi")}
-                          className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-[#1C1E22] hover:bg-[#26292E] text-white text-xs font-semibold shadow-sm transition cursor-pointer"
+                          className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-[#1C1E22] hover:bg-[#26292E] text-white text-xs font-semibold shadow-sm transition cursor-pointer border border-white/10"
                         >
-                          <Check className="w-3 h-3 text-[#D2F367]" />
+                          <Check className="w-3 h-3 text-[#88BC3C]" />
                           <span>Verifikasi</span>
                         </button>
 
@@ -449,9 +449,9 @@ export function PenyewaClientView({ initialPenyewa, userRole }: PenyewaClientVie
                       <button
                         type="button"
                         onClick={() => handleOpenActionModal(p, "verifikasi")}
-                        className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-[#1C1E22] hover:bg-[#26292E] text-white text-xs font-semibold shadow-sm transition cursor-pointer"
+                        className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-[#1C1E22] hover:bg-[#26292E] text-white text-xs font-semibold shadow-sm transition cursor-pointer border border-white/10"
                       >
-                        <Check className="w-3 h-3 text-[#D2F367]" />
+                        <Check className="w-3 h-3 text-[#88BC3C]" />
                         <span>Verifikasi</span>
                       </button>
                     )}
@@ -604,9 +604,9 @@ export function PenyewaClientView({ initialPenyewa, userRole }: PenyewaClientVie
                     <button
                       type="button"
                       onClick={() => handleOpenActionModal(detailPenyewa, "verifikasi")}
-                      className="inline-flex items-center gap-1 px-4 py-2 rounded-full bg-[#1C1E22] hover:bg-[#26292E] text-white text-xs font-semibold shadow-sm transition cursor-pointer"
+                      className="inline-flex items-center gap-1 px-4 py-2 rounded-full bg-[#1C1E22] hover:bg-[#26292E] text-white text-xs font-semibold shadow-sm transition cursor-pointer border border-white/10"
                     >
-                      <Check className="w-3.5 h-3.5 text-[#D2F367]" />
+                      <Check className="w-3.5 h-3.5 text-[#88BC3C]" />
                       <span>Verifikasi</span>
                     </button>
                   )}
@@ -717,7 +717,7 @@ export function PenyewaClientView({ initialPenyewa, userRole }: PenyewaClientVie
               >
                 {isPending ? (
                   <>
-                    <Loader2 className="w-3.5 h-3.5 animate-spin text-[#D2F367]" />
+                    <Loader2 className="w-3.5 h-3.5 animate-spin text-[#88BC3C]" />
                     <span>Menyimpan...</span>
                   </>
                 ) : actionType === "verifikasi" ? (

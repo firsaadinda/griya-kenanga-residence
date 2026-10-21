@@ -865,13 +865,13 @@ export function TagihanClientView({
             >
               {isPending ? (
                 <>
-                  <Loader2 className="w-3.5 h-3.5 animate-spin text-[#D2F367]" />
+                  <Loader2 className="w-3.5 h-3.5 animate-spin text-[#88BC3C]" />
                   <span>Memproses...</span>
                 </>
               ) : (
                 <>
                   <span>Buat tagihan {getNextMonthLabel(selectedPeriode).split(" ")[0]}</span>
-                  <ArrowRight className="w-3.5 h-3.5 text-[#D2F367] group-hover:translate-x-0.5 transition-transform" />
+                  <ArrowRight className="w-3.5 h-3.5 text-[#88BC3C] group-hover:translate-x-0.5 transition-transform" />
                 </>
               )}
             </button>
@@ -1081,7 +1081,7 @@ export function TagihanClientView({
                     <td className="py-3.5 px-4 align-middle text-center">
                       <div className="flex items-center justify-center h-8">
                         {item.status === "lunas" && (
-                          <span className="inline-flex items-center justify-center px-2.5 py-1 rounded-full text-[11px] font-semibold bg-[#ECFCCB] text-[#1C1E22] border border-[#D2F367] leading-none">
+                          <span className="inline-flex items-center justify-center px-2.5 py-1 rounded-full text-[11px] font-semibold bg-[#F2F7EC] text-[#4A6C2F] border border-[#5E8826]/30 leading-none">
                             lunas
                           </span>
                         )}
@@ -1155,11 +1155,11 @@ export function TagihanClientView({
                               type="button"
                               onClick={() => handleBayarMayarOnline(item.id)}
                               disabled={isGeneratingMayar && currentProcessingId === item.id}
-                              className="inline-flex items-center justify-center gap-1.5 h-8 px-3.5 rounded-full text-xs font-semibold bg-[#1C1E22] text-[#D2F367] hover:bg-[#26292E] shadow-2xs transition cursor-pointer disabled:opacity-50 leading-none"
+                              className="inline-flex items-center justify-center gap-1.5 h-8 px-3.5 rounded-full text-xs font-semibold bg-[#1C1E22] text-[#88BC3C] hover:bg-[#26292E] shadow-2xs transition cursor-pointer disabled:opacity-50 leading-none border border-white/10"
                               title="Bayar Online via Mayar"
                             >
                               {isGeneratingMayar && currentProcessingId === item.id ? (
-                                <Loader2 className="w-3.5 h-3.5 animate-spin text-[#D2F367] shrink-0" />
+                                <Loader2 className="w-3.5 h-3.5 animate-spin text-[#88BC3C] shrink-0" />
                               ) : activePollingId === item.id ? (
                                 <Loader2 className="w-3.5 h-3.5 animate-spin text-emerald-400 shrink-0" />
                               ) : (
@@ -1502,7 +1502,7 @@ export function TagihanClientView({
                 >
                   {isPending ? (
                     <>
-                      <Loader2 className="w-3.5 h-3.5 animate-spin text-[#D2F367]" />
+                      <Loader2 className="w-3.5 h-3.5 animate-spin text-[#88BC3C]" />
                       <span>Menyimpan...</span>
                     </>
                   ) : (
@@ -1629,7 +1629,7 @@ export function TagihanClientView({
                   >
                     {isGeneratingMayar && currentProcessingId === detailTagihan.id ? (
                       <>
-                        <Loader2 className="w-3.5 h-3.5 animate-spin text-[#D2F367]" />
+                        <Loader2 className="w-3.5 h-3.5 animate-spin text-[#88BC3C]" />
                         <span>Membuat Invoice Mayar...</span>
                       </>
                     ) : activePollingId === detailTagihan.id ? (
@@ -1640,7 +1640,7 @@ export function TagihanClientView({
                     ) : (
                       <>
                         <span>Bayar Online</span>
-                        <ExternalLink className="w-3.5 h-3.5 text-[#D2F367]" />
+                        <ExternalLink className="w-3.5 h-3.5 text-[#88BC3C]" />
                       </>
                     )}
                   </button>
@@ -1732,7 +1732,7 @@ export function TagihanClientView({
                   href={detailTagihan.mayar_link}
                   target="_blank"
                   rel="noreferrer"
-                  className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-[#1C1E22] text-[#D2F367] text-[11px] font-semibold shrink-0 hover:bg-[#26292E] transition"
+                  className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-[#1C1E22] text-[#88BC3C] text-[11px] font-semibold shrink-0 hover:bg-[#26292E] transition border border-white/10"
                 >
                   <span>Buka</span>
                   <ExternalLink className="w-3 h-3" />
@@ -2151,7 +2151,7 @@ export function TagihanClientView({
               >
                 {isPending ? (
                   <>
-                    <Loader2 className="w-3.5 h-3.5 animate-spin text-[#D2F367]" />
+                    <Loader2 className="w-3.5 h-3.5 animate-spin text-[#88BC3C]" />
                     <span>Memproses...</span>
                   </>
                 ) : (

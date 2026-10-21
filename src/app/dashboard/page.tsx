@@ -13,16 +13,10 @@ import { PenyewaHomeView, PenyewaContractInfo, PenyewaBillInfo, PenyewaReportInf
 import {
   ArrowRight,
   ArrowUpRight,
-  Check,
-  CreditCard,
-  FileSpreadsheet,
-  Search,
-  Bell,
   Home,
   Receipt,
   Wrench,
   Clock,
-  ShieldAlert,
 } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -284,17 +278,18 @@ export default async function DashboardPage() {
       <section className="space-y-6">
         {/* Header Seksi & Judul Two-Tone Editorial */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-          <div className="space-y-1.5 max-w-2xl">
-            <span className="inline-block text-[11px] font-semibold text-[#737A84] tracking-widest uppercase">
-              beranda operasional [01]
-            </span>
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-[#26292E] leading-tight">
+          <div className="space-y-2 max-w-2xl">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/80 border border-[#E8EAEC] text-[11px] font-semibold text-[#4A6C2F] shadow-2xs backdrop-blur-xs">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#5E8826] animate-pulse" />
+              <span className="tracking-wider uppercase">Griya Kenanga Residence • Sleman</span>
+            </div>
+            <h1 className="text-3xl sm:text-4xl lg:text-[42px] font-extrabold tracking-tight text-[#1C1E22] leading-[1.18]">
               Hunian tertata,{" "}
               <span className="text-[#737A84] font-normal">
                 kelola tanpa celah
               </span>
             </h1>
-            <p className="text-xs sm:text-sm text-[#737A84] leading-relaxed pt-1">
+            <p className="text-xs sm:text-sm text-[#737A84] leading-relaxed pt-0.5">
               Pantau 24 unit kos &amp; studio di Sleman secara real-time. Bebas kontrak ganda, tagihan bulanan bernomor urut otomatis, dan denda terhitung transparan per 15 Oktober 2026.
             </p>
           </div>
@@ -302,7 +297,7 @@ export default async function DashboardPage() {
           {/* Sisi Kanan: Status Keterisian Unit Presisi (Wireframe Hal 1 & PRD) */}
           <div className="flex flex-col sm:flex-row md:flex-col items-start md:items-end gap-1.5 shrink-0">
             <span className="text-xs font-semibold text-[#737A84]">
-              <strong className="text-[#26292E] font-bold">19 dari 23</strong> unit layak sewa terisi
+              <strong className="text-[#1C1E22] font-bold">19 dari 23</strong> unit layak sewa terisi
             </span>
             {/* Sub-teks kartu Unit Terisi (19/23) persis PRD & Wireframe Hal 1 */}
             <span className="text-[11px] text-[#737A84] font-medium">
@@ -311,69 +306,118 @@ export default async function DashboardPage() {
             <div className="pt-1">
               <Link
                 href="/dashboard/tagihan"
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#1C1E22] hover:bg-[#26292E] text-white text-xs font-semibold shadow-sm transition"
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#1C1E22] hover:bg-[#26292E] text-white text-xs font-semibold shadow-[0_4px_16px_rgba(28,30,34,0.15)] hover:shadow-md transition group"
               >
                 <span>Kelola Tagihan</span>
-                <ArrowRight className="w-3.5 h-3.5 text-[#D2F367]" />
+                <ArrowRight className="w-3.5 h-3.5 text-[#88BC3C] group-hover:translate-x-0.5 transition-transform" />
               </Link>
             </div>
           </div>
         </div>
 
-        {/* 4 Kartu Ringkasan Operasional Monte x Terra (Tanpa Angka Rupiah Total Omzet) */}
+        {/* 4 Kartu Ringkasan Operasional Monte x Terra Berkelas */}
         <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {/* Kartu 1: Unit Terisi */}
-          <div className="rounded-[24px] bg-white p-5 border border-[#E8EAEC] shadow-xs space-y-1.5">
-            <div className="flex items-center justify-between text-[#737A84]">
-              <span className="text-[10px] font-bold uppercase tracking-wider">Unit Terisi</span>
-              <Home className="w-4 h-4 text-[#26292E]" />
+          <div className="rounded-[26px] bg-white p-5 sm:p-6 border border-[#E8EAEC] shadow-[0_8px_30px_rgba(0,0,0,0.03)] hover:shadow-[0_16px_40px_rgba(0,0,0,0.07)] hover:-translate-y-0.5 transition-all duration-300 flex flex-col justify-between space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-[#737A84]">Unit Terisi</span>
+              <div className="w-8 h-8 rounded-xl bg-[#F2F7EC] text-[#4A6C2F] flex items-center justify-center border border-[#5E8826]/20 shadow-2xs">
+                <Home className="w-4 h-4" />
+              </div>
             </div>
-            <p className="text-2xl sm:text-3xl font-extrabold text-[#26292E] tracking-tight">
-              19 / 23
-            </p>
-            <p className="text-[11px] text-[#737A84] leading-tight">
+            <div>
+              <div className="flex items-baseline justify-between gap-2">
+                <p className="text-2xl sm:text-3xl font-black text-[#1C1E22] tracking-tight">
+                  19 / 23
+                </p>
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-[#F2F7EC] text-[#4A6C2F] border border-[#5E8826]/20">
+                  82,6%
+                </span>
+              </div>
+              <div className="w-full bg-[#F0F2F4] h-1.5 rounded-full overflow-hidden mt-2.5">
+                <div className="bg-[#5E8826] h-full rounded-full transition-all duration-700" style={{ width: "82.6%" }} />
+              </div>
+            </div>
+            <p className="text-[11px] text-[#737A84] leading-tight pt-0.5">
               1 unit perbaikan (B-205), 1 nonaktif tidak dihitung
             </p>
           </div>
 
           {/* Kartu 2: Tagihan Okt Lunas */}
-          <div className="rounded-[24px] bg-white p-5 border border-[#E8EAEC] shadow-xs space-y-1.5">
-            <div className="flex items-center justify-between text-[#737A84]">
-              <span className="text-[10px] font-bold uppercase tracking-wider">Tagihan Okt</span>
-              <Receipt className="w-4 h-4 text-emerald-600" />
+          <div className="rounded-[26px] bg-white p-5 sm:p-6 border border-[#E8EAEC] shadow-[0_8px_30px_rgba(0,0,0,0.03)] hover:shadow-[0_16px_40px_rgba(0,0,0,0.07)] hover:-translate-y-0.5 transition-all duration-300 flex flex-col justify-between space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-[#737A84]">Tagihan Okt</span>
+              <div className="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center border border-emerald-200 shadow-2xs">
+                <Receipt className="w-4 h-4" />
+              </div>
             </div>
-            <p className="text-2xl sm:text-3xl font-extrabold text-emerald-600 tracking-tight">
-              13 / 19 Lunas
-            </p>
-            <p className="text-[11px] text-emerald-700 font-medium">
+            <div>
+              <div className="flex items-baseline justify-between gap-2">
+                <p className="text-2xl sm:text-3xl font-black text-emerald-700 tracking-tight">
+                  13 / 19
+                </p>
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-800 border border-emerald-200">
+                  Lunas
+                </span>
+              </div>
+              <div className="w-full bg-[#F0F2F4] h-1.5 rounded-full overflow-hidden mt-2.5">
+                <div className="bg-emerald-600 h-full rounded-full transition-all duration-700" style={{ width: "68.4%" }} />
+              </div>
+            </div>
+            <p className="text-[11px] text-emerald-800 font-semibold leading-tight pt-0.5">
               68,4% tagihan bulan ini telah terbayar
             </p>
           </div>
 
           {/* Kartu 3: Tagihan Lewat Jatuh Tempo */}
-          <div className="rounded-[24px] bg-white p-5 border border-[#E8EAEC] shadow-xs space-y-1.5">
-            <div className="flex items-center justify-between text-[#737A84]">
-              <span className="text-[10px] font-bold uppercase tracking-wider">Lewat Tempo</span>
-              <Clock className="w-4 h-4 text-[#D32F2F]" />
+          <div className="rounded-[26px] bg-white p-5 sm:p-6 border border-[#E8EAEC] shadow-[0_8px_30px_rgba(0,0,0,0.03)] hover:shadow-[0_16px_40px_rgba(0,0,0,0.07)] hover:-translate-y-0.5 transition-all duration-300 flex flex-col justify-between space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-[#737A84]">Lewat Tempo</span>
+              <div className="w-8 h-8 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center border border-rose-200 shadow-2xs">
+                <Clock className="w-4 h-4" />
+              </div>
             </div>
-            <p className="text-2xl sm:text-3xl font-extrabold text-[#D32F2F] tracking-tight">
-              7 Tagihan
-            </p>
-            <p className="text-[11px] text-[#D32F2F] font-semibold">
+            <div>
+              <div className="flex items-baseline justify-between gap-2">
+                <p className="text-2xl sm:text-3xl font-black text-[#D32F2F] tracking-tight">
+                  7 Tagihan
+                </p>
+                <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-md bg-rose-50 text-rose-800 border border-rose-200">
+                  <span className="w-1.5 h-1.5 rounded-full bg-rose-600 animate-pulse" />
+                  Mendesak
+                </span>
+              </div>
+              <div className="w-full bg-[#F0F2F4] h-1.5 rounded-full overflow-hidden mt-2.5">
+                <div className="bg-rose-500 h-full rounded-full transition-all duration-700" style={{ width: "36.8%" }} />
+              </div>
+            </div>
+            <p className="text-[11px] text-[#D32F2F] font-semibold leading-tight pt-0.5">
               Denda berjalan Rp20rb/hari (maks Rp200rb)
             </p>
           </div>
 
           {/* Kartu 4: Laporan Kerusakan Terbuka */}
-          <div className="rounded-[24px] bg-white p-5 border border-[#E8EAEC] shadow-xs space-y-1.5">
-            <div className="flex items-center justify-between text-[#737A84]">
-              <span className="text-[10px] font-bold uppercase tracking-wider">Kerusakan</span>
-              <Wrench className="w-4 h-4 text-amber-600" />
+          <div className="rounded-[26px] bg-white p-5 sm:p-6 border border-[#E8EAEC] shadow-[0_8px_30px_rgba(0,0,0,0.03)] hover:shadow-[0_16px_40px_rgba(0,0,0,0.07)] hover:-translate-y-0.5 transition-all duration-300 flex flex-col justify-between space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-[#737A84]">Kerusakan</span>
+              <div className="w-8 h-8 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center border border-amber-200 shadow-2xs">
+                <Wrench className="w-4 h-4" />
+              </div>
             </div>
-            <p className="text-2xl sm:text-3xl font-extrabold text-[#26292E] tracking-tight">
-              5 Laporan
-            </p>
-            <p className="text-[11px] text-amber-700 font-medium">
+            <div>
+              <div className="flex items-baseline justify-between gap-2">
+                <p className="text-2xl sm:text-3xl font-black text-[#1C1E22] tracking-tight">
+                  5 Laporan
+                </p>
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-amber-50 text-amber-900 border border-amber-200">
+                  Perlu Aksi
+                </span>
+              </div>
+              <div className="w-full bg-[#F0F2F4] h-1.5 rounded-full overflow-hidden mt-2.5">
+                <div className="bg-amber-500 h-full rounded-full transition-all duration-700" style={{ width: "50%" }} />
+              </div>
+            </div>
+            <p className="text-[11px] text-amber-800 font-semibold leading-tight pt-0.5">
               1 menunggu persetujuan Pemilik (&gt;Rp1Jt)
             </p>
           </div>
@@ -383,9 +427,9 @@ export default async function DashboardPage() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
           {/* Kolom Kiri: Galeri Arsitektur & Kartu Properti Inovatif */}
           <div className="lg:col-span-8 space-y-6">
-            {/* Baris 1: 3 Kartu Beragam */}
-            <div className="grid grid-cols-1 sm:grid-cols-12 gap-4">
-              <div className="sm:col-span-5">
+            {/* Baris 1: 3 Kartu Beragam (Tinggi Seragam 310px & Sejajar Presisi) */}
+            <div className="grid grid-cols-1 sm:grid-cols-12 gap-4 items-stretch">
+              <div className="sm:col-span-5 h-[310px]">
                 <AsymmetricHexagonCard
                   blockTitle="Blok A • Lantai 1"
                   roomType="Kamar Standar"
@@ -394,10 +438,10 @@ export default async function DashboardPage() {
                 />
               </div>
 
-              <div className="sm:col-span-3 flex flex-col justify-between gap-3">
-                <div className="rounded-[24px] bg-white p-3.5 border border-[#E8EAEC] shadow-[0_8px_30px_rgba(0,0,0,0.03)] flex-1 flex flex-col justify-between">
+              <div className="sm:col-span-3 flex flex-col justify-between gap-3 h-[310px]">
+                <div className="rounded-[24px] bg-white p-3.5 border border-[#E8EAEC] shadow-[0_8px_30px_rgba(0,0,0,0.03)] flex-1 flex flex-col justify-between overflow-hidden">
                   <div>
-                    <span className="inline-block px-2.5 py-1 rounded-full bg-[#F6F7F9] text-[10px] font-semibold text-[#737A84] mb-2">
+                    <span className="inline-block px-2.5 py-1 rounded-full bg-[#F2F7EC] text-[10px] font-semibold text-[#4A6C2F] border border-[#5E8826]/20 mb-2">
                       bebas kontrak ganda
                     </span>
                     <p className="text-xs font-medium text-[#26292E] leading-snug">
@@ -411,22 +455,22 @@ export default async function DashboardPage() {
                   </div>
                 </div>
 
-                <div className="rounded-[24px] bg-[#26292E] text-white p-3.5 flex items-center justify-between">
+                <div className="rounded-[24px] bg-[#1C1E22] text-white p-3.5 flex items-center justify-between border border-white/10 shadow-xs shrink-0">
                   <div>
-                    <span className="block text-[10px] text-[#737A84] uppercase font-semibold">
+                    <span className="block text-[10px] text-[#A0A6AF] uppercase font-semibold">
                       Blok B • AC
                     </span>
-                    <span className="text-sm font-bold text-[#D2F367]">
+                    <span className="text-sm font-bold text-[#88BC3C]">
                       6/7 Terisi
                     </span>
                   </div>
-                  <div className="w-7 h-7 rounded-full bg-[#D2F367] text-[#1C1E22] flex items-center justify-center font-bold text-xs">
+                  <div className="w-7 h-7 rounded-full bg-[#26292E] text-[#88BC3C] border border-[#5E8826]/40 flex items-center justify-center font-bold text-xs">
                     <ArrowUpRight className="w-3.5 h-3.5" />
                   </div>
                 </div>
               </div>
 
-              <div className="sm:col-span-4">
+              <div className="sm:col-span-4 h-[310px]">
                 <StaggeredGalleryCard
                   badgePrice="Studio • Rp2,75 Jt"
                   actionText="Denah 3 Lantai"
@@ -452,25 +496,25 @@ export default async function DashboardPage() {
 
               <div className="grid sm:grid-cols-3 gap-3">
                 <HorizontalPropertyCard
-                  unitTitle="Blok C • Studio (20–22 m²)"
-                  priceRange="Rp2,75 Jt - Rp2,90 Jt"
-                  floorLabel="Lantai 3"
-                  gradientFrom="from-[#1C1E22]"
-                  gradientTo="to-[#2F343B]"
-                />
-                <HorizontalPropertyCard
-                  unitTitle="Blok B • Kamar AC (12–14 m²)"
-                  priceRange="Rp1,85 Jt - Rp2,00 Jt"
-                  floorLabel="Lantai 2"
-                  gradientFrom="from-[#26292E]"
-                  gradientTo="to-[#3D434C]"
-                />
-                <HorizontalPropertyCard
                   unitTitle="Blok A • Standar (9 m²)"
                   priceRange="Rp1,45 Jt / bln"
                   floorLabel="Lantai 1"
-                  gradientFrom="from-[#33383F]"
-                  gradientTo="to-[#4E5661]"
+                  imageSrc="/units/tipe-a/pov-1.jpg"
+                  href="/dashboard/unit?tipe=standar"
+                />
+                <HorizontalPropertyCard
+                  unitTitle="Blok B • AC (12–14 m²)"
+                  priceRange="Rp1,85 - 2,00 Jt"
+                  floorLabel="Lantai 2"
+                  imageSrc="/units/tipe-b/pov-2.jpg"
+                  href="/dashboard/unit?tipe=ac"
+                />
+                <HorizontalPropertyCard
+                  unitTitle="Blok C • Studio (20–22 m²)"
+                  priceRange="Rp2,75 - 2,90 Jt"
+                  floorLabel="Lantai 3"
+                  imageSrc="/units/tipe-c/pov-2.jpg"
+                  href="/dashboard/unit?tipe=studio"
                 />
               </div>
             </div>
@@ -508,131 +552,6 @@ export default async function DashboardPage() {
           actionContracts={actionContracts}
           userRole={profile.peran as "pemilik" | "pengelola" | "penyewa"}
         />
-      </section>
-
-      {/* ========================================================================= */}
-      {/* SEKSI 03: FITUR UNGGULAN & 4 PENINGKATAN FOKUS                             */}
-      {/* ========================================================================= */}
-      <section className="bg-white rounded-[28px] p-6 sm:p-10 border border-[#E8EAEC] shadow-[0_12px_45px_rgba(0,0,0,0.04)] space-y-8">
-        <div className="text-center max-w-2xl mx-auto space-y-2">
-          <span className="inline-block text-[11px] font-semibold text-[#737A84] tracking-widest uppercase">
-            fitur unggulan [03]
-          </span>
-          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#26292E]">
-            4 peningkatan fitur inti,{" "}
-            <span className="text-[#737A84] font-normal">
-              inovasi tepat guna.
-            </span>
-          </h2>
-          <p className="text-xs sm:text-sm text-[#737A84] leading-relaxed">
-            Dirancang selaras dengan 4 rekomendasi resmi buku petunjuk dan spesifikasi PRD Griya Kenanga Residence untuk menuntaskan masalah pengelolaan properti.
-          </p>
-
-          <div className="flex flex-wrap items-center justify-center gap-2 pt-2">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#F6F7F9] text-xs font-semibold text-[#26292E] border border-[#E8EAEC]">
-              <Check className="w-3.5 h-3.5 text-[#D2F367]" />
-              <span>Payment Gateway Mayar</span>
-            </span>
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#F6F7F9] text-xs font-semibold text-[#26292E] border border-[#E8EAEC]">
-              <Check className="w-3.5 h-3.5 text-[#D2F367]" />
-              <span>Ekspor PDF &amp; CSV</span>
-            </span>
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#F6F7F9] text-xs font-semibold text-[#26292E] border border-[#E8EAEC]">
-              <Check className="w-3.5 h-3.5 text-[#D2F367]" />
-              <span>Pencarian &amp; Filter Pintar</span>
-            </span>
-          </div>
-        </div>
-
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="rounded-2xl p-5 bg-[#F6F7F9] hover:bg-[#EEF1F4] border border-[#E8EAEC] flex flex-col justify-between space-y-3 transition group">
-            <div>
-              <div className="w-9 h-9 rounded-xl bg-white text-[#26292E] flex items-center justify-center mb-3 shadow-xs">
-                <CreditCard className="w-4 h-4 text-[#26292E]" />
-              </div>
-              <span className="text-[10px] font-bold text-[#737A84] uppercase tracking-wider block">
-                01 • Integrasi Pihak Ketiga
-              </span>
-              <h3 className="text-sm font-bold text-[#26292E] mt-1 leading-snug">
-                Mayar Payment + Webhook
-              </h3>
-              <p className="text-xs text-[#737A84] mt-2 leading-relaxed">
-                Penyewa bayar online sisa tagihan + denda hari ini. Webhook payment.received otomatis melunasi tagihan seketika.
-              </p>
-            </div>
-            <div className="pt-2 flex justify-end">
-              <div className="w-7 h-7 rounded-full bg-white text-[#26292E] flex items-center justify-center group-hover:bg-[#1C1E22] group-hover:text-[#D2F367] transition">
-                <ArrowRight className="w-3.5 h-3.5" />
-              </div>
-            </div>
-          </div>
-
-          <div className="rounded-2xl p-5 bg-[#F6F7F9] hover:bg-[#EEF1F4] border border-[#E8EAEC] flex flex-col justify-between space-y-3 transition group">
-            <div>
-              <div className="w-9 h-9 rounded-xl bg-white text-[#26292E] flex items-center justify-center mb-3 shadow-xs">
-                <FileSpreadsheet className="w-4 h-4 text-[#26292E]" />
-              </div>
-              <span className="text-[10px] font-bold text-[#737A84] uppercase tracking-wider block">
-                02 • Ekspor Dokumen
-              </span>
-              <h3 className="text-sm font-bold text-[#26292E] mt-1 leading-snug">
-                PDF Kwitansi &amp; CSV Laporan
-              </h3>
-              <p className="text-xs text-[#737A84] mt-2 leading-relaxed">
-                Unduh PDF E-Kwitansi lunas &amp; kontrak sewa, serta ekspor CSV tabel pendapatan &amp; tunggakan per unit untuk evaluasi bulanan Pemilik.
-              </p>
-            </div>
-            <div className="pt-2 flex justify-end">
-              <div className="w-7 h-7 rounded-full bg-white text-[#26292E] flex items-center justify-center group-hover:bg-[#1C1E22] group-hover:text-[#D2F367] transition">
-                <ArrowRight className="w-3.5 h-3.5" />
-              </div>
-            </div>
-          </div>
-
-          <div className="rounded-2xl p-5 bg-[#F6F7F9] hover:bg-[#EEF1F4] border border-[#E8EAEC] flex flex-col justify-between space-y-3 transition group">
-            <div>
-              <div className="w-9 h-9 rounded-xl bg-white text-[#26292E] flex items-center justify-center mb-3 shadow-xs">
-                <Search className="w-4 h-4 text-[#26292E]" />
-              </div>
-              <span className="text-[10px] font-bold text-[#737A84] uppercase tracking-wider block">
-                03 • Pencarian Pintar
-              </span>
-              <h3 className="text-sm font-bold text-[#26292E] mt-1 leading-snug">
-                Filter Multi-Kriteria Cepat
-              </h3>
-              <p className="text-xs text-[#737A84] mt-2 leading-relaxed">
-                Filter instan unit (lantai, tipe, status), tagihan per periode &amp; status bayar, serta pencarian cepat lintas penyewa &amp; nomor INV.
-              </p>
-            </div>
-            <div className="pt-2 flex justify-end">
-              <div className="w-7 h-7 rounded-full bg-white text-[#26292E] flex items-center justify-center group-hover:bg-[#1C1E22] group-hover:text-[#D2F367] transition">
-                <ArrowRight className="w-3.5 h-3.5" />
-              </div>
-            </div>
-          </div>
-
-          <div className="rounded-2xl p-5 bg-[#1C1E22] text-white border border-[#26292E] flex flex-col justify-between space-y-3 transition group">
-            <div>
-              <div className="w-9 h-9 rounded-xl bg-[#26292E] text-[#D2F367] flex items-center justify-center mb-3 border border-[#33383F]">
-                <Bell className="w-4 h-4" />
-              </div>
-              <span className="text-[10px] font-bold text-[#D2F367] uppercase tracking-wider block">
-                04 • Pengingat di Aplikasi
-              </span>
-              <h3 className="text-sm font-bold text-white mt-1 leading-snug">
-                Reminder Jatuh Tempo &amp; Kontrak
-              </h3>
-              <p className="text-xs text-[#737A84] mt-2 leading-relaxed">
-                Banner pengingat internal: 7 tagihan lewat jatuh tempo (beserta hitungan denda hari ini), 3 kontrak habis &lt;30 hari, &amp; 1 approval &gt;1Jt.
-              </p>
-            </div>
-            <div className="pt-2 flex justify-end">
-              <div className="w-7 h-7 rounded-full bg-[#D2F367] text-[#1C1E22] flex items-center justify-center group-hover:scale-105 transition">
-                <ArrowUpRight className="w-3.5 h-3.5" />
-              </div>
-            </div>
-          </div>
-        </div>
       </section>
     </div>
   );

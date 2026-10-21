@@ -353,9 +353,9 @@ export function KontrakClientView({
                 setIsCreateOpen(true);
                 setFeedback(null);
               }}
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#1C1E22] hover:bg-[#26292E] text-white text-xs font-semibold shadow-sm transition shrink-0"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#1C1E22] hover:bg-[#26292E] text-white text-xs font-semibold shadow-sm transition shrink-0 border border-white/10"
             >
-              <Plus className="w-3.5 h-3.5 text-[#D2F367]" />
+              <Plus className="w-3.5 h-3.5 text-[#88BC3C]" />
               <span>Kontrak Baru</span>
             </button>
           )}
@@ -452,7 +452,7 @@ export function KontrakClientView({
 
                   <div className="pt-1 border-t border-[#E8EAEC] flex items-center justify-between">
                     <span className="text-[#737A84]">Harga Sewa Terkunci:</span>
-                    <span className="px-2 py-0.5 rounded-full bg-[#D2F367] text-[#1C1E22] text-[11px] font-bold">
+                    <span className="px-2.5 py-0.5 rounded-full bg-[#1C1E22] text-[#88BC3C] border border-[#5E8826]/30 text-[11px] font-bold">
                       Rp{(k.harga_sewa_bulanan / 1000).toLocaleString("id-ID")} rb/bln
                     </span>
                   </div>
@@ -474,9 +474,9 @@ export function KontrakClientView({
                       type="button"
                       onClick={() => setConfirmModal({ action: "aktifkan", kontrak: k })}
                       disabled={isPending}
-                      className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-full bg-[#1C1E22] hover:bg-[#26292E] text-white text-xs font-semibold shadow-sm transition disabled:opacity-50 cursor-pointer"
+                      className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-full bg-[#1C1E22] hover:bg-[#26292E] text-white text-xs font-semibold shadow-sm transition disabled:opacity-50 cursor-pointer border border-white/10"
                     >
-                      <CheckCircle2 className="w-3.5 h-3.5 text-[#D2F367]" />
+                      <CheckCircle2 className="w-3.5 h-3.5 text-[#88BC3C]" />
                       <span>Aktifkan</span>
                     </button>
                     <button
@@ -845,7 +845,7 @@ export function KontrakClientView({
               >
                 {isPending ? (
                   <>
-                    <Loader2 className="w-3.5 h-3.5 animate-spin text-[#D2F367]" />
+                    <Loader2 className="w-3.5 h-3.5 animate-spin text-[#88BC3C]" />
                     <span>Memproses...</span>
                   </>
                 ) : (

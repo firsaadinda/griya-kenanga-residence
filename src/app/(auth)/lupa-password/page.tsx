@@ -124,8 +124,8 @@ function ForgotPasswordContent() {
           </Link>
 
           <div className="space-y-1">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#ECFCCB] border border-[#D2F367] text-[11px] font-semibold text-emerald-900 mb-1">
-              <KeyRound className="w-3.5 h-3.5 text-emerald-700" />
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#F2F7EC] border border-[#5E8826]/30 text-[11px] font-semibold text-[#4A6C2F] mb-1">
+              <KeyRound className="w-3.5 h-3.5 text-[#5E8826]" />
               <span>Pemulihan Kata Sandi</span>
             </div>
             <h1 className="text-2xl font-extrabold tracking-tight text-[#1C1E22]">
@@ -214,7 +214,7 @@ function ForgotPasswordContent() {
               className="w-full flex items-center justify-center gap-2 py-3 px-6 rounded-full bg-[#1C1E22] hover:bg-[#26292E] text-white text-xs font-semibold shadow-sm transition disabled:opacity-50 mt-2"
             >
               <span>{isPending ? "Mengirimkan Instruksi..." : "Kirim Instruksi Pemulihan"}</span>
-              <ArrowRight className="w-3.5 h-3.5 text-[#D2F367]" />
+              <ArrowRight className="w-3.5 h-3.5 text-[#88BC3C]" />
             </button>
 
             <div className="text-center pt-2">
@@ -329,7 +329,7 @@ function ForgotPasswordContent() {
               className="w-full flex items-center justify-center gap-2 py-3 px-6 rounded-full bg-[#1C1E22] hover:bg-[#26292E] text-white text-xs font-semibold shadow-sm transition disabled:opacity-50 mt-2"
             >
               <span>{isPending ? "Memperbarui Kata Sandi..." : "Simpan Kata Sandi Baru"}</span>
-              <ShieldCheck className="w-3.5 h-3.5 text-[#D2F367]" />
+              <ShieldCheck className="w-3.5 h-3.5 text-[#88BC3C]" />
             </button>
           </form>
         )}

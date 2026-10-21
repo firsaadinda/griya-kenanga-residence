@@ -34,7 +34,7 @@ export default function NotFound() {
               href="/dashboard"
               className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#1C1E22] hover:bg-[#26292E] px-4 py-2.5 text-xs font-semibold text-white shadow-xs transition"
             >
-              <Home className="h-3.5 w-3.5 text-[#D2F367]" />
+              <Home className="h-3.5 w-3.5 text-[#88BC3C]" />
               <span>Beranda</span>
             </Link>
 

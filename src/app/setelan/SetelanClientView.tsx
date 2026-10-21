@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { Navbar } from "@/components/navigation/Navbar";
 import { UserProfile } from "@/lib/auth/guard";
+import { BrowserWindowFrame } from "@/components/landing/BrowserWindowFrame";
 
 export interface WebhookLogItem {
   id: string;
@@ -101,11 +102,27 @@ export function SetelanClientView({
   };
 
   return (
-    <div className="min-h-screen bg-[#F6F7F9] text-[#26292E] pb-20">
-      {/* Navbar Konsisten */}
-      <Navbar userProfile={userProfile} />
+    <div className="min-h-screen relative font-sans select-text antialiased">
+      {/* Background Image: Merapi & Tropical Garden with subtle 5% blur */}
+      <div className="fixed inset-0 -z-20 overflow-hidden pointer-events-none">
+        <img
+          src="/images/griya-kenanga-12k-merapi.jpg?v=3"
+          alt="Latar Belakang Eksklusif Griya Kenanga Residence"
+          className="w-full h-full object-cover object-center"
+        />
+        <div
+          className="absolute inset-0 bg-black/15"
+          style={{ backdropFilter: "blur(0.6px)", WebkitBackdropFilter: "blur(0.6px)" }}
+        />
+      </div>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6 pt-2">
+      <div className="relative z-10 w-full min-h-screen py-3 sm:py-6 lg:py-8 px-2 sm:px-5 lg:px-8 flex flex-col items-center">
+        <BrowserWindowFrame url="griyakenanga.id/setelan" isDashboard>
+          <div className="min-h-[85vh] bg-[#F6F7F9] text-[#26292E] pb-20">
+            {/* Navbar Konsisten */}
+            <Navbar userProfile={userProfile} />
+
+            <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6 pt-2">
         {/* Header Breadcrumb & Title */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
@@ -127,8 +144,8 @@ export function SetelanClientView({
           </div>
 
           <div className="flex items-center gap-2">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#1C1E22] text-[#D2F367] text-xs font-semibold shadow-xs">
-              <Radio className="w-3 h-3 text-[#D2F367] animate-pulse" />
+            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#1C1E22] text-[#88BC3C] border border-[#5E8826]/30 text-xs font-semibold shadow-xs">
+              <Radio className="w-3 h-3 text-[#88BC3C] animate-pulse" />
               <span>Khusus Pemilik</span>
             </span>
           </div>
@@ -279,8 +296,8 @@ export function SetelanClientView({
               >
                 {copied ? (
                   <>
-                    <Check className="w-4 h-4 text-[#D2F367]" />
-                    <span className="text-[#D2F367]">Berhasil Disalin!</span>
+                    <Check className="w-4 h-4 text-[#88BC3C]" />
+                    <span className="text-[#88BC3C]">Berhasil Disalin!</span>
                   </>
                 ) : (
                   <>
@@ -440,7 +457,7 @@ export function SetelanClientView({
               </button>
             </div>
 
-            <div className="flex-1 overflow-y-auto bg-[#1C1E22] text-[#D2F367] p-4 rounded-2xl font-mono text-xs">
+            <div className="flex-1 overflow-y-auto bg-[#1C1E22] text-[#88BC3C] p-4 rounded-2xl font-mono text-xs border border-white/10">
               <pre className="whitespace-pre-wrap break-all leading-relaxed">
                 {JSON.stringify(selectedPayload.payload, null, 2)}
               </pre>
@@ -458,6 +475,9 @@ export function SetelanClientView({
           </div>
         </div>
       )}
+          </div>
+        </BrowserWindowFrame>
+      </div>
     </div>
   );
 }

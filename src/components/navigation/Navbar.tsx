@@ -215,16 +215,16 @@ export function Navbar({ userProfile }: NavbarProps) {
                           onClick={() => setIsDropdownOpen(false)}
                           className={`flex items-center justify-between px-4 py-2 text-xs font-medium transition ${
                             isActive
-                              ? "bg-[#1C1E22] text-white font-semibold rounded-xl mx-2"
+                              ? "bg-[#1C1E22] text-white font-semibold rounded-xl mx-2 shadow-xs"
                               : "text-[#737A84] hover:bg-[#F6F7F9] hover:text-[#26292E] rounded-xl mx-2"
                           }`}
                         >
                           <div className="flex items-center gap-2.5">
-                            <item.icon className={`w-4 h-4 ${isActive ? "text-[#D2F367]" : "text-[#737A84]"}`} />
+                            <item.icon className={`w-4 h-4 ${isActive ? "text-[#88BC3C]" : "text-[#737A84]"}`} />
                             <span>{item.label}</span>
                           </div>
                           {isActive && (
-                            <span className="w-1.5 h-1.5 rounded-full bg-[#D2F367]"></span>
+                            <span className="w-1.5 h-1.5 rounded-full bg-[#88BC3C]"></span>
                           )}
                         </Link>
                       );
@@ -234,7 +234,7 @@ export function Navbar({ userProfile }: NavbarProps) {
                     {role === "pemilik" && ownerItems.length > 0 && (
                       <>
                         <div className="px-4 pt-3 pb-1 mt-1 border-t border-[#E8EAEC]">
-                          <span className="text-[9px] font-bold text-[#1B5E20] uppercase tracking-wider bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200 inline-block">
+                          <span className="text-[9px] font-bold text-[#4A6C2F] uppercase tracking-wider bg-[#F2F7EC] px-2 py-0.5 rounded-md border border-[#5E8826]/20 inline-block">
                             KHUSUS PEMILIK
                           </span>
                         </div>
@@ -247,16 +247,16 @@ export function Navbar({ userProfile }: NavbarProps) {
                               onClick={() => setIsDropdownOpen(false)}
                               className={`flex items-center justify-between px-4 py-2 text-xs font-medium transition ${
                                 isActive
-                                  ? "bg-[#1C1E22] text-white font-semibold rounded-xl mx-2"
+                                  ? "bg-[#1C1E22] text-white font-semibold rounded-xl mx-2 shadow-xs"
                                   : "text-[#737A84] hover:bg-[#F6F7F9] hover:text-[#26292E] rounded-xl mx-2"
                               }`}
                             >
                               <div className="flex items-center gap-2.5">
-                                <item.icon className={`w-4 h-4 ${isActive ? "text-[#D2F367]" : "text-[#737A84]"}`} />
+                                <item.icon className={`w-4 h-4 ${isActive ? "text-[#88BC3C]" : "text-[#737A84]"}`} />
                                 <span>{item.label}</span>
                               </div>
                               {isActive && (
-                                <span className="w-1.5 h-1.5 rounded-full bg-[#D2F367]"></span>
+                                <span className="w-1.5 h-1.5 rounded-full bg-[#88BC3C]"></span>
                               )}
                             </Link>
                           );
@@ -340,7 +340,7 @@ export function Navbar({ userProfile }: NavbarProps) {
                           className="w-full text-left flex items-center justify-between gap-3 p-2.5 rounded-2xl hover:bg-[#F6F7F9] transition group cursor-pointer focus:outline-none focus:bg-[#F6F7F9]"
                         >
                           <div className="flex items-center gap-3 min-w-0">
-                            <div className="w-8 h-8 rounded-xl bg-[#F6F7F9] group-hover:bg-[#1C1E22] group-hover:text-[#D2F367] text-[#26292E] flex items-center justify-center shrink-0 transition-colors border border-[#E8EAEC]">
+                            <div className="w-8 h-8 rounded-xl bg-[#F6F7F9] group-hover:bg-[#1C1E22] group-hover:text-[#88BC3C] text-[#26292E] flex items-center justify-center shrink-0 transition-colors border border-[#E8EAEC]">
                               <CategoryIcon className="w-4 h-4" />
                             </div>
                             <div className="min-w-0">
@@ -390,17 +390,17 @@ export function Navbar({ userProfile }: NavbarProps) {
             )}
           </div>
 
-          <div className="hidden lg:flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[#F6F7F9] text-xs font-medium text-[#737A84] border border-[#E8EAEC] whitespace-nowrap ml-auto">
-            <span className="w-2 h-2 rounded-full bg-[#D2F367]"></span>
-            <span>15 Okt 2026</span>
+          <div className="hidden lg:flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#F6F7F9] text-xs font-medium text-[#737A84] border border-[#E8EAEC] whitespace-nowrap ml-auto">
+            <span className="w-2 h-2 rounded-full bg-[#5E8826] animate-pulse"></span>
+            <span className="font-semibold text-[#26292E]">15 Okt 2026</span>
           </div>
         </div>
 
         {/* Sisi Kanan: Kapsul Profil Pengguna Abu Tua (#1C1E22) */}
         <div className="flex items-center gap-2">
           {userProfile ? (
-            <div className="flex items-center gap-2 bg-[#1C1E22] text-white pl-1.5 pr-2 py-1 rounded-full shadow-sm">
-              <div className="w-8 h-8 rounded-full overflow-hidden bg-white border border-[#D2F367] flex items-center justify-center shrink-0 shadow-xs">
+            <div className="flex items-center gap-2.5 bg-[#1C1E22] text-white pl-1.5 pr-2.5 py-1 rounded-full shadow-[0_4px_16px_rgba(0,0,0,0.12)] border border-white/10 hover:border-[#5E8826]/40 transition">
+              <div className="w-8 h-8 rounded-full overflow-hidden bg-white ring-2 ring-[#76A733]/50 flex items-center justify-center shrink-0 shadow-xs">
                 <img
                   src={getUserAvatarUrl(userProfile.nama_lengkap || userProfile.email)}
                   alt={userProfile.nama_lengkap}
@@ -411,16 +411,19 @@ export function Navbar({ userProfile }: NavbarProps) {
                 <p className="text-xs font-semibold leading-tight text-white max-w-[120px] truncate">
                   {userProfile.nama_lengkap}
                 </p>
-                <p className="text-[10px] text-[#D2F367] font-medium leading-none">
-                  {getRoleBadgeLabel(userProfile.peran)}
-                </p>
+                <div className="flex items-center gap-1 mt-0.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#88BC3C]" />
+                  <p className="text-[10px] text-[#A2DB56] font-semibold tracking-wide uppercase leading-none">
+                    {getRoleBadgeLabel(userProfile.peran)}
+                  </p>
+                </div>
               </div>
 
               <form action={logoutAction}>
                 <button
                   type="submit"
                   title="Keluar dari Akun"
-                  className="p-1 rounded-full text-[#737A84] hover:text-white hover:bg-[#26292E] transition focus:outline-none"
+                  className="p-1 rounded-full text-[#A0A6AF] hover:text-white hover:bg-white/10 transition focus:outline-none"
                 >
                   <LogOut className="w-3.5 h-3.5" />
                 </button>
@@ -430,7 +433,7 @@ export function Navbar({ userProfile }: NavbarProps) {
             <div className="flex items-center gap-2">
               <Link
                 href="/login"
-                className="px-4 py-1.5 rounded-full bg-[#1C1E22] text-[#D2F367] hover:bg-[#26292E] text-xs font-semibold transition shadow-sm"
+                className="px-4 py-1.5 rounded-full bg-[#1C1E22] text-[#88BC3C] hover:bg-[#26292E] text-xs font-semibold transition shadow-sm border border-white/10"
               >
                 Masuk
               </Link>

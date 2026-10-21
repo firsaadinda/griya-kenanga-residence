@@ -81,7 +81,7 @@ export function Forbidden403({
           href="/dashboard"
           className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-[#1C1E22] hover:bg-[#26292E] text-white text-xs font-semibold shadow-sm transition"
         >
-          <Home className="w-4 h-4 text-[#D2F367]" />
+          <Home className="w-4 h-4 text-[#88BC3C]" />
           <span>Kembali ke Beranda Sah</span>
         </Link>
 

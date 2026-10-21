@@ -284,22 +284,22 @@ export function UnitClientView({ initialUnits, userRole }: UnitClientViewProps) 
                     {isLantai1 && (
                       <>
                         <rect x="30" y="40" width="80" height="120" stroke="#FFFFFF" strokeWidth="1.5" />
-                        <rect x="130" y="20" width="140" height="140" rx="8" stroke="#D2F367" strokeWidth="2" strokeDasharray="3 3" />
-                        <circle cx="200" cy="90" r="25" fill="#D2F367" fillOpacity="0.2" />
+                        <rect x="130" y="20" width="140" height="140" rx="8" stroke="#5E8826" strokeWidth="2" strokeDasharray="3 3" />
+                        <circle cx="200" cy="90" r="25" fill="#5E8826" fillOpacity="0.25" />
                       </>
                     )}
                     {isLantai2 && (
                       <>
                         <rect x="20" y="25" width="120" height="130" stroke="#FFFFFF" strokeWidth="1.5" />
-                        <rect x="160" y="30" width="110" height="60" rx="6" stroke="#D2F367" strokeWidth="2" />
-                        <line x1="170" y1="60" x2="260" y2="60" stroke="#D2F367" strokeWidth="2" strokeDasharray="4 2" />
+                        <rect x="160" y="30" width="110" height="60" rx="6" stroke="#5E8826" strokeWidth="2" />
+                        <line x1="170" y1="60" x2="260" y2="60" stroke="#88BC3C" strokeWidth="2" strokeDasharray="4 2" />
                       </>
                     )}
                     {isLantai3 && (
                       <>
-                        <rect x="25" y="15" width="250" height="150" rx="10" stroke="#D2F367" strokeWidth="2" />
+                        <rect x="25" y="15" width="250" height="150" rx="10" stroke="#5E8826" strokeWidth="2" />
                         <rect x="50" y="45" width="90" height="100" fill="#FFFFFF" fillOpacity="0.15" />
-                        <circle cx="210" cy="70" r="18" fill="#D2F367" fillOpacity="0.3" />
+                        <circle cx="210" cy="70" r="18" fill="#5E8826" fillOpacity="0.3" />
                       </>
                     )}
                   </svg>
@@ -308,7 +308,7 @@ export function UnitClientView({ initialUnits, userRole }: UnitClientViewProps) 
                 {/* Baris Atas Wadah Gambar: Kode Unit & Badge Status */}
                 <div className="relative z-10 flex items-center justify-between">
                   <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/95 backdrop-blur-md text-xs font-bold text-[#26292E] shadow-sm">
-                    <span className="w-2 h-2 rounded-full bg-[#D2F367]" />
+                    <span className="w-2 h-2 rounded-full bg-[#5E8826]" />
                     {u.kode}
                   </span>
 
@@ -319,7 +319,7 @@ export function UnitClientView({ initialUnits, userRole }: UnitClientViewProps) 
                   </span>
                 </div>
 
-                {/* Baris Bawah Wadah Gambar: Badge Harga Hijau Muda (#D2F367) */}
+                {/* Baris Bawah Wadah Gambar: Badge Harga Elegan */}
                 <div className="relative z-10 flex items-end justify-between">
                   <div>
                     <span className="block text-[10px] text-[#A6ABB2] uppercase font-semibold">
@@ -330,7 +330,7 @@ export function UnitClientView({ initialUnits, userRole }: UnitClientViewProps) 
                     </span>
                   </div>
 
-                  <span className="px-3 py-1.5 rounded-full bg-[#D2F367] text-[#1C1E22] text-xs font-bold tracking-tight shadow-sm">
+                  <span className="px-3 py-1.5 rounded-full bg-[#1C1E22] text-[#88BC3C] border border-[#5E8826]/40 text-xs font-bold tracking-tight shadow-sm">
                     Rp{(u.harga_sewa_bulanan / 1000).toLocaleString("id-ID")} rb/bln
                   </span>
                 </div>
@@ -378,9 +378,9 @@ export function UnitClientView({ initialUnits, userRole }: UnitClientViewProps) 
                       <button
                         type="button"
                         onClick={() => openHargaModal(u)}
-                        className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-full bg-[#1C1E22] hover:bg-[#26292E] text-white text-xs font-semibold shadow-sm transition"
+                        className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-full bg-[#1C1E22] hover:bg-[#26292E] text-white text-xs font-semibold shadow-sm transition border border-white/10"
                       >
-                        <Edit2 className="w-3.5 h-3.5 text-[#D2F367]" />
+                        <Edit2 className="w-3.5 h-3.5 text-[#88BC3C]" />
                         <span>Ubah Harga</span>
                       </button>
                     </>
@@ -501,7 +501,7 @@ export function UnitClientView({ initialUnits, userRole }: UnitClientViewProps) 
               >
                 {isPending ? (
                   <>
-                    <Loader2 className="w-3.5 h-3.5 animate-spin text-[#D2F367]" />
+                    <Loader2 className="w-3.5 h-3.5 animate-spin text-[#88BC3C]" />
                     <span>Menyimpan...</span>
                   </>
                 ) : (
@@ -588,7 +588,7 @@ export function UnitClientView({ initialUnits, userRole }: UnitClientViewProps) 
               >
                 {isPending ? (
                   <>
-                    <Loader2 className="w-3.5 h-3.5 animate-spin text-[#D2F367]" />
+                    <Loader2 className="w-3.5 h-3.5 animate-spin text-[#88BC3C]" />
                     <span>Menyimpan...</span>
                   </>
                 ) : (
