@@ -1,6 +1,6 @@
 import React from "react";
 import Link from "next/link";
-import { ArrowRight, Box } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 
 interface StaggeredGalleryCardProps {
   title?: string;
@@ -55,13 +55,7 @@ export function StaggeredGalleryCard({
           </Link>
         </div>
 
-        {/* Baris Bawah di dalam gambar: Badge 3D */}
-        <div className="relative z-10 flex items-center justify-start">
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-black/60 backdrop-blur-md text-[10px] font-medium text-white/90 border border-white/20">
-            <Box className="w-3 h-3 text-[#88BC3C]" />
-            <span>Tipe Studio Eksklusif</span>
-          </span>
-        </div>
+
       </div>
 
       {/* Bagian Bawah: Susunan Tumpukan Avatar Penghuni & Status Lunas */}

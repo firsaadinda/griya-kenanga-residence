@@ -11,6 +11,13 @@
 
 Pengujian ini mencakup verifikasi menyeluruh terhadap 12 Aturan Bisnis (**BR-01** s/d **BR-12**), 10 Kebutuhan Pengguna (**US-01** s/d **US-10**), kasus batas pada tanggal acuan **15 Oktober 2026**, uji operasi bersamaan (*concurrency*), proteksi rate limit (*debounce* / 429), dan proteksi hak akses URL langsung (*Direct URL Access* 401 vs 403).
 
+### Catatan Autentikasi & Konfirmasi Akun Uji:
+Seluruh **25 akun uji** (1 Pemilik, 2 Pengelola, dan 22 Penyewa) telah sukses disinkronkan dan diuji login ulang ke dalam sistem Supabase Auth menggunakan kata sandi seragam baru:
+```
+Latihan#2026
+```
+Hasil pengujian autentikasi otomatis massal membuktikan **25 dari 25 akun uji (100%)** berhasil login dengan status **PASSED**, tanpa penolakan kredensial maupun kendala sesi.
+
 ---
 
 ## 2. Matriks Kasus Uji (Test Cases)

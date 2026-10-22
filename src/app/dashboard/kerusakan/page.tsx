@@ -96,14 +96,14 @@ export default async function KerusakanPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <span className="inline-block text-[11px] font-semibold text-[#737A84] tracking-widest uppercase">
-            pemeliharaan fasilitas [06]
+            pemeliharaan fasilitas
           </span>
           <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-[#26292E]">
             Laporan Kerusakan,{" "}
             <span className="text-[#737A84] font-normal">tanggap & transparan</span>
           </h1>
           <p className="text-xs sm:text-sm text-[#737A84] mt-1">
-            Maksimal 3 tiket terbuka per penyewa (BR-11) dan persetujuan wajib Pemilik untuk estimasi &gt; Rp1.000.000 (BR-12).
+            Maksimal 3 tiket terbuka per penyewa dan persetujuan wajib Pemilik untuk estimasi &gt; Rp1.000.000.
           </p>
         </div>
 

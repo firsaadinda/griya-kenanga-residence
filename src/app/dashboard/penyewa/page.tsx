@@ -86,7 +86,7 @@ export default async function PenyewaPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <span className="inline-block text-[11px] font-semibold text-[#737A84] tracking-widest uppercase">
-            direktori penghuni [03]
+            direktori penghuni
           </span>
           <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-[#26292E]">
             Kelola Data Penyewa,{" "}
@@ -95,7 +95,7 @@ export default async function PenyewaPage() {
           <p className="text-xs sm:text-sm text-[#737A84] mt-1">
             Data 22 penyewa terdaftar. Mode:{" "}
             <strong className="text-[#26292E] capitalize">
-              {profile.peran === "pemilik" ? "Penyamaran NIK (Pemilik - BR-10)" : "Akses Penuh (Pengelola)"}
+              {profile.peran === "pemilik" ? "Penyamaran NIK (Pemilik)" : "Akses Penuh (Pengelola)"}
             </strong>
             .
           </p>

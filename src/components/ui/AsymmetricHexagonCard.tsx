@@ -1,6 +1,6 @@
 import React from "react";
 import Link from "next/link";
-import { ArrowUpRight, Box } from "lucide-react";
+import { ArrowUpRight } from "lucide-react";
 
 interface AsymmetricHexagonCardProps {
   blockTitle?: string;
@@ -40,14 +40,6 @@ export function AsymmetricHexagonCard({
           <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/95 backdrop-blur-md text-[11px] font-semibold text-[#26292E] shadow-sm border border-white/40">
             <span className="w-2 h-2 rounded-full bg-[#5E8826] animate-pulse"></span>
             {blockTitle}
-          </span>
-        </div>
-
-        {/* Badge 3D & 5 Foto di Pojok Kanan Atas */}
-        <div className="absolute top-3.5 right-3.5 z-10">
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#1C1E22]/90 backdrop-blur-md text-[10px] font-bold text-[#88BC3C] border border-[#5E8826]/40 shadow-sm">
-            <Box className="w-3 h-3 text-[#88BC3C]" />
-            <span>5 Foto + 3D</span>
           </span>
         </div>
 

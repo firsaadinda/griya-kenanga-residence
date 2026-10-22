@@ -5,6 +5,8 @@ import Link from "next/link";
 import { ArrowLeft, Building2 } from "lucide-react";
 import { UnitClientView, UnitItem } from "./UnitClientView";
 
+export const dynamic = "force-dynamic";
+
 export default async function UnitPage() {
   // Guard: Hanya Pemilik & Pengelola yang diizinkan (Penyewa -> 403)
   const profile = await requireRole(["pemilik", "pengelola"], "/dashboard/unit");
@@ -63,7 +65,7 @@ export default async function UnitPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <span className="inline-block text-[11px] font-semibold text-[#737A84] tracking-widest uppercase">
-            katalog unit [02]
+            katalog unit
           </span>
           <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-[#26292E]">
             Kelola 24 Unit,{" "}

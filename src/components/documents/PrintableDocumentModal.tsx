@@ -241,7 +241,7 @@ export function PrintableDocumentModal({
                           Biaya Sewa Unit {invoiceData.unit_kode} ({invoiceData.periode})
                         </span>
                         <span className="text-[10px] text-[#737A84]">
-                          Tarif sewa bulanan terkunci resmi (Sesuai Aturan Bisnis BR-04)
+                          Tarif sewa bulanan terkunci resmi
                         </span>
                       </td>
                       <td className="py-3 text-right font-semibold text-[#1C1E22]">
@@ -254,7 +254,7 @@ export function PrintableDocumentModal({
                           Denda Keterlambatan Pembayaran
                         </span>
                         <span className="text-[10px] text-[#737A84]">
-                          Rp20.000/hari setelah tanggal 10 (Maksimal Rp200.000, Aturan Bisnis BR-07)
+                          Rp20.000/hari setelah tanggal 10 (Maksimal Rp200.000)
                         </span>
                       </td>
                       <td className="py-3 text-right font-semibold text-rose-600">
@@ -374,7 +374,7 @@ export function PrintableDocumentModal({
                 <div className="p-3.5 rounded-xl border border-[#E8EAEC] bg-white flex items-center justify-between">
                   <div>
                     <span className="font-bold text-xs text-[#1C1E22] block">
-                      Harga Sewa Bulanan Terkunci (Aturan Bisnis BR-04)
+                      Harga Sewa Bulanan Terkunci
                     </span>
                     <span className="text-[10px] text-[#737A84]">
                       Harga sewa tidak akan mengalami kenaikan selama masa kontrak sewa masih berlangsung.
@@ -387,7 +387,7 @@ export function PrintableDocumentModal({
 
                 <ul className="list-disc pl-5 space-y-1.5 text-[11px] text-[#737A84] leading-relaxed">
                   <li>Tagihan bulanan diterbitkan secara otomatis setiap tanggal 1 dan jatuh tempo pada tanggal 10 tiap bulannya.</li>
-                  <li>Pembayaran yang melampaui tanggal 10 dikenakan denda keterlambatan sebesar Rp20.000/hari hingga batas maksimal Rp200.000 (BR-07).</li>
+                  <li>Pembayaran yang melampaui tanggal 10 dikenakan denda keterlambatan sebesar Rp20.000/hari hingga batas maksimal Rp200.000.</li>
                   <li>Segala kerusakan fasilitas unit wajib segera dilaporkan melalui portal aplikasi Griya Kenanga Residence.</li>
                   <li>Penyewa berkewajiban mematuhi norma ketertiban bersama dan kebersihan lingkungan hunian Griya Kenanga Residence.</li>
                 </ul>

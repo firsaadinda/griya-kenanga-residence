@@ -498,7 +498,7 @@ export function KontrakClientView({
                     disabled={isPending}
                     className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-full bg-[#F6F7F9] hover:bg-[#E8EAEC] text-[#26292E] text-xs font-semibold border border-[#E8EAEC] transition disabled:opacity-50 cursor-pointer"
                   >
-                    <span>Selesaikan Kontrak (BR-05)</span>
+                    <span>Selesaikan Kontrak</span>
                   </button>
                 )}
 
@@ -581,7 +581,7 @@ export function KontrakClientView({
             <div className="flex items-center justify-between">
               <div>
                 <span className="text-[10px] font-bold text-[#737A84] uppercase tracking-widest">
-                  Perjanjian Sewa Baru [BR-01 s/d BR-04]
+                  Perjanjian Sewa Baru
                 </span>
                 <h2 className="text-xl font-bold text-[#26292E]">Buat Kontrak Baru</h2>
               </div>
@@ -706,7 +706,7 @@ export function KontrakClientView({
             <div className="flex items-center justify-between">
               <div>
                 <span className="text-[10px] font-bold text-[#D32F2F] uppercase tracking-widest">
-                  Pengakhiran Kontrak [BR-05]
+                  Pengakhiran Kontrak
                 </span>
                 <h2 className="text-xl font-bold text-[#26292E]">
                   Akhiri Kontrak {activeKontrakTarget.nomor}
@@ -818,10 +818,10 @@ export function KontrakClientView({
 
             <p className="text-xs text-[#737A84] leading-relaxed">
               {confirmModal.action === "aktifkan"
-                ? "Apakah Anda yakin ingin mengaktifkan kontrak ini? Sistem akan memvalidasi bahwa identitas penyewa sudah diverifikasi oleh Pengelola dan tidak ada kontrak aktif lain (BR-03)."
+                ? "Apakah Anda yakin ingin mengaktifkan kontrak ini? Sistem akan memvalidasi bahwa identitas penyewa sudah diverifikasi oleh Pengelola dan tidak ada kontrak aktif lain."
                 : confirmModal.action === "batalkan"
                 ? "Apakah Anda yakin ingin membatalkan draf kontrak ini? Draf yang dibatalkan tidak dapat diaktifkan kembali."
-                : "Apakah Anda yakin ingin menandai kontrak ini sebagai selesai (BR-05)? Pastikan seluruh kewajiban sewa telah tuntas."}
+                : "Apakah Anda yakin ingin menandai kontrak ini sebagai selesai? Pastikan seluruh kewajiban sewa telah tuntas."}
             </p>
 
             <div className="flex items-center justify-end gap-2 pt-2">

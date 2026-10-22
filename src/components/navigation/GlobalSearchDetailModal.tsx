@@ -124,6 +124,28 @@ export function GlobalSearchDetailModal({ item, onClose }: GlobalSearchDetailMod
           {/* ==================================================== */}
           {item.category === "unit" && raw.unit && (
             <div className="space-y-4">
+              {/* Foto Asli Sesuai Lantai Unit */}
+              <div className="relative w-full h-36 rounded-2xl overflow-hidden bg-[#26292E]">
+                <img
+                  src={
+                    raw.unit.lantai === 1
+                      ? "/units/lantai-1-standar.jpg"
+                      : raw.unit.lantai === 2
+                      ? "/units/lantai-2-ac.jpg"
+                      : "/units/lantai-3-studio.jpg"
+                  }
+                  alt={`Unit ${raw.unit.kode}`}
+                  className="w-full h-full object-cover object-center"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                <div className="absolute bottom-2.5 left-3.5 right-3.5 flex items-center justify-between text-white text-xs">
+                  <span className="font-bold">Unit {raw.unit.kode} • Blok {raw.unit.kode.charAt(0)} (Lantai {raw.unit.lantai})</span>
+                  <span className="px-2.5 py-0.5 rounded-full bg-[#1C1E22]/90 text-[#88BC3C] text-[10px] font-bold border border-[#5E8826]/40 uppercase">
+                    {raw.unit.tipe}
+                  </span>
+                </div>
+              </div>
+
               <div className="grid grid-cols-2 gap-3">
                 <div className="bg-[#F6F7F9] p-3.5 rounded-2xl border border-[#E8EAEC]">
                   <span className="text-[10px] font-bold text-[#737A84] uppercase tracking-wider block">

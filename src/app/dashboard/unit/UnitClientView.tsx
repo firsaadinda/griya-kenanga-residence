@@ -255,9 +255,9 @@ export function UnitClientView({ initialUnits, userRole }: UnitClientViewProps) 
         <>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {paginatedUnits.map((u) => {
-          const isLantai1 = u.lantai === 1;
-          const isLantai2 = u.lantai === 2;
-          const isLantai3 = u.lantai === 3;
+          const isLantai1 = Number(u.lantai) === 1 || u.kode.startsWith("A");
+          const isLantai2 = Number(u.lantai) === 2 || u.kode.startsWith("B");
+          const isLantai3 = Number(u.lantai) === 3 || u.kode.startsWith("C");
           const isTargeted = targetIdParam && u.id === targetIdParam;
 
           const statusColor =
@@ -266,6 +266,14 @@ export function UnitClientView({ initialUnits, userRole }: UnitClientViewProps) 
               : u.status === "perbaikan"
               ? "bg-[#FFF4E5] text-[#9A5B08] border-[#FFE2BA]"
               : "bg-[#F1F3F5] text-[#555A61] border-[#E0E3E6]";
+
+          // Foto asli unit berdasarkan lantai (Lampiran 1: Lantai 1, Lampiran 2: Lantai 2, Lampiran 3: Lantai 3)
+          const photoSrc =
+            isLantai1
+              ? "/units/lantai-1-standar.jpg"
+              : isLantai2
+              ? "/units/lantai-2-ac.jpg"
+              : "/units/lantai-3-studio.jpg";
 
           return (
             <div
@@ -276,34 +284,17 @@ export function UnitClientView({ initialUnits, userRole }: UnitClientViewProps) 
                   : "border-[#E8EAEC] shadow-[0_8px_30px_rgba(0,0,0,0.04)] hover:shadow-lg"
               }`}
             >
-              {/* Wadah Visual Arsitektur dengan Lekukan Asimetris & Notch Monte x Terra */}
+              {/* Wadah Visual Arsitektur dengan Foto Asli Berdasarkan Lantai Unit */}
               <div className="relative w-full h-44 rounded-[22px] overflow-hidden bg-[#26292E] flex flex-col justify-between p-3.5">
-                {/* SVG Visual Interior / Gedung Berdasarkan Tipe */}
-                <div className="absolute inset-0 bg-gradient-to-tr from-[#1C1E22] via-[#2A2E35] to-[#3B4049]">
-                  <svg className="w-full h-full opacity-25" viewBox="0 0 300 180" fill="none">
-                    {isLantai1 && (
-                      <>
-                        <rect x="30" y="40" width="80" height="120" stroke="#FFFFFF" strokeWidth="1.5" />
-                        <rect x="130" y="20" width="140" height="140" rx="8" stroke="#5E8826" strokeWidth="2" strokeDasharray="3 3" />
-                        <circle cx="200" cy="90" r="25" fill="#5E8826" fillOpacity="0.25" />
-                      </>
-                    )}
-                    {isLantai2 && (
-                      <>
-                        <rect x="20" y="25" width="120" height="130" stroke="#FFFFFF" strokeWidth="1.5" />
-                        <rect x="160" y="30" width="110" height="60" rx="6" stroke="#5E8826" strokeWidth="2" />
-                        <line x1="170" y1="60" x2="260" y2="60" stroke="#88BC3C" strokeWidth="2" strokeDasharray="4 2" />
-                      </>
-                    )}
-                    {isLantai3 && (
-                      <>
-                        <rect x="25" y="15" width="250" height="150" rx="10" stroke="#5E8826" strokeWidth="2" />
-                        <rect x="50" y="45" width="90" height="100" fill="#FFFFFF" fillOpacity="0.15" />
-                        <circle cx="210" cy="70" r="18" fill="#5E8826" fillOpacity="0.3" />
-                      </>
-                    )}
-                  </svg>
-                </div>
+                {/* Foto Unit Sesuai Lantai */}
+                <img
+                  src={photoSrc}
+                  alt={`Unit ${u.kode} - Lantai ${u.lantai}`}
+                  className="absolute inset-0 w-full h-full object-cover object-center group-hover:scale-108 transition-transform duration-700 ease-out"
+                />
+
+                {/* Ambient Dark Gradient Overlay agar Informasi Terbaca Kontras & Tajam */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-black/50 pointer-events-none" />
 
                 {/* Baris Atas Wadah Gambar: Kode Unit & Badge Status */}
                 <div className="relative z-10 flex items-center justify-between">
@@ -313,7 +304,7 @@ export function UnitClientView({ initialUnits, userRole }: UnitClientViewProps) 
                   </span>
 
                   <span
-                    className={`px-2.5 py-1 rounded-full text-[10px] font-bold border uppercase tracking-wider ${statusColor}`}
+                    className={`px-2.5 py-1 rounded-full text-[10px] font-bold border uppercase tracking-wider backdrop-blur-md shadow-xs ${statusColor}`}
                   >
                     {u.status}
                   </span>
@@ -322,15 +313,15 @@ export function UnitClientView({ initialUnits, userRole }: UnitClientViewProps) 
                 {/* Baris Bawah Wadah Gambar: Badge Harga Elegan */}
                 <div className="relative z-10 flex items-end justify-between">
                   <div>
-                    <span className="block text-[10px] text-[#A6ABB2] uppercase font-semibold">
+                    <span className="block text-[10px] text-white/90 uppercase font-semibold drop-shadow-xs">
                       Blok {u.kode[0]} • Lt {u.lantai} ({u.tipe.toUpperCase()})
                     </span>
-                    <span className="text-xs font-medium text-white/90">
+                    <span className="text-xs font-medium text-white/95 drop-shadow-xs">
                       Luas: {u.luas_m2} m²
                     </span>
                   </div>
 
-                  <span className="px-3 py-1.5 rounded-full bg-[#1C1E22] text-[#88BC3C] border border-[#5E8826]/40 text-xs font-bold tracking-tight shadow-sm">
+                  <span className="px-3 py-1.5 rounded-full bg-[#1C1E22]/90 backdrop-blur-md text-[#88BC3C] border border-[#5E8826]/40 text-xs font-bold tracking-tight shadow-sm">
                     Rp{(u.harga_sewa_bulanan / 1000).toLocaleString("id-ID")} rb/bln
                   </span>
                 </div>
@@ -406,14 +397,14 @@ export function UnitClientView({ initialUnits, userRole }: UnitClientViewProps) 
         </>
       )}
 
-      {/* MODAL UBAH STATUS (PENGELOLA - BR-04) */}
+      {/* MODAL UBAH STATUS (PENGELOLA) */}
       {modalMode === "status" && selectedUnit && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-in fade-in">
           <div className="w-full max-w-md rounded-[28px] bg-white p-6 shadow-2xl border border-[#E8EAEC] space-y-5">
             <div className="flex items-center justify-between">
               <div>
                 <span className="text-[10px] font-bold text-[#737A84] uppercase tracking-widest">
-                  Operasional Unit [BR-04]
+                  Operasional Unit
                 </span>
                 <h2 className="text-xl font-bold text-[#26292E]">
                   Ubah Status Unit {selectedUnit.kode}
@@ -428,6 +419,28 @@ export function UnitClientView({ initialUnits, userRole }: UnitClientViewProps) 
               >
                 <X className="w-4 h-4" />
               </button>
+            </div>
+
+            {/* Thumbnail Foto Unit Sesuai Lantai */}
+            <div className="relative w-full h-28 rounded-2xl overflow-hidden bg-[#26292E]">
+              <img
+                src={
+                  selectedUnit.lantai === 1
+                    ? "/units/lantai-1-standar.jpg"
+                    : selectedUnit.lantai === 2
+                    ? "/units/lantai-2-ac.jpg"
+                    : "/units/lantai-3-studio.jpg"
+                }
+                alt={selectedUnit.kode}
+                className="w-full h-full object-cover object-center"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+              <div className="absolute bottom-2.5 left-3.5 right-3.5 flex items-center justify-between text-white text-xs">
+                <span className="font-bold">Unit {selectedUnit.kode} • Blok {selectedUnit.kode[0]} (Lantai {selectedUnit.lantai})</span>
+                <span className="px-2.5 py-0.5 rounded-full bg-[#1C1E22]/90 text-[#88BC3C] text-[10px] font-bold border border-[#5E8826]/40 uppercase">
+                  {selectedUnit.tipe}
+                </span>
+              </div>
             </div>
 
             <div className="space-y-4">
@@ -455,7 +468,7 @@ export function UnitClientView({ initialUnits, userRole }: UnitClientViewProps) 
 
               {newStatus === "nonaktif" && (
                 <div className="p-3 rounded-2xl bg-[#FFF9E6] border border-[#FFE8A3] text-xs text-[#8A6D14] space-y-1">
-                  <strong>Peringatan BR-04:</strong>
+                  <strong>Peringatan:</strong>
                   <p>
                     Unit yang masih memiliki kontrak draf atau aktif <strong>dilarang</strong> dinonaktifkan.
                   </p>
@@ -513,14 +526,14 @@ export function UnitClientView({ initialUnits, userRole }: UnitClientViewProps) 
         </div>
       )}
 
-      {/* MODAL UBAH HARGA SEWA (PEMILIK - BR-04) */}
+      {/* MODAL UBAH HARGA SEWA (PEMILIK) */}
       {modalMode === "harga" && selectedUnit && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-in fade-in">
           <div className="w-full max-w-md rounded-[28px] bg-white p-6 shadow-2xl border border-[#E8EAEC] space-y-5">
             <div className="flex items-center justify-between">
               <div>
                 <span className="text-[10px] font-bold text-[#737A84] uppercase tracking-widest">
-                  Kebijakan Tarif [BR-04]
+                  Kebijakan Tarif
                 </span>
                 <h2 className="text-xl font-bold text-[#26292E]">
                   Ubah Harga Unit {selectedUnit.kode}
@@ -535,6 +548,28 @@ export function UnitClientView({ initialUnits, userRole }: UnitClientViewProps) 
               >
                 <X className="w-4 h-4" />
               </button>
+            </div>
+
+            {/* Thumbnail Foto Unit Sesuai Lantai */}
+            <div className="relative w-full h-28 rounded-2xl overflow-hidden bg-[#26292E]">
+              <img
+                src={
+                  selectedUnit.lantai === 1
+                    ? "/units/lantai-1-standar.jpg"
+                    : selectedUnit.lantai === 2
+                    ? "/units/lantai-2-ac.jpg"
+                    : "/units/lantai-3-studio.jpg"
+                }
+                alt={selectedUnit.kode}
+                className="w-full h-full object-cover object-center"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+              <div className="absolute bottom-2.5 left-3.5 right-3.5 flex items-center justify-between text-white text-xs">
+                <span className="font-bold">Unit {selectedUnit.kode} • Blok {selectedUnit.kode[0]} (Lantai {selectedUnit.lantai})</span>
+                <span className="px-2.5 py-0.5 rounded-full bg-[#1C1E22]/90 text-[#88BC3C] text-[10px] font-bold border border-[#5E8826]/40 uppercase">
+                  {selectedUnit.tipe}
+                </span>
+              </div>
             </div>
 
             {feedback && (
@@ -552,7 +587,7 @@ export function UnitClientView({ initialUnits, userRole }: UnitClientViewProps) 
                   Rp{selectedUnit.harga_sewa_bulanan.toLocaleString("id-ID")}
                 </strong>
                 <p className="mt-1 text-[11px]">
-                  <strong>Catatan BR-04:</strong> Harga pada kontrak yang sudah dibuat tetap terkunci dan tidak ikut berubah.
+                  <strong>Catatan:</strong> Harga pada kontrak yang sudah dibuat tetap terkunci dan tidak ikut berubah.
                 </p>
               </div>
 

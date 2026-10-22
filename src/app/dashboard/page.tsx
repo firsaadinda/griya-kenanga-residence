@@ -279,10 +279,6 @@ export default async function DashboardPage() {
         {/* Header Seksi & Judul Two-Tone Editorial */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
           <div className="space-y-2 max-w-2xl">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/80 border border-[#E8EAEC] text-[11px] font-semibold text-[#4A6C2F] shadow-2xs backdrop-blur-xs">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#5E8826] animate-pulse" />
-              <span className="tracking-wider uppercase">Griya Kenanga Residence • Sleman</span>
-            </div>
             <h1 className="text-3xl sm:text-4xl lg:text-[42px] font-extrabold tracking-tight text-[#1C1E22] leading-[1.18]">
               Hunian tertata,{" "}
               <span className="text-[#737A84] font-normal">
@@ -321,16 +317,13 @@ export default async function DashboardPage() {
           <div className="rounded-[26px] bg-white p-5 sm:p-6 border border-[#E8EAEC] shadow-[0_8px_30px_rgba(0,0,0,0.03)] hover:shadow-[0_16px_40px_rgba(0,0,0,0.07)] hover:-translate-y-0.5 transition-all duration-300 flex flex-col justify-between space-y-3">
             <div className="flex items-center justify-between">
               <span className="text-[10px] font-bold uppercase tracking-wider text-[#737A84]">Unit Terisi</span>
-              <div className="w-8 h-8 rounded-xl bg-[#F2F7EC] text-[#4A6C2F] flex items-center justify-center border border-[#5E8826]/20 shadow-2xs">
-                <Home className="w-4 h-4" />
-              </div>
             </div>
             <div>
               <div className="flex items-baseline justify-between gap-2">
                 <p className="text-2xl sm:text-3xl font-black text-[#1C1E22] tracking-tight">
                   19 / 23
                 </p>
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-[#F2F7EC] text-[#4A6C2F] border border-[#5E8826]/20">
+                <span className="text-[11px] font-bold text-[#4A6C2F]">
                   82,6%
                 </span>
               </div>
@@ -347,16 +340,13 @@ export default async function DashboardPage() {
           <div className="rounded-[26px] bg-white p-5 sm:p-6 border border-[#E8EAEC] shadow-[0_8px_30px_rgba(0,0,0,0.03)] hover:shadow-[0_16px_40px_rgba(0,0,0,0.07)] hover:-translate-y-0.5 transition-all duration-300 flex flex-col justify-between space-y-3">
             <div className="flex items-center justify-between">
               <span className="text-[10px] font-bold uppercase tracking-wider text-[#737A84]">Tagihan Okt</span>
-              <div className="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center border border-emerald-200 shadow-2xs">
-                <Receipt className="w-4 h-4" />
-              </div>
             </div>
             <div>
               <div className="flex items-baseline justify-between gap-2">
                 <p className="text-2xl sm:text-3xl font-black text-emerald-700 tracking-tight">
                   13 / 19
                 </p>
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-800 border border-emerald-200">
+                <span className="text-[11px] font-bold text-emerald-800">
                   Lunas
                 </span>
               </div>
@@ -373,17 +363,13 @@ export default async function DashboardPage() {
           <div className="rounded-[26px] bg-white p-5 sm:p-6 border border-[#E8EAEC] shadow-[0_8px_30px_rgba(0,0,0,0.03)] hover:shadow-[0_16px_40px_rgba(0,0,0,0.07)] hover:-translate-y-0.5 transition-all duration-300 flex flex-col justify-between space-y-3">
             <div className="flex items-center justify-between">
               <span className="text-[10px] font-bold uppercase tracking-wider text-[#737A84]">Lewat Tempo</span>
-              <div className="w-8 h-8 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center border border-rose-200 shadow-2xs">
-                <Clock className="w-4 h-4" />
-              </div>
             </div>
             <div>
               <div className="flex items-baseline justify-between gap-2">
                 <p className="text-2xl sm:text-3xl font-black text-[#D32F2F] tracking-tight">
                   7 Tagihan
                 </p>
-                <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-md bg-rose-50 text-rose-800 border border-rose-200">
-                  <span className="w-1.5 h-1.5 rounded-full bg-rose-600 animate-pulse" />
+                <span className="text-[11px] font-bold text-rose-800">
                   Mendesak
                 </span>
               </div>
@@ -400,16 +386,13 @@ export default async function DashboardPage() {
           <div className="rounded-[26px] bg-white p-5 sm:p-6 border border-[#E8EAEC] shadow-[0_8px_30px_rgba(0,0,0,0.03)] hover:shadow-[0_16px_40px_rgba(0,0,0,0.07)] hover:-translate-y-0.5 transition-all duration-300 flex flex-col justify-between space-y-3">
             <div className="flex items-center justify-between">
               <span className="text-[10px] font-bold uppercase tracking-wider text-[#737A84]">Kerusakan</span>
-              <div className="w-8 h-8 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center border border-amber-200 shadow-2xs">
-                <Wrench className="w-4 h-4" />
-              </div>
             </div>
             <div>
               <div className="flex items-baseline justify-between gap-2">
                 <p className="text-2xl sm:text-3xl font-black text-[#1C1E22] tracking-tight">
                   5 Laporan
                 </p>
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-amber-50 text-amber-900 border border-amber-200">
+                <span className="text-[11px] font-bold text-amber-900">
                   Perlu Aksi
                 </span>
               </div>
@@ -499,21 +482,21 @@ export default async function DashboardPage() {
                   unitTitle="Blok A • Standar (9 m²)"
                   priceRange="Rp1,45 Jt / bln"
                   floorLabel="Lantai 1"
-                  imageSrc="/units/tipe-a/pov-1.jpg"
+                  imageSrc="/units/lantai-1-standar.jpg"
                   href="/dashboard/unit?tipe=standar"
                 />
                 <HorizontalPropertyCard
                   unitTitle="Blok B • AC (12–14 m²)"
                   priceRange="Rp1,85 - 2,00 Jt"
                   floorLabel="Lantai 2"
-                  imageSrc="/units/tipe-b/pov-2.jpg"
+                  imageSrc="/units/lantai-2-ac.jpg"
                   href="/dashboard/unit?tipe=ac"
                 />
                 <HorizontalPropertyCard
                   unitTitle="Blok C • Studio (20–22 m²)"
                   priceRange="Rp2,75 - 2,90 Jt"
                   floorLabel="Lantai 3"
-                  imageSrc="/units/tipe-c/pov-2.jpg"
+                  imageSrc="/units/lantai-3-studio.jpg"
                   href="/dashboard/unit?tipe=studio"
                 />
               </div>
@@ -535,7 +518,7 @@ export default async function DashboardPage() {
         <div className="flex items-center justify-between">
           <div>
             <span className="inline-block text-[11px] font-semibold text-[#737A84] tracking-widest uppercase">
-              antrean kerja operasional [02]
+              antrean kerja operasional
             </span>
             <h2 className="text-2xl font-bold tracking-tight text-[#26292E] mt-0.5">
               Daftar Tindak Lanjut Mendesak

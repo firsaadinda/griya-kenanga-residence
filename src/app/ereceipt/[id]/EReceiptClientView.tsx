@@ -29,6 +29,7 @@ export interface EReceiptData {
   penyewa_hp: string;
   metode_pembayaran: string;
   referensi_transaksi?: string | null;
+  nama_pencatat?: string | null;
 }
 
 function formatRupiah(amount: number): string {
@@ -118,16 +119,18 @@ export function EReceiptClientView({ data }: { data: EReceiptData }) {
         </div>
       </div>
 
-      {/* DOKUMEN INVOICE STANDAR A4 RESMI MAYAR */}
+      {/* DOKUMEN INVOICE STANDAR A4 RESMI */}
       <div className="max-w-[794px] w-full bg-white shadow-2xl rounded-sm print:shadow-none print:w-full print:max-w-none p-10 sm:p-14 relative overflow-hidden text-slate-900">
         
-        {/* Dekorasi Aksen Segitiga Pink & Biru khas Mayar di sudut kanan bawah */}
-        <div className="absolute right-0 bottom-0 pointer-events-none select-none z-0">
-          <svg width="180" height="180" viewBox="0 0 180 180" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M180 90L90 180H180V90Z" fill="#F43F5E" />
-            <path d="M180 125L125 180H180V125Z" fill="#2563EB" />
-          </svg>
-        </div>
+        {/* Dekorasi Aksen Segitiga Pink & Biru khas Mayar di sudut kanan bawah (Hanya jika Mayar) */}
+        {data.metode_pembayaran === "mayar" && (
+          <div className="absolute right-0 bottom-0 pointer-events-none select-none z-0">
+            <svg width="180" height="180" viewBox="0 0 180 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M180 90L90 180H180V90Z" fill="#F43F5E" />
+              <path d="M180 125L125 180H180V125Z" fill="#2563EB" />
+            </svg>
+          </div>
+        )}
 
         {/* 1. HEADER: Logo Perusahaan di Kiri, Tulisan INVOICE Besar di Kanan */}
         <div className="flex items-start justify-between border-b border-slate-100 pb-8 relative z-10">
@@ -156,9 +159,9 @@ export function EReceiptClientView({ data }: { data: EReceiptData }) {
             <h2 className="text-4xl sm:text-5xl font-black tracking-tight text-[#1E293B]">
               INVOICE
             </h2>
-            {/* Status LUNAS / PAID biasa hitam tanpa border dan tanpa centang */}
+            {/* Teks Status: Standar 'LUNAS' untuk Tunai, 'Terkonfirmasi Lunas (Mayar)' untuk Mayar */}
             <p className="mt-1 font-bold text-sm tracking-wider text-slate-900 uppercase">
-              LUNAS / PAID
+              {data.metode_pembayaran === "mayar" ? "Terkonfirmasi Lunas (Mayar)" : "LUNAS"}
             </p>
           </div>
         </div>
@@ -295,9 +298,20 @@ export function EReceiptClientView({ data }: { data: EReceiptData }) {
               <p>
                 Status Transaksi :{" "}
                 <strong className="text-emerald-700 font-bold">
-                  TERKONFIRMASI LUNAS
+                  {data.metode_pembayaran === "mayar"
+                    ? "TERKONFIRMASI LUNAS (MAYAR)"
+                    : "LUNAS"}
                 </strong>
               </p>
+              {/* Tampilkan bagian pencatat jika tunai, sembunyikan jika mayar */}
+              {data.metode_pembayaran === "tunai" && (
+                <p>
+                  Dicatat:{" "}
+                  <strong className="text-slate-800 font-semibold">
+                    {data.nama_pencatat || "Pengelola Kos"}
+                  </strong>
+                </p>
+              )}
               {data.referensi_transaksi && (
                 <p>
                   No. Referensi / ID :{" "}
@@ -309,7 +323,7 @@ export function EReceiptClientView({ data }: { data: EReceiptData }) {
             </div>
           </div>
 
-          {/* Kanan: Ringkasan Total Dokumen Sesuai Template Mayar */}
+          {/* Kanan: Ringkasan Total Dokumen */}
           <div className="space-y-2 text-right">
             <div className="flex justify-between items-center text-slate-600">
               <span className="font-bold uppercase tracking-wider text-[11px]">
@@ -344,7 +358,7 @@ export function EReceiptClientView({ data }: { data: EReceiptData }) {
             SYARAT & KETENTUAN
           </span>
           <p>
-            1. Invoice ini merupakan bukti pembayaran elektronik resmi (e-receipt) yang sah dan diterbitkan secara otomatis setelah dana terverifikasi pada sistem Griya Kenanga Residence.
+            1. Dokumen ini merupakan bukti pembayaran elektronik resmi (e-receipt / kwitansi) yang sah dan diterbitkan secara resmi setelah dana tercatat lunas pada sistem Griya Kenanga Residence.
           </p>
           <p>
             2. Pembayaran sewa mencakup fasilitas kamar sesuai dengan kontrak yang disepakati. Pembayaran yang telah terkonfirmasi lunas tidak dapat dibatalkan atau dikembalikan secara sepihak.
@@ -354,7 +368,7 @@ export function EReceiptClientView({ data }: { data: EReceiptData }) {
           </p>
         </div>
 
-        {/* 6. FOOTER: Informasi Kontak Kiri, Brand Mayar di Kanan */}
+        {/* 6. FOOTER: Informasi Kontak Kiri, Brand Mayar di Kanan (Jika Mayar) */}
         <div className="pt-6 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] text-slate-600 relative z-10">
           <div className="flex flex-wrap items-center gap-4 sm:gap-6">
             <div className="flex items-center gap-1.5">
@@ -388,17 +402,19 @@ export function EReceiptClientView({ data }: { data: EReceiptData }) {
             </div>
           </div>
 
-          {/* Logo & Teks Mayar SimplePay di Sudut Kanan Bawah */}
-          <div className="text-right shrink-0">
-            <div className="flex items-baseline gap-1 justify-end">
-              <span className="text-xl font-black italic tracking-tight text-[#1E40AF]">
-                Mayar
+          {/* Logo & Teks Mayar SimplePay di Sudut Kanan Bawah: Hanya tampil jika metode === 'mayar', sembunyikan jika tunai */}
+          {data.metode_pembayaran === "mayar" && (
+            <div className="text-right shrink-0">
+              <div className="flex items-baseline gap-1 justify-end">
+                <span className="text-xl font-black italic tracking-tight text-[#1E40AF]">
+                  Mayar
+                </span>
+              </div>
+              <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block -mt-1">
+                SimplePay
               </span>
             </div>
-            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block -mt-1">
-              SimplePay
-            </span>
-          </div>
+          )}
         </div>
 
       </div>

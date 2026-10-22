@@ -120,14 +120,14 @@ export default async function KontrakPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <span className="inline-block text-[11px] font-semibold text-[#737A84] tracking-widest uppercase">
-            perjanjian sewa [04]
+            perjanjian sewa
           </span>
           <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-[#26292E]">
             Kelola Kontrak,{" "}
             <span className="text-[#737A84] font-normal">bebas tumpang tindih</span>
           </h1>
           <p className="text-xs sm:text-sm text-[#737A84] mt-1">
-            Penegakan aturan BR-01 (anti iris tanggal sewa) & BR-03 (identitas terverifikasi sebelum aktif). Anda masuk sebagai{" "}
+            Pencegahan tumpang tindih tanggal sewa & verifikasi identitas sebelum aktivasi. Anda masuk sebagai{" "}
             <strong className="text-[#26292E] capitalize">{profile.peran}</strong>.
           </p>
         </div>

@@ -117,22 +117,7 @@ export function BrowserWindowFrame({
 
         {/* Right: Actions */}
         <div className="flex items-center gap-2 text-[#737A84]">
-          {isDashboard ? (
-            <>
-              <span className="hidden sm:inline-flex items-center gap-1.5 text-[10px] font-semibold text-[#4A6C2F] bg-[#F2F7EC] px-2.5 py-0.5 rounded-full border border-[#5E8826]/20">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#5E8826] animate-pulse" />
-                Sistem Aktif
-              </span>
-              <button
-                type="button"
-                onClick={handleToggleFullscreen}
-                title="Layar Penuh (Toggle Fullscreen)"
-                className="w-7 h-7 rounded-full border border-[#D1D5DB] hover:border-[#76A733] hover:text-[#76A733] hover:bg-white flex items-center justify-center transition cursor-pointer"
-              >
-                <Maximize2 className="w-3.5 h-3.5" />
-              </button>
-            </>
-          ) : (
+          {isDashboard ? null : (
             <>
               <Link
                 href="/login"

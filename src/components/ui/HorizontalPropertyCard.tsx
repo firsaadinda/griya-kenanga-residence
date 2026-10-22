@@ -25,10 +25,10 @@ export function HorizontalPropertyCard({
   const resolvedImage =
     imageSrc ||
     (unitTitle.includes("Studio")
-      ? "/units/tipe-c/pov-2.jpg"
+      ? "/units/lantai-3-studio.jpg"
       : unitTitle.includes("AC")
-      ? "/units/tipe-b/pov-2.jpg"
-      : "/units/tipe-a/pov-1.jpg");
+      ? "/units/lantai-2-ac.jpg"
+      : "/units/lantai-1-standar.jpg");
 
   return (
     <Link

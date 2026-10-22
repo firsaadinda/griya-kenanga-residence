@@ -680,7 +680,7 @@ export function TagihanClientView({
       if (!paymentBuktiFile) {
         setAlertState({
           statusCode: 400,
-          message: "Foto bukti transfer wajib diunggah untuk metode transfer (BR-08).",
+          message: "Foto bukti transfer wajib diunggah untuk metode transfer.",
         });
         return;
       }
@@ -818,7 +818,7 @@ export function TagihanClientView({
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <span className="inline-block text-[11px] font-semibold text-[#737A84] tracking-widest uppercase">
-            Keuangan & Penagihan [05]
+            Keuangan & Penagihan
           </span>
           <h1 className="text-3xl font-extrabold tracking-tight text-[#1C1E22]">
             Tagihan
@@ -1115,13 +1115,13 @@ export function TagihanClientView({
                           >
                             Detail
                           </button>
-                          {/* Lihat Bukti – kanan: Membuka link Mayar langsung jika ada, atau E-Receipt Resmi */}
+                          {/* Lihat Bukti – kanan: Untuk tagihan LUNAS, SELALU membuka E-Receipt Resmi (bukan link bayar Mayar) */}
                           <a
-                            href={item.mayar_link || `/ereceipt/${item.id}`}
+                            href={`/ereceipt/${item.id}`}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="inline-flex items-center justify-center gap-1.5 h-8 px-3.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-800 hover:bg-emerald-100 border border-emerald-200 transition cursor-pointer shadow-2xs leading-none"
-                            title="Buka Invoice / Bukti Pembayaran Resmi di Tab Baru"
+                            title="Buka Invoice / E-Receipt Resmi di Tab Baru"
                           >
                             <ExternalLink className="w-3.5 h-3.5 text-emerald-700 shrink-0" />
                             <span>Lihat Bukti</span>
@@ -1661,43 +1661,65 @@ export function TagihanClientView({
               )}
             </div>
 
-            {/* Requirement 3: Banner LUNAS Otomatis dengan Label Lunas dan Waktu Dibayar */}
-            {detailTagihan.status === "lunas" && (
-              <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-xs">
-                    <CheckCircle2 className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-emerald-100 text-emerald-800 border border-emerald-300">
-                        Lunas
-                      </span>
-                      <span className="text-xs font-bold text-emerald-950">
-                        Invoice Terkonfirmasi Lunas (Mayar)
+            {/* Banner LUNAS: Conditional rendering metode Mayar vs Tunai */}
+            {detailTagihan.status === "lunas" && (() => {
+              const lastSahBayar = detailPembayaranList.filter((p) => p.status === "sah").pop();
+              const isTunai = lastSahBayar?.metode === "tunai";
+              const namaPencatat = lastSahBayar?.pencatat?.nama_lengkap ||
+                (lastSahBayar?.tanggal_bayar && lastSahBayar.tanggal_bayar < "2026-10-05"
+                  ? "Bayu Prasetyo"
+                  : "Sinta Maharani");
+
+              return (
+                <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-xl bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-xs">
+                      <CheckCircle2 className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-emerald-100 text-emerald-800 border border-emerald-300">
+                          {isTunai ? "LUNAS" : "Lunas"}
+                        </span>
+                        <span className="text-xs font-bold text-emerald-950">
+                          {isTunai ? "LUNAS" : "Terkonfirmasi Lunas (Mayar)"}
+                        </span>
+                      </div>
+                      <span className="text-[11px] text-emerald-800 block mt-0.5">
+                        {isTunai ? (
+                          <>
+                            Dicatat: <strong className="font-semibold text-emerald-950">{namaPencatat}</strong>
+                            {lastSahBayar?.tanggal_bayar && (
+                              <span className="text-emerald-700 ml-1.5 font-normal">
+                                ({formatTanggalWaktuIndo(lastSahBayar.tanggal_bayar)})
+                              </span>
+                            )}
+                          </>
+                        ) : (
+                          <>
+                            Waktu dibayar otomatis:{" "}
+                            <strong className="font-semibold text-emerald-950">
+                              {formatTanggalWaktuIndo(detailTagihan.dibayar_online_at)}
+                            </strong>
+                          </>
+                        )}
                       </span>
                     </div>
-                    <span className="text-[11px] text-emerald-800 block mt-0.5">
-                      Waktu dibayar otomatis:{" "}
-                      <strong className="font-semibold text-emerald-950">
-                        {formatTanggalWaktuIndo(detailTagihan.dibayar_online_at)}
-                      </strong>
-                    </span>
                   </div>
-                </div>
 
-                <a
-                  href={`/ereceipt/${detailTagihan.id}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-semibold shadow-xs transition shrink-0 cursor-pointer self-start sm:self-auto"
-                  title="Buka E-Receipt Resmi Lunas di Tab Baru"
-                >
-                  <ExternalLink className="w-3.5 h-3.5" />
-                  <span>Lihat Bukti</span>
-                </a>
-              </div>
-            )}
+                  <a
+                    href={`/ereceipt/${detailTagihan.id}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-semibold shadow-xs transition shrink-0 cursor-pointer self-start sm:self-auto"
+                    title="Buka E-Receipt Resmi Lunas di Tab Baru"
+                  >
+                    <ExternalLink className="w-3.5 h-3.5" />
+                    <span>Lihat Bukti</span>
+                  </a>
+                </div>
+              );
+            })()}
 
             {/* Banner Indikator Polling Realtime Aktif */}
             {activePollingId === detailTagihan.id && detailTagihan.status !== "lunas" && (
@@ -1745,7 +1767,7 @@ export function TagihanClientView({
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-1.5 font-bold text-xs text-[#1C1E22]">
                   <Calculator className="w-4 h-4 text-[#737A84]" />
-                  <span>Kalkulator Simulasi Denda (BR-07)</span>
+                  <span>Kalkulator Simulasi Denda</span>
                 </div>
                 <span className="text-[10px] text-[#737A84]">
                   Rp20.000/hari &bull; Maks Rp200.000
@@ -1872,15 +1894,17 @@ export function TagihanClientView({
                               Keterangan: <strong className="text-[#26292E]">Pembayaran Tunai</strong>
                             </span>
                           )}
-                          <span>
-                            Dicatat:{" "}
-                            <strong className="text-[#26292E]">
-                              {p.pencatat?.nama_lengkap ||
-                                (p.tanggal_bayar < "2026-10-05"
-                                  ? "Bayu Prasetyo"
-                                  : "Sinta Maharani")}
-                            </strong>
-                          </span>
+                          {!isMayar && (
+                            <span>
+                              Dicatat:{" "}
+                              <strong className="text-[#26292E]">
+                                {p.pencatat?.nama_lengkap ||
+                                  (p.tanggal_bayar < "2026-10-05"
+                                    ? "Bayu Prasetyo"
+                                    : "Sinta Maharani")}
+                              </strong>
+                            </span>
+                          )}
                         </div>
 
                         {p.status === "dibatalkan" && p.alasan_batal && (
@@ -2119,7 +2143,7 @@ export function TagihanClientView({
               </div>
               <div className="flex justify-between">
                 <span className="text-[#737A84]">Jatuh Tempo:</span>
-                <span className="font-semibold text-[#1C1E22]">Tanggal 10 (BR-06)</span>
+                <span className="font-semibold text-[#1C1E22]">Tanggal 10</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-[#737A84]">Sasaran Tagihan:</span>
@@ -2128,7 +2152,7 @@ export function TagihanClientView({
             </div>
 
             <p className="text-xs text-[#737A84] leading-relaxed">
-              Sistem akan memvalidasi seluruh kontrak sewa berstatus aktif dan menerbitkan invoice bernomor urut resmi (INV-YYYYMM-XXXX). Unit yang sudah memiliki invoice pada periode ini tidak akan dibuatkan tagihan ganda (proteksi BR-06). Apakah Anda yakin ingin memproses?
+              Sistem akan memvalidasi seluruh kontrak sewa berstatus aktif dan menerbitkan invoice bernomor urut resmi (INV-YYYYMM-XXXX). Unit yang sudah memiliki invoice pada periode ini tidak akan dibuatkan tagihan ganda. Apakah Anda yakin ingin memproses?
             </p>
 
             <div className="flex items-center justify-end gap-2 pt-2">

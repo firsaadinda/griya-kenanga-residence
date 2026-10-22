@@ -142,13 +142,6 @@ export function SetelanClientView({
               Kelola integrasi pembayaran online resmi, pantau status webhook, dan audit transaksi realtime.
             </p>
           </div>
-
-          <div className="flex items-center gap-2">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#1C1E22] text-[#88BC3C] border border-[#5E8826]/30 text-xs font-semibold shadow-xs">
-              <Radio className="w-3 h-3 text-[#88BC3C] animate-pulse" />
-              <span>Khusus Pemilik</span>
-            </span>
-          </div>
         </div>
 
         {/* Status Gateway Overview Cards */}
@@ -159,13 +152,6 @@ export function SetelanClientView({
               <span className="text-[11px] font-bold uppercase tracking-wider text-[#737A84]">
                 Status Server Gateway
               </span>
-              <div
-                className={`w-7 h-7 rounded-xl flex items-center justify-center ${
-                  isConnected ? "bg-emerald-50 text-emerald-600" : "bg-rose-50 text-rose-600"
-                }`}
-              >
-                {isConnected ? <Zap className="w-4 h-4" /> : <AlertCircle className="w-4 h-4" />}
-              </div>
             </div>
 
             <div>
@@ -208,9 +194,6 @@ export function SetelanClientView({
               <span className="text-[11px] font-bold uppercase tracking-wider text-[#737A84]">
                 Mode Operasi Mayar
               </span>
-              <div className="w-7 h-7 rounded-xl bg-purple-50 text-purple-700 flex items-center justify-center">
-                <Server className="w-4 h-4" />
-              </div>
             </div>
 
             <div>
@@ -239,9 +222,6 @@ export function SetelanClientView({
               <span className="text-[11px] font-bold uppercase tracking-wider text-[#737A84]">
                 Protokol Keamanan
               </span>
-              <div className="w-7 h-7 rounded-xl bg-blue-50 text-blue-700 flex items-center justify-center">
-                <ShieldCheck className="w-4 h-4" />
-              </div>
             </div>
 
             <div>
@@ -251,9 +231,8 @@ export function SetelanClientView({
               </p>
             </div>
 
-            <div className="pt-2 border-t border-[#F1F3F5] text-[11px] text-emerald-800 flex items-center gap-1.5 font-medium">
-              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-              <span>Proteksi RLS Khusus Owner Aktif</span>
+            <div className="pt-2 border-t border-[#F1F3F5] text-[11px] text-emerald-800 flex items-center font-medium">
+              <span>Proteksi RLS Owner</span>
             </div>
           </div>
         </div>

@@ -389,11 +389,6 @@ export function Navbar({ userProfile }: NavbarProps) {
               </div>
             )}
           </div>
-
-          <div className="hidden lg:flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#F6F7F9] text-xs font-medium text-[#737A84] border border-[#E8EAEC] whitespace-nowrap ml-auto">
-            <span className="w-2 h-2 rounded-full bg-[#5E8826] animate-pulse"></span>
-            <span className="font-semibold text-[#26292E]">15 Okt 2026</span>
-          </div>
         </div>
 
         {/* Sisi Kanan: Kapsul Profil Pengguna Abu Tua (#1C1E22) */}

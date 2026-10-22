@@ -71,7 +71,7 @@ export function WorkQueueTables({
       {/* ========================================================================= */}
       {/* KOLOM KIRI (7 SPAN): TABEL TAGIHAN LEWAT JATUH TEMPO                      */}
       {/* ========================================================================= */}
-      <div className="lg:col-span-7 rounded-[26px] bg-white p-5 sm:p-6 border border-[#E8EAEC] shadow-[0_8px_30px_rgba(0,0,0,0.03)] space-y-4">
+      <div className="lg:col-span-7 h-fit rounded-[26px] bg-white p-5 sm:p-6 border border-[#E8EAEC] shadow-[0_8px_30px_rgba(0,0,0,0.03)] space-y-4">
         <div className="flex items-center justify-between pb-3 border-b border-[#F0F2F4]">
           <div className="flex items-center gap-2.5">
             <span className="w-2.5 h-2.5 rounded-full bg-[#D32F2F] animate-pulse"></span>
@@ -162,6 +162,17 @@ export function WorkQueueTables({
               )}
             </tbody>
           </table>
+        </div>
+
+        {/* Footer Tautan Lihat Semua Tagihan */}
+        <div className="pt-3 border-t border-[#F0F2F4] flex items-center justify-end">
+          <Link
+            href="/dashboard/tagihan"
+            className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#1C1E22] hover:text-[#5E8826] transition group"
+          >
+            <span>Lihat Semua Tagihan</span>
+            <span className="transition-transform group-hover:translate-x-0.5">&rarr;</span>
+          </Link>
         </div>
       </div>
 

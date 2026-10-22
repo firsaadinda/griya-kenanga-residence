@@ -226,11 +226,10 @@ export function LaporanClientView({
         <div>
           <div className="flex items-center gap-2">
             <span className="inline-block text-[11px] font-semibold text-[#737A84] tracking-widest uppercase">
-              eksekutif &amp; audit log [07]
+              eksekutif &amp; audit log
             </span>
-            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-900 font-bold text-[10px] uppercase">
-              <ShieldCheck className="w-3 h-3 text-emerald-700" />
-              Khusus Pemilik (BR-10)
+            <span className="text-emerald-700 font-bold text-[10px] uppercase">
+              Khusus Pemilik
             </span>
           </div>
           <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-[#26292E] mt-1">
@@ -406,35 +405,38 @@ export function LaporanClientView({
                   </div>
                 </div>
 
-                {/* Visual Bar Chart SVG/CSS Interaktif */}
-                <div className="h-56 flex items-end justify-between gap-4 pt-6 px-4 pb-2 border-b border-[#E8EAEC]">
+                {/* Visual Bar Chart Interaktif */}
+                <div className="h-60 flex items-end justify-between gap-4 pt-6 px-4 pb-2 border-b border-[#E8EAEC]">
                   {dataLaporan.monthlyBreakdown.map((m) => {
                     const maxVal = 40; // Skala maksimal 40 Jt
-                    const hDitagihkan = Math.round((m.ditagihkanJt / maxVal) * 100);
-                    const hDiterima = Math.round((m.diterimaJt / maxVal) * 100);
+                    const hDitagihkan = Math.min(100, Math.max(8, Math.round((m.ditagihkanJt / maxVal) * 100)));
+                    const hDiterima = Math.min(100, Math.max(8, Math.round((m.diterimaJt / maxVal) * 100)));
 
                     return (
                       <div key={m.bulanKey} className="flex-1 flex flex-col items-center h-full justify-end group">
-                        <div className="w-full flex items-end justify-center gap-2 h-full">
+                        {/* Container Bar: set fixed height 180px agar percentage height anak terhitung pasti */}
+                        <div className="w-full flex items-end justify-center gap-2 sm:gap-3 h-44">
                           {/* Bar Ditagihkan (Abu Tua #26292E) */}
-                          <div className="flex flex-col items-center w-5 sm:w-7">
-                            <span className="text-[10px] font-bold text-[#26292E] mb-1 group-hover:scale-110 transition-transform">
+                          <div className="flex flex-col items-center justify-end h-full w-5 sm:w-7">
+                            <span className="text-[10px] font-bold text-[#26292E] mb-1 group-hover:scale-110 transition-transform select-none">
                               {m.ditagihkanJt.toFixed(1)}
                             </span>
                             <div
                               style={{ height: `${hDitagihkan}%` }}
-                              className="w-full bg-[#26292E] rounded-t-md transition-all duration-500 shadow-xs"
+                              className="w-full min-h-[8px] bg-[#26292E] rounded-t-md transition-all duration-500 shadow-xs"
+                              title={`Ditagihkan: Rp${m.ditagihkanJt} Jt`}
                             ></div>
                           </div>
 
                           {/* Bar Diterima (Griya Kenanga Olive Green #5E8826) */}
-                          <div className="flex flex-col items-center w-5 sm:w-7">
-                            <span className="text-[10px] font-bold text-emerald-800 mb-1 group-hover:scale-110 transition-transform">
+                          <div className="flex flex-col items-center justify-end h-full w-5 sm:w-7">
+                            <span className="text-[10px] font-bold text-emerald-800 mb-1 group-hover:scale-110 transition-transform select-none">
                               {m.diterimaJt.toFixed(1)}
                             </span>
                             <div
                               style={{ height: `${hDiterima}%` }}
-                              className="w-full bg-[#5E8826] rounded-t-md transition-all duration-500 shadow-xs"
+                              className="w-full min-h-[8px] bg-[#5E8826] rounded-t-md transition-all duration-500 shadow-xs"
+                              title={`Diterima: Rp${m.diterimaJt} Jt`}
                             ></div>
                           </div>
                         </div>
@@ -706,14 +708,14 @@ export function LaporanClientView({
       )}
 
       {/* ========================================================================= */}
-      {/* TAB 3: PENGATURAN PERAN AKUN (ATURAN BR-10)                               */}
+      {/* TAB 3: PENGATURAN PERAN AKUN                                              */}
       {/* ========================================================================= */}
       {activeTab === "pengaturan" && (
         <div className="space-y-6">
           <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200 text-xs text-amber-900 flex items-start gap-3">
             <AlertTriangle className="w-4 h-4 text-amber-700 shrink-0 mt-0.5" />
             <div>
-              <strong>Aturan Bisnis BR-10 (Perubahan Peran Akun):</strong>
+              <strong>Kebijakan Perubahan Peran Akun:</strong>
               <p className="mt-0.5 text-amber-800">
                 Pemilik memiliki wewenang mengangkat atau mengubah peran staf pengelola dan penyewa.
                 Namun, <strong>Pemilik tidak dapat mengubah peran akunnya sendiri</strong> untuk menjamin kontinuitas hak kontrol tertinggi sistem.
@@ -779,7 +781,7 @@ export function LaporanClientView({
                         <td className="py-3 px-3 text-right">
                           {isOwner || isSelf ? (
                             <span className="text-[10px] text-[#737A84] italic">
-                              Terkunci (BR-10)
+                              Terkunci
                             </span>
                           ) : (
                             <button
@@ -808,14 +810,14 @@ export function LaporanClientView({
         </div>
       )}
 
-      {/* MODAL UBAH PERAN PENGGUNA (BR-10) */}
+      {/* MODAL UBAH PERAN PENGGUNA */}
       {roleModalOpen && selectedUser && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in">
           <div className="w-full max-w-md rounded-[28px] bg-white p-6 shadow-2xl border border-[#E8EAEC] space-y-4">
             <div className="flex items-center justify-between">
               <div>
                 <span className="text-[10px] font-bold text-[#737A84] uppercase tracking-wider">
-                  Pengaturan Peran Akun (BR-10)
+                  Pengaturan Peran Akun
                 </span>
                 <h3 className="text-base font-bold text-[#26292E]">
                   Ubah Peran: {selectedUser.nama_lengkap}
@@ -851,7 +853,7 @@ export function LaporanClientView({
             </div>
 
             <div className="p-3 rounded-2xl bg-[#FFF9E6] border border-[#FFE8A3] text-xs text-[#8A6D14]">
-              <strong>Perhatian Pemilik (BR-10):</strong> Mengubah peran akun akan langsung memengaruhi hak akses modul operasional dan batasan Row Level Security (RLS) di database.
+              <strong>Perhatian Pemilik:</strong> Mengubah peran akun akan langsung memengaruhi hak akses modul operasional dan batasan Row Level Security (RLS) di database.
             </div>
 
             {roleFeedback && (

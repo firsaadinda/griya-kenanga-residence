@@ -262,19 +262,19 @@ export function PenyewaClientView({ initialPenyewa, userRole }: PenyewaClientVie
         </div>
       </div>
 
-      {/* BANNER PRIVASI SESUAI BR-10 */}
+      {/* BANNER PRIVASI */}
       {userRole === "pemilik" ? (
         <div className="rounded-[20px] bg-[#F6F7F9] p-4 border border-[#E8EAEC] flex items-center gap-3 text-xs text-[#737A84]">
           <Lock className="w-4 h-4 text-[#26292E] shrink-0" />
           <span>
-            <strong>Privasi Data Pemilik (BR-10):</strong> Sebagai Pemilik, Anda hanya dapat melihat 4 angka terakhir NIK (contoh: ************9663). Foto KTP asli, alamat lengkap, dan nomor kontak darurat disembunyikan demi privasi penyewa.
+            <strong>Privasi Data Pemilik:</strong> Sebagai Pemilik, Anda hanya dapat melihat 4 angka terakhir NIK (contoh: ************9663). Foto KTP asli, alamat lengkap, dan nomor kontak darurat disembunyikan demi privasi penyewa.
           </span>
         </div>
       ) : (
         <div className="rounded-[20px] bg-[#EAFCD6] p-4 border border-[#C8F296] flex items-center gap-3 text-xs text-[#2F6B12]">
           <ShieldCheck className="w-4 h-4 text-[#2F6B12] shrink-0" />
           <span>
-            <strong>Hak Akses Pengelola (US-02, BR-03):</strong> Anda berhak meninjau berkas KTP penyewa lewat tautan aman sementara (Signed URL), serta memverifikasi atau menolak pengajuan identitas.
+            <strong>Hak Akses Pengelola:</strong> Anda berhak meninjau berkas KTP penyewa lewat tautan aman sementara (Signed URL), serta memverifikasi atau menolak pengajuan identitas.
           </span>
         </div>
       )}
@@ -569,7 +569,7 @@ export function PenyewaClientView({ initialPenyewa, userRole }: PenyewaClientVie
                 <div className="p-2.5 rounded-xl bg-white border border-[#E8EAEC] text-[11px] text-[#737A84] flex items-center gap-2">
                   <Lock className="w-3.5 h-3.5 text-[#26292E] shrink-0" />
                   <span>
-                    <strong>Privasi Pemilik (BR-10):</strong> NIK disamarkan (*12 digit + 4 digit akhir). Foto KTP asli, alamat domisili, dan kontak darurat dilindungi privasi.
+                    <strong>Privasi Pemilik:</strong> NIK disamarkan (*12 digit + 4 digit akhir). Foto KTP asli, alamat domisili, dan kontak darurat dilindungi privasi.
                   </span>
                 </div>
               )}

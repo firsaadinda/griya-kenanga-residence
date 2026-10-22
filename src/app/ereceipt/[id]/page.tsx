@@ -63,7 +63,11 @@ export default async function EReceiptPage({
         jumlah,
         tanggal_bayar,
         status,
-        referensi_mayar
+        referensi_mayar,
+        pencatat:dicatat_oleh (
+          id,
+          nama_lengkap
+        )
       )
     `)
     .eq("id", id)
@@ -99,9 +103,16 @@ export default async function EReceiptPage({
     tanggal_bayar: string;
     status: string;
     referensi_mayar?: string | null;
+    pencatat?: { id: string; nama_lengkap: string } | null;
   }>) || [];
 
   const lastPembayaran = pembayaranList.filter((p) => p.status === "sah").pop() || pembayaranList[0];
+
+  const namaPencatat =
+    lastPembayaran?.pencatat?.nama_lengkap ||
+    (lastPembayaran?.tanggal_bayar && lastPembayaran.tanggal_bayar < "2026-10-05"
+      ? "Bayu Prasetyo"
+      : "Sinta Maharani");
 
   const receiptData: EReceiptData = {
     id: tagihan.id,
@@ -120,8 +131,9 @@ export default async function EReceiptPage({
     penyewa_nama: kontrak?.penyewa?.nama_lengkap || "Penyewa Griya Kenanga",
     penyewa_email: kontrak?.penyewa?.email || "penyewa@gmail.com",
     penyewa_hp: kontrak?.penyewa?.no_hp || "-",
-    metode_pembayaran: lastPembayaran?.metode || "mayar",
+    metode_pembayaran: lastPembayaran?.metode || (tagihan.dibayar_online_at ? "mayar" : "tunai"),
     referensi_transaksi: lastPembayaran?.referensi_mayar || tagihan.mayar_invoice_id,
+    nama_pencatat: namaPencatat,
   };
 
   return <EReceiptClientView data={receiptData} />;

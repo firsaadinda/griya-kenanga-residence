@@ -713,7 +713,7 @@ export function KerusakanClientView({
                       className="w-full inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-full bg-[#1C1E22] hover:bg-[#26292E] text-white text-xs font-bold shadow-sm transition disabled:opacity-50"
                     >
                       <CheckCircle2 className="w-3.5 h-3.5 text-[#88BC3C]" />
-                      <span>Tandai Selesai (BR-12)</span>
+                      <span>Tandai Selesai</span>
                     </button>
                   </div>
                 )}
@@ -744,7 +744,7 @@ export function KerusakanClientView({
                         disabled={isPending}
                         className="w-full inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-full bg-[#F6F7F9] hover:bg-[#E8EAEC] text-[#26292E] text-xs font-semibold border border-[#E8EAEC] transition disabled:opacity-50 cursor-pointer"
                       >
-                        <span>Tutup (Pengelola - Aturan &gt; 3 Hari BR-12)</span>
+                        <span>Tutup (Pengelola - Melebihi 3 Hari)</span>
                       </button>
                     )}
                   </div>
@@ -830,7 +830,7 @@ export function KerusakanClientView({
             <div className="flex items-center justify-between">
               <div>
                 <span className="text-[10px] font-bold text-[#737A84] uppercase tracking-widest">
-                  Laporan Kerusakan Fasilitas [BR-11]
+                  Laporan Kerusakan Fasilitas
                 </span>
                 <h2 className="text-xl font-bold text-[#26292E]">Buat Laporan Baru</h2>
               </div>
@@ -848,7 +848,7 @@ export function KerusakanClientView({
             <div className="p-3 rounded-2xl bg-[#F6F7F9] border border-[#E8EAEC] text-xs text-[#737A84]">
               Unit Terkontrak: <strong className="text-[#26292E]">{activeContractUnit || "A-104"}</strong>
               <p className="text-[11px] mt-1">
-                Aturan BR-11: Wajib 1 sampai 3 foto, maksimal 3 laporan terbuka per penyewa.
+                Wajib 1 sampai 3 foto, maksimal 3 laporan terbuka per penyewa.
               </p>
             </div>
 
@@ -898,7 +898,7 @@ export function KerusakanClientView({
 
               <div>
                 <span className="block text-xs font-semibold text-[#26292E] mb-1.5">
-                  Lampiran Foto Bukti (1 s.d. 3 foto - BR-11):
+                  Lampiran Foto Bukti (1 s.d. 3 foto):
                 </span>
                 <div className="flex items-center gap-2">
                   <span className="text-xs bg-[#EAFCD6] text-[#2F6B12] px-3 py-1.5 rounded-full border border-[#C8F296]">
@@ -937,7 +937,7 @@ export function KerusakanClientView({
             <div className="flex items-center justify-between">
               <div>
                 <span className="text-[10px] font-bold text-[#D32F2F] uppercase tracking-widest">
-                  Penolakan Laporan [BR-12]
+                  Penolakan Laporan
                 </span>
                 <h2 className="text-xl font-bold text-[#26292E]">Tolak Laporan Kerusakan</h2>
               </div>
@@ -1088,8 +1088,8 @@ export function KerusakanClientView({
 
             <p className="text-xs text-[#737A84] leading-relaxed">
               {confirmAksiModal === "setujui_biaya"
-                ? "Sebagai Pemilik, Anda menyetujui estimasi biaya perbaikan melebihi batas Rp1.000.000 (BR-12). Status tiket akan berubah menjadi 'diproses' dan Pengelola dapat menunjuk teknisi pengerjaan."
-                : "Apakah Anda yakin ingin menutup tiket laporan kerusakan ini secara permanen? Tiket yang telah berstatus ditutup tidak dapat diubah kembali (BR-12)."}
+                ? "Sebagai Pemilik, Anda menyetujui estimasi biaya perbaikan melebihi batas Rp1.000.000. Status tiket akan berubah menjadi 'diproses' dan Pengelola dapat menunjuk teknisi pengerjaan."
+                : "Apakah Anda yakin ingin menutup tiket laporan kerusakan ini secara permanen? Tiket yang telah berstatus ditutup tidak dapat diubah kembali."}
             </p>
 
             <div className="flex items-center justify-end gap-2 pt-2">

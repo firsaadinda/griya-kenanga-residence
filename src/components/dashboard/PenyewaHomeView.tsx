@@ -322,7 +322,7 @@ export function PenyewaHomeView({
                 </h3>
               </div>
               <p className="text-xs text-[#737A84] mt-1">
-                Sesuai Aturan Bisnis BR-03: Kontrak draf hanya bisa diaktifkan oleh Pengelola bila identitas NIK 16 angka, alamat asal, dan kontak darurat Anda sudah diverifikasi.
+                Kontrak draf hanya bisa diaktifkan oleh Pengelola bila identitas NIK 16 angka, alamat asal, dan kontak darurat Anda sudah diverifikasi.
               </p>
             </div>
           </div>
