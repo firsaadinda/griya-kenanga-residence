@@ -1149,8 +1149,8 @@ export function TagihanClientView({
                           >
                             Detail
                           </button>
-                          {/* Bayar Online – kanan (Admin/Owner saja) */}
-                          {(userRole === "pengelola" || userRole === "pemilik") && (
+                          {/* Bayar Online – kanan (Khusus Penyewa, sembunyikan dari Admin dan Owner) */}
+                          {userRole === "penyewa" && (
                             <button
                               type="button"
                               onClick={() => handleBayarMayarOnline(item.id)}
@@ -1617,9 +1617,9 @@ export function TagihanClientView({
                 <span>Unduh PDF / E-Kwitansi</span>
               </button>
 
-              {/* Tombol Bayar Online via Mayar untuk Admin & Owner (Bila belum lunas) */}
-              {/* Tombol Bayar Online untuk tagihan BELUM LUNAS */}
-              {detailTagihan.status !== "lunas" &&
+              {/* Tombol Bayar Online via Mayar khusus untuk Penyewa (Sembunyikan dari Admin dan Owner) */}
+              {userRole === "penyewa" &&
+                detailTagihan.status !== "lunas" &&
                 detailTagihan.status !== "dibatalkan" && (
                   <button
                     type="button"

@@ -7,7 +7,8 @@ import { createAdminClient } from "@/lib/supabase/admin";
  * Membuat atau mengambil tautan pembayaran online Mayar API V2.
  * 
  * Aturan & Kebijakan:
- * 1. Hanya Admin (pengelola) atau Owner (pemilik) yang sedang login (dibaca dari tabel profiles).
+ * 1. Admin ('pengelola'), Owner ('pemilik'), atau Penyewa ('penyewa') yang sedang login (dibaca dari tabel profiles).
+ *    Untuk peran Penyewa, dibatasi khusus untuk ID tagihannya sendiri.
  * 2. Menerima id invoice. Mengambil sisa tagihan, item, dan data pelanggan langsung dari basis data.
  *    Menolak jika invoice sudah lunas atau email pelanggan kosong.
  * 3. Jika invoice sudah punya mayar_link dan mayar_jumlah sama dengan sisa tagihan, langsung kembalikan tautan tersebut.
@@ -17,7 +18,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
  */
 export async function POST(req: NextRequest) {
   try {
-    // 1. Otorisasi Pengguna: Hanya Admin ('pengelola') atau Owner ('pemilik')
+    // 1. Otorisasi Pengguna: Pengelola, Pemilik, atau Penyewa (khusus tagihannya sendiri)
     const supabase = await createClient();
     const {
       data: { user },
@@ -51,11 +52,11 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    if (!["pengelola", "pemilik"].includes(profile.peran)) {
+    if (!["pengelola", "pemilik", "penyewa"].includes(profile.peran)) {
       return NextResponse.json(
         {
           success: false,
-          message: "Akses ditolak. Hanya Admin atau Owner yang berhak membuat tautan pembayaran Mayar.",
+          message: "Akses ditolak. Anda tidak memiliki izin untuk mengakses layanan ini.",
         },
         { status: 403 }
       );
@@ -156,6 +157,20 @@ export async function POST(req: NextRequest) {
       unit?: { id: string; kode: string; tipe: string };
       penyewa?: { id: string; nama_lengkap: string; email: string; no_hp?: string | null };
     } | null;
+
+    // Verifikasi kepemilikan tagihan untuk peran Penyewa: hanya boleh untuk tagihannya sendiri
+    if (profile.peran === "penyewa") {
+      const penyewaId = kontrakData?.penyewa?.id;
+      if (!penyewaId || penyewaId !== user.id) {
+        return NextResponse.json(
+          {
+            success: false,
+            message: "Akses ditolak. Anda hanya dapat membuat tautan pembayaran untuk tagihan Anda sendiri.",
+          },
+          { status: 403 }
+        );
+      }
+    }
 
     const penyewaData = kontrakData?.penyewa;
     const unitData = kontrakData?.unit;
