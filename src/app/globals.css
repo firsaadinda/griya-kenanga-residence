@@ -84,31 +84,46 @@ body {
   clip-path: polygon(0 0, 100% 0, 100% calc(100% - 16px), calc(100% - 16px) 100%, 0 100%);
 }
 
-/* Custom Scrollbar Ukuran Normal & Transparan */
+/* Custom Scrollbar Global Elegan Menyeluruh (Tema Hijau Tua / Emerald Gelap Alami Properti Griya Kenanga) */
+/* Untuk Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #2D5220 #132210;
+}
+
 /* Untuk Webkit browser (Chrome, Safari, Edge) */
 ::-webkit-scrollbar {
-  width: 10px; /* Ukuran normal standar yang nyaman digunakan */
-  height: 10px;
+  width: 9px;
+  height: 9px;
 }
 
+/* Jalur latar belakang scrollbar (Track) nuansa hijau hutan gelap elegan, bebas dari warna putih */
 ::-webkit-scrollbar-track {
-  background: transparent !important; /* Jalur scrollbar 100% transparan */
+  background: #142312 !important;
+  border-radius: 9999px;
 }
 
+/* Batang geser scrollbar (Thumb) hijau zamrud/emerald gelap elegan */
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.25); /* Warna batang scrollbar transparan putih */
+  background: #2D5220;
   border-radius: 9999px;
-  border: 2px solid transparent;
+  border: 2px solid #142312;
   background-clip: padding-box;
+  transition: background-color 0.2s ease;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.5); /* Agak terang pas disorot mouse */
+  background: #3F6F2E; /* Lebih cerah bersahaja saat disorot */
+  background-clip: padding-box;
+}
+
+::-webkit-scrollbar-thumb:active {
+  background: #508638;
   background-clip: padding-box;
 }
 
 ::-webkit-scrollbar-corner {
-  background: transparent !important;
+  background: #142312 !important;
 }
 
 /* Sembunyikan scrollbar khusus elemen dengan class .no-scrollbar */

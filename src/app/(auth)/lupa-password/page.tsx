@@ -6,7 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { OrbitalBackground } from "@/components/ui/OrbitalBackground";
 import { forgotPasswordAction, verifyOtpAndResetPasswordAction } from "@/lib/auth/actions";
 import { PasswordStrengthIndicator } from "@/components/auth/PasswordStrengthIndicator";
-import { validateStrongPassword } from "@/lib/auth/password";
+import { validateStrongPassword, sanitizeAuthInput } from "@/lib/auth/password";
 import {
   KeyRound,
   Mail,
@@ -74,8 +74,13 @@ function ForgotPasswordContent() {
     setErrorMessage(null);
     setSuccessMessage(null);
 
+    const cleanEmail = sanitizeAuthInput(email).toLowerCase();
+    const cleanToken = sanitizeAuthInput(otpToken);
+    const cleanNewPassword = sanitizeAuthInput(newPassword);
+    const cleanConfirmPassword = sanitizeAuthInput(confirmPassword);
+
     // Validasi 12 - 16 karakter kata sandi baru
-    const passwordCheck = validateStrongPassword(newPassword);
+    const passwordCheck = validateStrongPassword(cleanNewPassword);
     if (!passwordCheck.isValid) {
       setErrorMessage(
         passwordCheck.message ||
@@ -84,16 +89,16 @@ function ForgotPasswordContent() {
       return;
     }
 
-    if (newPassword !== confirmPassword) {
+    if (cleanNewPassword !== cleanConfirmPassword) {
       setErrorMessage("Konfirmasi kata sandi tidak cocok.");
       return;
     }
 
     const formData = new FormData();
-    formData.set("email", email);
-    formData.set("token", otpToken);
-    formData.set("new_password", newPassword);
-    formData.set("confirm_password", confirmPassword);
+    formData.set("email", cleanEmail);
+    formData.set("token", cleanToken);
+    formData.set("new_password", cleanNewPassword);
+    formData.set("confirm_password", cleanConfirmPassword);
 
     startTransition(async () => {
       const res = await verifyOtpAndResetPasswordAction(formData);
@@ -240,7 +245,7 @@ function ForgotPasswordContent() {
                   type="email"
                   required
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => setEmail(sanitizeAuthInput(e.target.value))}
                   placeholder="penyewa@gmail.com"
                   className="w-full bg-[#F6F7F9] text-xs text-[#26292E] pl-10 pr-4 py-2.5 rounded-xl border border-transparent focus:border-[#D5D9DE] focus:bg-white focus:outline-none transition"
                 />
@@ -257,7 +262,7 @@ function ForgotPasswordContent() {
                   type="text"
                   required
                   value={otpToken}
-                  onChange={(e) => setOtpToken(e.target.value)}
+                  onChange={(e) => setOtpToken(sanitizeAuthInput(e.target.value))}
                   placeholder="Masukkan kode OTP dari email"
                   className="w-full bg-[#F6F7F9] text-xs text-[#26292E] pl-10 pr-4 py-2.5 rounded-xl border border-transparent focus:border-[#D5D9DE] focus:bg-white focus:outline-none transition font-mono tracking-widest"
                 />
@@ -277,7 +282,7 @@ function ForgotPasswordContent() {
                     minLength={12}
                     maxLength={16}
                     value={newPassword}
-                    onChange={(e) => setNewPassword(e.target.value)}
+                    onChange={(e) => setNewPassword(sanitizeAuthInput(e.target.value))}
                     placeholder="12 - 16 karakter sandi baru"
                     className="w-full bg-[#F6F7F9] text-xs text-[#26292E] pl-10 pr-10 py-2.5 rounded-xl border border-transparent focus:border-[#D5D9DE] focus:bg-white focus:outline-none transition"
                   />
@@ -308,7 +313,7 @@ function ForgotPasswordContent() {
                     minLength={12}
                     maxLength={16}
                     value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    onChange={(e) => setConfirmPassword(sanitizeAuthInput(e.target.value))}
                     placeholder="Ketik ulang kata sandi"
                     className="w-full bg-[#F6F7F9] text-xs text-[#26292E] pl-10 pr-10 py-2.5 rounded-xl border border-transparent focus:border-[#D5D9DE] focus:bg-white focus:outline-none transition"
                   />

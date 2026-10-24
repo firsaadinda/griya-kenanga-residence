@@ -4,6 +4,7 @@ import React, { useState, useEffect, useTransition } from "react";
 import { useSearchParams } from "next/navigation";
 import { UserRole } from "@/lib/auth/guard";
 import { verifikasiIdentitasAction, getSignedKtpUrlAction } from "@/lib/actions/penyewa-actions";
+import { sanitizeAuthInput } from "@/lib/auth/password";
 import {
   Users,
   ShieldCheck,
@@ -20,6 +21,8 @@ import {
   Loader2,
   User,
   ExternalLink,
+  KeyRound,
+  EyeOff,
 } from "lucide-react";
 import { AlertBanner } from "@/components/feedback/AlertBanner";
 import { EmptyState } from "@/components/feedback/EmptyState";
@@ -150,6 +153,85 @@ export function PenyewaClientView({ initialPenyewa, userRole }: PenyewaClientVie
     return true;
   });
 
+  // Helper Sensor NIK Pengelola: 3321******1234
+  const maskNik = (nik?: string | null): string => {
+    if (!nik) return "Belum diisi";
+    if (nik.length < 8) return nik;
+    const prefix = nik.slice(0, 4);
+    const suffix = nik.slice(-4);
+    return `${prefix}******${suffix}`;
+  };
+
+  // Helper Sensor NIK Khusus Pemilik: Hanya menampilkan 4 angka terakhir (contoh: ************9663)
+  const maskNikPemilik = (nik?: string | null): string => {
+    if (!nik) return "Belum diisi";
+    const clean = nik.trim();
+    if (clean.length <= 4) return clean;
+    const suffix = clean.slice(-4);
+    const asterisks = "*".repeat(Math.max(12, clean.length - 4));
+    return `${asterisks}${suffix}`;
+  };
+
+  // Helper Sensor Email: 3 huruf awal, bintang, lalu domain (contoh: adi***@gmail.com)
+  const maskEmail = (email?: string | null): string => {
+    if (!email) return "-";
+    const parts = email.split("@");
+    if (parts.length !== 2) return email;
+    const [name, domain] = parts;
+    const prefix = name.slice(0, 3);
+    return `${prefix}***@${domain}`;
+  };
+
+  // Helper Sensor No. Telepon: 4 digit awal dan 4 digit akhir, sisanya bintang (contoh: 0877****5249)
+  const maskPhone = (phone?: string | null): string => {
+    if (!phone) return "-";
+    const clean = phone.trim();
+    if (clean.length <= 8) {
+      if (clean.length <= 4) return clean;
+      return `${clean.slice(0, 2)}****${clean.slice(-2)}`;
+    }
+    const prefix = clean.slice(0, 4);
+    const suffix = clean.slice(-4);
+    return `${prefix}****${suffix}`;
+  };
+
+  // State Keamanan Verifikasi Kata Sandi untuk Akses NIK, KTP, Email, & No. Telepon (Kata Sandi: Latihan#2026)
+  const [isPasswordVerified, setIsPasswordVerified] = useState(false);
+  const [passwordModalOpen, setPasswordModalOpen] = useState(false);
+  const [passwordInput, setPasswordInput] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [passwordError, setPasswordError] = useState<string | null>(null);
+  const [pendingSecurityAction, setPendingSecurityAction] = useState<(() => void) | null>(null);
+
+  // Trigger Aksi Aman
+  const requireSecurityVerification = (action: () => void) => {
+    if (isPasswordVerified) {
+      action();
+    } else {
+      setPendingSecurityAction(() => action);
+      setPasswordInput("");
+      setShowPassword(false);
+      setPasswordError(null);
+      setPasswordModalOpen(true);
+    }
+  };
+
+  const handleVerifyPassword = (e: React.FormEvent) => {
+    e.preventDefault();
+    const cleanPassword = sanitizeAuthInput(passwordInput);
+    if (cleanPassword === "Latihan#2026") {
+      setIsPasswordVerified(true);
+      setPasswordModalOpen(false);
+      setPasswordError(null);
+      if (pendingSecurityAction) {
+        pendingSecurityAction();
+        setPendingSecurityAction(null);
+      }
+    } else {
+      setPasswordError("Kata sandi salah, akses ditolak");
+    }
+  };
+
   const handleOpenActionModal = (p: PenyewaItem, type: "verifikasi" | "tolak") => {
     setSelectedPenyewa(p);
     setActionType(type);
@@ -159,22 +241,25 @@ export function PenyewaClientView({ initialPenyewa, userRole }: PenyewaClientVie
 
   const handleOpenKtpModal = async (p: PenyewaItem) => {
     if (!p.foto_ktp_path || userRole !== "pengelola") return;
-    setSelectedPenyewa(p);
-    setKtpModalOpen(true);
-    setLoadingKtp(true);
-    setFeedback(null);
+    const fotoPath = p.foto_ktp_path;
+    requireSecurityVerification(async () => {
+      setSelectedPenyewa(p);
+      setKtpModalOpen(true);
+      setLoadingKtp(true);
+      setFeedback(null);
 
-    const res = await getSignedKtpUrlAction(p.foto_ktp_path, {
-      nama: p.nama_lengkap,
-      nik: p.nik || undefined,
-      alamat: p.alamat_asal || undefined,
+      const res = await getSignedKtpUrlAction(fotoPath, {
+        nama: p.nama_lengkap,
+        nik: p.nik || undefined,
+        alamat: p.alamat_asal || undefined,
+      });
+      setLoadingKtp(false);
+      if (res.success && res.data?.signedUrl) {
+        setKtpSignedUrl(res.data.signedUrl);
+      } else {
+        setFeedback({ statusCode: res.statusCode || 400, message: res.message || "Gagal memuat foto KTP." });
+      }
     });
-    setLoadingKtp(false);
-    if (res.success && res.data?.signedUrl) {
-      setKtpSignedUrl(res.data.signedUrl);
-    } else {
-      setFeedback({ statusCode: res.statusCode || 400, message: res.message || "Gagal memuat foto KTP." });
-    }
   };
 
   const handleConfirmAction = () => {
@@ -333,7 +418,24 @@ export function PenyewaClientView({ initialPenyewa, userRole }: PenyewaClientVie
                       <h3 className="text-base font-bold text-[#26292E] leading-tight group-hover:underline">
                         {p.nama_lengkap}
                       </h3>
-                      <p className="text-xs text-[#737A84] mt-0.5">{p.email}</p>
+                      <div className="flex items-center gap-1.5 mt-0.5">
+                        <p className="text-xs text-[#737A84]">
+                          {isPasswordVerified ? p.email : maskEmail(p.email)}
+                        </p>
+                        {!isPasswordVerified && (
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              requireSecurityVerification(() => {});
+                            }}
+                            title="Data email disensor. Klik untuk otorisasi sandi"
+                            className="text-[#737A84] hover:text-[#26292E] p-0.5 rounded cursor-pointer"
+                          >
+                            <Lock className="w-3 h-3 text-amber-600" />
+                          </button>
+                        )}
+                      </div>
                     </div>
                   </div>
 
@@ -361,14 +463,44 @@ export function PenyewaClientView({ initialPenyewa, userRole }: PenyewaClientVie
                 <div className="rounded-2xl bg-[#F6F7F9] p-3.5 space-y-2 border border-[#E8EAEC] text-xs">
                   <div className="flex items-center justify-between">
                     <span className="text-[#737A84]">NIK KTP:</span>
-                    <strong className="text-[#26292E] tracking-wider font-mono">
-                      {p.nik ? p.nik : "Belum diisi"}
-                    </strong>
+                    <div className="flex items-center gap-1.5">
+                      <strong className="text-[#26292E] tracking-wider font-mono">
+                        {userRole === "pengelola"
+                          ? isPasswordVerified
+                            ? p.nik || "Belum diisi"
+                            : maskNik(p.nik)
+                          : maskNikPemilik(p.nik)}
+                      </strong>
+                      {!isPasswordVerified && p.nik && userRole === "pengelola" && (
+                        <button
+                          type="button"
+                          onClick={() => requireSecurityVerification(() => {})}
+                          title="Buka sensor NIK (Verifikasi Sandi Pengelola)"
+                          className="p-1 rounded-md bg-white hover:bg-[#E8EAEC] text-[#737A84] hover:text-[#26292E] border border-[#E8EAEC] transition cursor-pointer"
+                        >
+                          <Lock className="w-3 h-3 text-amber-600" />
+                        </button>
+                      )}
+                    </div>
                   </div>
 
                   <div className="flex items-center justify-between">
                     <span className="text-[#737A84]">No. Telepon:</span>
-                    <span className="text-[#26292E] font-medium">{p.no_hp || "-"}</span>
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-[#26292E] font-medium font-mono">
+                        {isPasswordVerified ? p.no_hp || "-" : maskPhone(p.no_hp)}
+                      </span>
+                      {!isPasswordVerified && p.no_hp && (
+                        <button
+                          type="button"
+                          onClick={() => requireSecurityVerification(() => {})}
+                          title="Buka sensor nomor telepon (Verifikasi Sandi)"
+                          className="text-[#737A84] hover:text-[#26292E] p-0.5 rounded cursor-pointer"
+                        >
+                          <Lock className="w-3 h-3 text-amber-600" />
+                        </button>
+                      )}
+                    </div>
                   </div>
 
                   {/* Alamat & Kontak Darurat (Hanya untuk Pengelola sesuai BR-10) */}
@@ -408,6 +540,23 @@ export function PenyewaClientView({ initialPenyewa, userRole }: PenyewaClientVie
                   <User className="w-3.5 h-3.5 text-[#737A84]" />
                   <span>Detail Profil</span>
                 </button>
+
+                {userRole === "pemilik" && !isPasswordVerified && (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      requireSecurityVerification(() => {
+                        setDetailPenyewa(p);
+                      });
+                    }}
+                    className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-full bg-amber-50 hover:bg-amber-100 text-amber-900 text-xs font-semibold border border-amber-200 transition cursor-pointer ml-auto"
+                    title="Buka Detail Kontak dengan Kata Sandi"
+                  >
+                    <Lock className="w-3 h-3 text-amber-700" />
+                    <span>Detail Kontak</span>
+                  </button>
+                )}
 
                 {userRole === "pengelola" && (
                   <div className="flex items-center gap-1.5 ml-auto">
@@ -511,7 +660,21 @@ export function PenyewaClientView({ initialPenyewa, userRole }: PenyewaClientVie
                   <h3 className="text-lg font-bold text-[#26292E] mt-0.5">
                     {detailPenyewa.nama_lengkap}
                   </h3>
-                  <p className="text-xs text-[#737A84]">{detailPenyewa.email}</p>
+                  <div className="flex items-center gap-1.5 mt-0.5">
+                    <p className="text-xs text-[#737A84]">
+                      {isPasswordVerified ? detailPenyewa.email : maskEmail(detailPenyewa.email)}
+                    </p>
+                    {!isPasswordVerified && (
+                      <button
+                        type="button"
+                        onClick={() => requireSecurityVerification(() => {})}
+                        title="Buka sensor email (Verifikasi Sandi)"
+                        className="text-[#737A84] hover:text-[#26292E] p-0.5 rounded cursor-pointer"
+                      >
+                        <Lock className="w-3 h-3 text-amber-600" />
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
 
@@ -531,18 +694,50 @@ export function PenyewaClientView({ initialPenyewa, userRole }: PenyewaClientVie
                 <span className="text-[#737A84] flex items-center gap-1.5">
                   <Phone className="w-3.5 h-3.5" /> No. Telepon / WhatsApp:
                 </span>
-                <span className="font-semibold text-[#26292E]">
-                  {detailPenyewa.no_hp || "-"}
-                </span>
+                <div className="flex items-center gap-2">
+                  <span className="font-semibold text-[#26292E] font-mono">
+                    {isPasswordVerified
+                      ? detailPenyewa.no_hp || "-"
+                      : maskPhone(detailPenyewa.no_hp)}
+                  </span>
+                  {!isPasswordVerified && detailPenyewa.no_hp && (
+                    <button
+                      type="button"
+                      onClick={() => requireSecurityVerification(() => {})}
+                      title="Buka sensor nomor telepon (Verifikasi Sandi)"
+                      className="px-2 py-0.5 rounded-full bg-amber-50 hover:bg-amber-100 text-amber-800 text-[10px] font-bold border border-amber-200 transition flex items-center gap-1 cursor-pointer"
+                    >
+                      <Lock className="w-2.5 h-2.5 text-amber-700" />
+                      <span>Detail Kontak</span>
+                    </button>
+                  )}
+                </div>
               </div>
 
               <div className="flex items-center justify-between pb-2 border-b border-[#E8EAEC]">
                 <span className="text-[#737A84] flex items-center gap-1.5">
                   <FileText className="w-3.5 h-3.5" /> NIK KTP:
                 </span>
-                <span className="font-mono font-bold text-[#26292E]">
-                  {detailPenyewa.nik || "Belum diisi"}
-                </span>
+                <div className="flex items-center gap-2">
+                  <span className="font-mono font-bold text-[#26292E]">
+                    {userRole === "pengelola"
+                      ? isPasswordVerified
+                        ? detailPenyewa.nik || "Belum diisi"
+                        : maskNik(detailPenyewa.nik)
+                      : maskNikPemilik(detailPenyewa.nik)}
+                  </span>
+                  {!isPasswordVerified && detailPenyewa.nik && userRole === "pengelola" && (
+                    <button
+                      type="button"
+                      onClick={() => requireSecurityVerification(() => {})}
+                      title="Buka sensor NIK (Verifikasi Sandi Pengelola)"
+                      className="px-2 py-0.5 rounded-full bg-amber-50 hover:bg-amber-100 text-amber-700 text-[10px] font-bold border border-amber-200 transition flex items-center gap-1 cursor-pointer"
+                    >
+                      <Lock className="w-2.5 h-2.5" />
+                      <span>Buka Sensor</span>
+                    </button>
+                  )}
+                </div>
               </div>
 
               {userRole === "pengelola" ? (
@@ -566,11 +761,12 @@ export function PenyewaClientView({ initialPenyewa, userRole }: PenyewaClientVie
                   </div>
                 </>
               ) : (
-                <div className="p-2.5 rounded-xl bg-white border border-[#E8EAEC] text-[11px] text-[#737A84] flex items-center gap-2">
-                  <Lock className="w-3.5 h-3.5 text-[#26292E] shrink-0" />
-                  <span>
-                    <strong>Privasi Pemilik:</strong> NIK disamarkan (*12 digit + 4 digit akhir). Foto KTP asli, alamat domisili, dan kontak darurat dilindungi privasi.
-                  </span>
+                <div className="p-3 rounded-xl bg-amber-50/70 border border-amber-200/80 text-[11px] text-amber-900 flex items-start gap-2.5 leading-relaxed">
+                  <Lock className="w-4 h-4 text-amber-700 shrink-0 mt-0.5" />
+                  <div>
+                    <span className="font-semibold block text-amber-950 mb-0.5">Ketentuan Privasi Akun Pemilik:</span>
+                    NIK KTP tetap disamarkan dan hanya menampilkan 4 angka terakhir demi perlindungan data pribadi penghuni. Email dan nomor kontak dapat diakses menggunakan kata sandi otorisasi.
+                  </div>
                 </div>
               )}
 
@@ -625,7 +821,20 @@ export function PenyewaClientView({ initialPenyewa, userRole }: PenyewaClientVie
             )}
 
             {/* Footer Modal */}
-            <div className="flex justify-end pt-3 border-t border-[#F0F2F4]">
+            <div className="flex items-center justify-between pt-3 border-t border-[#F0F2F4]">
+              <div>
+                {!isPasswordVerified && (
+                  <button
+                    type="button"
+                    onClick={() => requireSecurityVerification(() => {})}
+                    className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-amber-50 hover:bg-amber-100 text-amber-900 text-xs font-semibold border border-amber-200 transition cursor-pointer"
+                    title="Buka akses kontak telepon dan email dengan kata sandi otorisasi"
+                  >
+                    <KeyRound className="w-3.5 h-3.5 text-amber-700" />
+                    <span>Buka Detail Kontak</span>
+                  </button>
+                )}
+              </div>
               <button
                 type="button"
                 onClick={() => setDetailPenyewa(null)}
@@ -761,12 +970,24 @@ export function PenyewaClientView({ initialPenyewa, userRole }: PenyewaClientVie
                 Membuat dokumen KTP resmi dari Supabase Storage...
               </div>
             ) : ktpSignedUrl ? (
-              <div className="rounded-[24px] bg-[#ECEEEF] border border-[#D5D9DC] pt-2.5 pb-1 px-1.5 sm:pt-3 sm:pb-1.5 sm:px-2 flex items-center justify-center shadow-inner overflow-hidden">
+              <div className="relative rounded-[24px] bg-[#ECEEEF] border border-[#D5D9DC] pt-2.5 pb-1 px-1.5 sm:pt-3 sm:pb-1.5 sm:px-2 flex items-center justify-center shadow-inner overflow-hidden select-none">
                 <img
                   src={ktpSignedUrl}
                   alt={`KTP ${selectedPenyewa.nama_lengkap}`}
                   className="w-full h-auto object-contain rounded-[18px] transition"
                 />
+                
+                {/* WATERMARK RESMI TRANSPARAN DI ATAS GAMBAR KTP */}
+                <div className="absolute inset-0 pointer-events-none flex items-center justify-center overflow-hidden">
+                  <div className="transform -rotate-25 border-4 border-emerald-900/30 px-6 py-3 rounded-2xl bg-white/20 backdrop-blur-[0.8px] shadow-sm">
+                    <span className="text-lg sm:text-2xl font-black tracking-widest text-emerald-900/40 uppercase whitespace-nowrap block text-center">
+                      Griya Kenanga Verification
+                    </span>
+                    <span className="text-[10px] font-bold tracking-wider text-emerald-900/35 uppercase block text-center mt-0.5">
+                      Dokumen Terproteksi • Khusus Pengelola
+                    </span>
+                  </div>
+                </div>
               </div>
             ) : (
               <div className="p-4 rounded-2xl bg-[#FFF0F0] text-xs text-[#D32F2F]">
@@ -789,6 +1010,117 @@ export function PenyewaClientView({ initialPenyewa, userRole }: PenyewaClientVie
                 Tutup
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL POP-UP KEAMANAN VERIFIKASI KATA SANDI (Latihan#2026) */}
+      {passwordModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in">
+          <div
+            className="w-full max-w-md rounded-[28px] bg-white p-6 shadow-2xl border border-[#E8EAEC] space-y-5 animate-in zoom-in-95 duration-150"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between pb-3 border-b border-[#F0F2F4]">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-full bg-emerald-50 text-emerald-800 flex items-center justify-center border border-emerald-200 shrink-0">
+                  <KeyRound className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-[#26292E]">
+                    Konfirmasi Keamanan Otorisasi
+                  </h3>
+                  <p className="text-[11px] text-[#737A84]">
+                    {userRole === "pengelola"
+                      ? "Akses Berkas KTP, NIK & Data Kontak Pribadi"
+                      : "Akses Data Kontak Pribadi Penyewa"}
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setPasswordModalOpen(false);
+                  setPasswordInput("");
+                  setShowPassword(false);
+                  setPasswordError(null);
+                  setPendingSecurityAction(null);
+                }}
+                className="w-8 h-8 rounded-full bg-[#F6F7F9] hover:bg-[#E8EAEC] text-[#737A84] flex items-center justify-center transition"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleVerifyPassword} className="space-y-4">
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-[#26292E] block">
+                  Masukkan Kata Sandi Otorisasi:
+                </label>
+                <div className="relative">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    autoFocus
+                    placeholder="Masukkan kata sandi..."
+                    value={passwordInput}
+                    onChange={(e) => {
+                      setPasswordInput(sanitizeAuthInput(e.target.value));
+                      if (passwordError) setPasswordError(null);
+                    }}
+                    className={`w-full pl-4 pr-10 py-2.5 rounded-xl bg-[#F6F7F9] text-xs text-[#26292E] border focus:outline-none focus:ring-2 transition ${
+                      passwordError
+                        ? "border-[#D32F2F] focus:ring-red-100"
+                        : "border-[#E8EAEC] focus:ring-emerald-100 focus:border-emerald-700"
+                    }`}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((prev) => !prev)}
+                    className="absolute right-3 top-2.5 text-[#737A84] hover:text-[#26292E] p-1 rounded-md transition cursor-pointer"
+                    title={showPassword ? "Sembunyikan kata sandi" : "Tampilkan kata sandi"}
+                  >
+                    {showPassword ? (
+                      <EyeOff className="w-4 h-4" />
+                    ) : (
+                      <Eye className="w-4 h-4" />
+                    )}
+                  </button>
+                </div>
+                {passwordError && (
+                  <p className="text-xs font-semibold text-[#D32F2F] pt-0.5 flex items-center gap-1">
+                    <AlertCircle className="w-3 h-3" />
+                    <span>{passwordError}</span>
+                  </p>
+                )}
+              </div>
+
+              <div className="p-3 rounded-xl bg-emerald-50/60 border border-emerald-100 text-[11px] text-emerald-900 leading-relaxed">
+                <strong className="block font-bold mb-0.5">Protokol Keamanan Data Warga:</strong>
+                Sesuai Pelindungan Data Pribadi (UU PDP) Undang-Undang nomor 27 Tahun 2022 yang berlaku 17 Oktober 2024, data spesifik penyewa dienkripsi dan memerlukan otorisasi untuk diakses.
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-2 border-t border-[#F0F2F4]">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setPasswordModalOpen(false);
+                    setPasswordInput("");
+                    setShowPassword(false);
+                    setPasswordError(null);
+                    setPendingSecurityAction(null);
+                  }}
+                  className="px-4 py-2 rounded-full bg-[#F6F7F9] hover:bg-[#E8EAEC] text-xs font-semibold text-[#26292E] transition"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 rounded-full bg-emerald-800 hover:bg-emerald-900 text-xs font-bold text-white shadow-sm transition active:scale-95"
+                >
+                  Buka Akses
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

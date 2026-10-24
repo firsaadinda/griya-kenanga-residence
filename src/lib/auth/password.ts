@@ -103,3 +103,21 @@ export function validateStrongPassword(password: string): {
     message: result.message,
   };
 }
+
+/**
+ * Sanitasi string input autentikasi:
+ * - Menghapus Zero-Width Space (\u200B)
+ * - Menghapus Zero-Width Non-Joiner (\u200C) & Zero-Width Joiner (\u200D)
+ * - Menghapus LTR/RTL marks (\u200E, \u200F)
+ * - Menghapus Byte Order Mark / BOM (\uFEFF)
+ * - Menghapus No-Break Space (\u00A0)
+ * - Menghapus Line/Paragraph Separator (\u2028, \u2029)
+ * - Menghapus karakter kontrol / invisible non-printable characters
+ * - Memotong spasi biasa (\s) di awal dan akhir
+ */
+export function sanitizeAuthInput(value?: string | null): string {
+  if (!value) return "";
+  return value
+    .replace(/[\u200B-\u200D\u200E\u200F\uFEFF\u00A0\u2028\u2029\u0000-\u001F\u007F-\u009F]/g, "")
+    .trim();
+}

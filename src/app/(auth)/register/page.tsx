@@ -7,7 +7,7 @@ import { OrbitalBackground } from "@/components/ui/OrbitalBackground";
 import { registerAction } from "@/lib/auth/actions";
 import { PasswordStrengthIndicator } from "@/components/auth/PasswordStrengthIndicator";
 import { ProfilePhotoUpload } from "@/components/auth/ProfilePhotoUpload";
-import { validateStrongPassword } from "@/lib/auth/password";
+import { validateStrongPassword, sanitizeAuthInput } from "@/lib/auth/password";
 import {
   User,
   Mail,
@@ -95,6 +95,13 @@ export default function RegisterPage() {
     setErrorMessage(null);
     setSuccessMessage(null);
 
+    // Sanitasi input menyeluruh (bersihkan zero-width unicode, newline, invisible chars, dan spasi ekstra)
+    const cleanNama = sanitizeAuthInput(namaLengkap);
+    const cleanEmail = sanitizeAuthInput(email).toLowerCase();
+    const cleanNoHp = sanitizeAuthInput(noHp);
+    const cleanPassword = sanitizeAuthInput(password);
+    const cleanKonfirmasiPassword = sanitizeAuthInput(konfirmasiPassword);
+
     // Validasi email
     if (emailFormatError) {
       setErrorMessage(emailFormatError);
@@ -107,7 +114,7 @@ export default function RegisterPage() {
     }
 
     // Validasi kata sandi 12 - 16 karakter
-    const passwordCheck = validateStrongPassword(password);
+    const passwordCheck = validateStrongPassword(cleanPassword);
     if (!passwordCheck.isValid) {
       setErrorMessage(
         passwordCheck.message ||
@@ -117,7 +124,7 @@ export default function RegisterPage() {
     }
 
     // Validasi konfirmasi password
-    if (password !== konfirmasiPassword) {
+    if (cleanPassword !== cleanKonfirmasiPassword) {
       setErrorMessage("Konfirmasi kata sandi tidak cocok.");
       return;
     }
@@ -129,11 +136,11 @@ export default function RegisterPage() {
     }
 
     const formData = new FormData();
-    formData.set("nama_lengkap", namaLengkap);
-    formData.set("email", email);
-    formData.set("no_hp", noHp);
-    formData.set("password", password);
-    formData.set("konfirmasi_password", konfirmasiPassword);
+    formData.set("nama_lengkap", cleanNama);
+    formData.set("email", cleanEmail);
+    formData.set("no_hp", cleanNoHp);
+    formData.set("password", cleanPassword);
+    formData.set("konfirmasi_password", cleanKonfirmasiPassword);
     formData.set("setuju_syarat", "true");
 
     if (avatarFile) {
@@ -154,52 +161,99 @@ export default function RegisterPage() {
   };
 
   return (
-    <main className="min-h-screen relative flex items-center justify-center p-4 sm:p-6 lg:p-8 bg-[#F6F7F9]">
-      <OrbitalBackground />
+    <main className="min-h-screen grid grid-cols-1 lg:grid-cols-2 bg-[#F7F8F5]">
+      {/* ========================================================================= */}
+      {/* KOLOM KIRI (Desktop only): Fixed Sticky Sidebar Visual Showcase */}
+      {/* ========================================================================= */}
+      <div className="relative hidden lg:flex flex-col justify-between p-10 xl:p-14 overflow-hidden lg:h-screen lg:sticky lg:top-0">
+        {/* Background Image: hero-facade.jpg */}
+        <div
+          className="absolute inset-0 bg-cover bg-center transition-transform duration-1000 scale-100 hover:scale-102"
+          style={{ backgroundImage: `url('/hero-facade.jpg')` }}
+        />
 
-      <div className="w-full max-w-xl my-8 relative z-10">
-        <div className="bg-white rounded-[28px] p-6 sm:p-8 shadow-[0_12px_45px_rgba(0,0,0,0.04)] border border-[#E8EAEC] space-y-6">
-          {/* Header Identitas */}
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="inline-block text-[11px] font-semibold text-[#737A84] tracking-widest uppercase">
-                Registrasi Akun Calon Penghuni
-              </span>
+        {/* Overlay Gradasi Gelap Halus dari bawah ke tengah */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-black/20 pointer-events-none" />
+
+        {/* Navigasi / Logo Mini di Kiri Atas */}
+        <div className="relative z-10">
+          <Link
+            href="/"
+            className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/15 hover:bg-white/25 backdrop-blur-md border border-white/20 text-white text-xs font-medium transition"
+          >
+            <span>← Kembali ke Beranda</span>
+          </Link>
+        </div>
+
+        {/* Elemen Bawah: Badge Rating, Judul Serif Elegan, dan Sub-teks */}
+        <div className="relative z-10 mt-auto space-y-4 max-w-xl">
+          {/* Badge Rating (Glassmorphism) */}
+          <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/20 backdrop-blur-md border border-white/30 text-white text-xs font-medium w-fit mb-1">
+            <span>★ 5.0 (Ulasan Penghuni)</span>
+          </div>
+
+          {/* Judul Utama (Serif Elegan) */}
+          <h2 className="font-serif text-3xl xl:text-5xl text-white font-normal leading-tight">
+            Kenyamanan Ruang dalam Harmoni Alam Sleman
+          </h2>
+
+          {/* Sub-teks Deskripsi */}
+          <p className="text-white/85 text-sm xl:text-base leading-relaxed">
+            Nikmati tempat tinggal modern yang memadukan kenyamanan, privasi, dan fasilitas lengkap untuk aktivitas harian Anda.
+          </p>
+        </div>
+      </div>
+
+      {/* ========================================================================= */}
+      {/* KOLOM KANAN: Area Form Mandiri yang Dapat Di-scroll (Independent Scroll) */}
+      {/* ========================================================================= */}
+      <div className="flex flex-col justify-start sm:justify-center items-center p-6 sm:p-10 lg:p-12 xl:p-16 lg:h-screen lg:overflow-y-auto">
+        <div className="w-full max-w-md space-y-4 my-auto py-4">
+          {/* Tombol Balik ke Beranda (Tampil di Mobile) */}
+          <div className="lg:hidden flex justify-start mb-2">
+            <Link
+              href="/"
+              className="inline-flex items-center gap-1.5 text-xs text-[#737A84] hover:text-[#14341B] transition font-medium"
+            >
+              <span>← Kembali ke Beranda</span>
+            </Link>
+          </div>
+
+          {/* Header Identitas Griya Kenanga Residence */}
+          <div className="text-center space-y-1.5">
+            <div className="flex justify-center mb-1">
               <img
-                src="/logo-griya-kenanga.png"
+                src="/logo.png"
                 alt="Logo Griya Kenanga Residence"
-                className="h-9 w-auto object-contain"
+                className="mx-auto h-14 sm:h-16 w-auto object-contain"
               />
             </div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[#1C1E22] leading-tight">
-              Daftar Akun Baru,{" "}
-              <span className="text-[#737A84] font-normal">
-                Griya Kenanga Residence
-              </span>
+            <h1 className="text-2xl font-bold text-[#142312] text-center">
+              Griya Kenanga Residence
             </h1>
-            <p className="text-xs text-[#737A84] leading-relaxed">
-              Lengkapi informasi identitas untuk mengakses portal pemesanan unit, kontrak sewa, dan layanan penghuni.
+            <p className="text-xs text-[#737A84]">
+              Daftarkan diri Anda untuk mengakses portal hunian &amp; pemesanan unit
             </p>
           </div>
 
           {/* Notifikasi Pesan */}
           {errorMessage && (
-            <div className="p-3.5 rounded-2xl bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-start gap-2 animate-in fade-in">
+            <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-start gap-2 animate-in fade-in">
               <AlertCircle className="w-4 h-4 text-rose-500 shrink-0 mt-0.5" />
               <span className="leading-relaxed font-medium">{errorMessage}</span>
             </div>
           )}
           {successMessage && (
-            <div className="p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs flex items-center gap-2 animate-in fade-in">
+            <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs flex items-center gap-2 animate-in fade-in">
               <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
               <span className="font-medium">{successMessage}</span>
             </div>
           )}
 
           {/* Form Registrasi */}
-          <form onSubmit={handleSubmit} className="space-y-5">
+          <form onSubmit={handleSubmit} className="space-y-3.5">
             {/* 1. Komponen Foto Profil Opsional */}
-            <div className="p-4 rounded-2xl bg-[#FAFBFB] border border-[#E8EAEC]">
+            <div className="p-3 rounded-xl bg-white border border-gray-200 shadow-xs">
               <ProfilePhotoUpload
                 fullName={namaLengkap}
                 onPhotoSelected={(file: File | null) => setAvatarFile(file)}
@@ -207,7 +261,7 @@ export default function RegisterPage() {
             </div>
 
             {/* 2. Informasi Pribadi */}
-            <div className="space-y-4">
+            <div className="space-y-3">
               <div>
                 <label className="block text-xs font-semibold text-[#26292E] mb-1.5">
                   Nama Lengkap (sesuai KTP) <span className="text-rose-500">*</span>
@@ -220,7 +274,7 @@ export default function RegisterPage() {
                     value={namaLengkap}
                     onChange={(e) => setNamaLengkap(e.target.value)}
                     placeholder="Contoh: Dimas Santoso"
-                    className="w-full bg-[#F6F7F9] text-xs text-[#26292E] pl-10 pr-4 py-2.5 rounded-xl border border-transparent focus:border-[#D5D9DE] focus:bg-white focus:outline-none transition"
+                    className="w-full bg-white text-xs text-[#26292E] pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 focus:border-[#14341B] focus:outline-none transition shadow-xs"
                   />
                 </div>
               </div>
@@ -244,27 +298,27 @@ export default function RegisterPage() {
                     type="email"
                     required
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    onChange={(e) => setEmail(sanitizeAuthInput(e.target.value))}
                     placeholder="penyewa@gmail.com"
-                    className={`w-full bg-[#F6F7F9] text-xs text-[#26292E] pl-10 pr-4 py-2.5 rounded-xl border transition focus:bg-white focus:outline-none ${
+                    className={`w-full bg-white text-xs text-[#26292E] pl-10 pr-4 py-2.5 rounded-xl border transition focus:outline-none shadow-xs ${
                       emailExistsWarning
                         ? "border-rose-400 bg-rose-50/50"
                         : emailFormatError
                         ? "border-amber-400 bg-amber-50/50"
-                        : "border-transparent focus:border-[#D5D9DE]"
+                        : "border-gray-200 focus:border-[#14341B]"
                     }`}
                   />
                 </div>
 
                 {/* Warning Email Real-time */}
                 {emailFormatError && (
-                  <p className="text-[11px] text-amber-600 mt-1.5 flex items-center gap-1">
+                  <p className="text-[11px] text-amber-600 mt-1 flex items-center gap-1">
                     <AlertCircle className="w-3 h-3 shrink-0" />
                     <span>{emailFormatError}</span>
                   </p>
                 )}
                 {emailExistsWarning && (
-                  <p className="text-[11px] text-rose-600 font-medium mt-1.5 flex items-center gap-1">
+                  <p className="text-[11px] text-rose-600 font-medium mt-1 flex items-center gap-1">
                     <AlertCircle className="w-3 h-3 shrink-0" />
                     <span>{emailExistsWarning}</span>
                   </p>
@@ -287,16 +341,16 @@ export default function RegisterPage() {
                     type="tel"
                     required
                     value={noHp}
-                    onChange={(e) => setNoHp(e.target.value)}
+                    onChange={(e) => setNoHp(sanitizeAuthInput(e.target.value))}
                     placeholder="081234567890"
-                    className="w-full bg-[#F6F7F9] text-xs text-[#26292E] pl-10 pr-4 py-2.5 rounded-xl border border-transparent focus:border-[#D5D9DE] focus:bg-white focus:outline-none transition"
+                    className="w-full bg-white text-xs text-[#26292E] pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 focus:border-[#14341B] focus:outline-none transition shadow-xs"
                   />
                 </div>
               </div>
             </div>
 
             {/* 3. Aturan & Validasi Kata Sandi (12 - 16 Karakter + Kekuatan Sandi) */}
-            <div className="space-y-4 pt-2 border-t border-[#E8EAEC]">
+            <div className="space-y-3.5 pt-2 border-t border-gray-200">
               <div>
                 <label className="block text-xs font-semibold text-[#26292E] mb-1.5">
                   Kata Sandi Baru <span className="text-rose-500">*</span>
@@ -309,14 +363,14 @@ export default function RegisterPage() {
                     minLength={12}
                     maxLength={16}
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    onChange={(e) => setPassword(sanitizeAuthInput(e.target.value))}
                     placeholder="12 - 16 karakter (kombinasi huruf, angka & simbol)"
-                    className="w-full bg-[#F6F7F9] text-xs text-[#26292E] pl-10 pr-10 py-2.5 rounded-xl border border-transparent focus:border-[#D5D9DE] focus:bg-white focus:outline-none transition"
+                    className="w-full bg-white text-xs text-[#26292E] pl-10 pr-10 py-2.5 rounded-xl border border-gray-200 focus:border-[#14341B] focus:outline-none transition shadow-xs"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[#737A84] hover:text-[#26292E] p-1"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[#737A84] hover:text-[#26292E] p-1 cursor-pointer"
                     aria-label={showPassword ? "Sembunyikan sandi" : "Tampilkan sandi"}
                   >
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -325,7 +379,7 @@ export default function RegisterPage() {
 
                 {/* Teks Informasi Ketentuan Password Standar */}
                 <p className="text-[11px] text-[#737A84] mt-1.5 leading-relaxed">
-                  Minimal 12 hingga 16 karakter, Gunakan gabungan huruf kapital (A-Z), huruf kecil (a-z), angka (0-9), serta simbol atau tanda baca.
+                  Minimal 12 hingga 16 karakter. Gunakan gabungan huruf kapital (A-Z), huruf kecil (a-z), angka (0-9), serta simbol atau tanda baca.
                 </p>
 
                 {/* Dynamic Password Strength Indicator */}
@@ -346,14 +400,14 @@ export default function RegisterPage() {
                     minLength={12}
                     maxLength={16}
                     value={konfirmasiPassword}
-                    onChange={(e) => setKonfirmasiPassword(e.target.value)}
+                    onChange={(e) => setKonfirmasiPassword(sanitizeAuthInput(e.target.value))}
                     placeholder="Ketik ulang kata sandi"
-                    className="w-full bg-[#F6F7F9] text-xs text-[#26292E] pl-10 pr-10 py-2.5 rounded-xl border border-transparent focus:border-[#D5D9DE] focus:bg-white focus:outline-none transition"
+                    className="w-full bg-white text-xs text-[#26292E] pl-10 pr-10 py-2.5 rounded-xl border border-gray-200 focus:border-[#14341B] focus:outline-none transition shadow-xs"
                   />
                   <button
                     type="button"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[#737A84] hover:text-[#26292E] p-1"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[#737A84] hover:text-[#26292E] p-1 cursor-pointer"
                     aria-label={showConfirmPassword ? "Sembunyikan sandi" : "Tampilkan sandi"}
                   >
                     {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -375,14 +429,14 @@ export default function RegisterPage() {
             </div>
 
             {/* 4. Persetujuan Syarat & Ketentuan serta Kebijakan Privasi */}
-            <div className="pt-2 border-t border-[#E8EAEC]">
+            <div className="pt-2 border-t border-gray-200">
               <label className="flex items-start gap-3 cursor-pointer group">
                 <input
                   type="checkbox"
                   checked={setujuSyarat}
                   onChange={(e) => setSetujuSyarat(e.target.checked)}
                   required
-                  className="mt-0.5 h-4 w-4 rounded border-gray-300 text-[#1C1E22] focus:ring-[#1C1E22] transition cursor-pointer"
+                  className="mt-0.5 h-4 w-4 rounded border-gray-300 text-[#14341B] focus:ring-[#14341B] transition cursor-pointer"
                 />
                 <span className="text-xs text-[#737A84] leading-relaxed group-hover:text-[#26292E] transition">
                   Saya telah membaca dan menyetujui{" "}
@@ -392,7 +446,7 @@ export default function RegisterPage() {
                       e.preventDefault();
                       setShowTermsModal(true);
                     }}
-                    className="font-semibold text-[#1C1E22] underline hover:text-emerald-700 inline"
+                    className="font-semibold text-[#14341B] underline hover:text-emerald-800 inline"
                   >
                     Syarat & Ketentuan
                   </button>{" "}
@@ -403,7 +457,7 @@ export default function RegisterPage() {
                       e.preventDefault();
                       setShowTermsModal(true);
                     }}
-                    className="font-semibold text-[#1C1E22] underline hover:text-emerald-700 inline"
+                    className="font-semibold text-[#14341B] underline hover:text-emerald-800 inline"
                   >
                     Kebijakan Privasi
                   </button>{" "}
@@ -416,22 +470,31 @@ export default function RegisterPage() {
             <button
               type="submit"
               disabled={isPending || !setujuSyarat || !!emailExistsWarning || !!emailFormatError}
-              className="w-full flex items-center justify-center gap-2 py-3 px-6 rounded-full bg-[#1C1E22] hover:bg-[#26292E] text-white text-xs font-semibold shadow-sm transition disabled:opacity-40 disabled:cursor-not-allowed mt-2"
+              className="w-full flex items-center justify-center gap-2 py-3 px-6 rounded-xl bg-[#14341B] hover:bg-[#1B4324] text-white text-xs font-medium shadow-sm transition disabled:opacity-40 disabled:cursor-not-allowed mt-2 cursor-pointer"
             >
-              <span>{isPending ? "Mendaftarkan Akun..." : "Daftar sebagai Penyewa"}</span>
-              <ArrowRight className="w-3.5 h-3.5 text-[#88BC3C]" />
+              <span>{isPending ? "Mendaftarkan Akun..." : "Daftar sebagai Penyewa →"}</span>
             </button>
           </form>
 
           {/* Footer Balik ke Login */}
-          <div className="pt-3 border-t border-[#E8EAEC] flex items-center justify-between text-xs text-[#737A84]">
+          <div className="pt-3 border-t border-gray-200 flex items-center justify-between text-xs text-[#737A84]">
             <span>Sudah memiliki akun terdaftar?</span>
             <Link
               href="/login"
-              className="text-[#26292E] font-semibold hover:underline flex items-center gap-1"
+              className="text-[#14341B] font-semibold hover:underline flex items-center gap-1"
             >
               <span>Masuk di sini</span>
               <ArrowRight className="w-3 h-3" />
+            </Link>
+          </div>
+
+          {/* Navigasi Kecil Kembali ke Beranda di Desktop */}
+          <div className="hidden lg:flex justify-center pt-2">
+            <Link
+              href="/"
+              className="text-xs text-[#737A84] hover:text-[#14341B] transition font-medium"
+            >
+              ← Kembali ke Beranda
             </Link>
           </div>
         </div>

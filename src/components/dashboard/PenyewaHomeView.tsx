@@ -166,48 +166,54 @@ export function PenyewaHomeView({
 
   return (
     <div className="space-y-8">
-      {/* HEADER BERANDA PENYEWA: KARTU RESIDEN EKSEKUTIF */}
-      <div className="rounded-[30px] bg-gradient-to-r from-[#1C1E22] via-[#26292E] to-[#343A42] p-6 sm:p-8 text-white border border-white/10 shadow-[0_16px_50px_rgba(0,0,0,0.12)] relative overflow-hidden">
-        {/* Subtle decorative glow */}
-        <div className="absolute -top-12 -right-12 w-48 h-48 rounded-full bg-[#5E8826]/15 blur-2xl pointer-events-none" />
+      {/* ========================================================================= */}
+      {/* BANNER SAMBUTAN PENYEWA: UKURAN RAMPING (COMPACT) & HANGAT DEEP FOREST     */}
+      {/* ========================================================================= */}
+      <div className="relative overflow-hidden rounded-2xl py-5 px-6 sm:px-8 bg-gradient-to-r from-[#112617] via-[#16301D]/95 to-[#1B3B24]/90 border border-[#23472B]/40 shadow-[0_10px_30px_rgba(0,0,0,0.12)]">
+        {/* Layer Gambar hero-facade.jpg yang Sangat Samar di Sisi Kanan */}
+        <div
+          className="absolute inset-y-0 right-0 w-full sm:w-2/3 lg:w-1/2 bg-cover bg-center pointer-events-none opacity-20 mix-blend-overlay"
+          style={{ backgroundImage: `url('/hero-facade.jpg')` }}
+        />
 
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div className="space-y-2 max-w-xl">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md text-[10px] font-bold text-[#88BC3C] border border-[#5E8826]/30 uppercase tracking-widest">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#88BC3C] animate-pulse" />
-              <span>Portal Residen Resmi • Griya Kenanga Residence</span>
-            </div>
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-white">
-              Selamat datang, <span className="text-[#88BC3C]">{userName}</span>
+        {/* Subtle decorative glow hijau hutan */}
+        <div className="absolute -top-10 -right-10 w-36 h-36 rounded-full bg-[#5E8826]/20 blur-2xl pointer-events-none" />
+
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          {/* Sisi Kiri: Eyebrow, Sapaan Satu Warna, dan Sub-teks Ringkas */}
+          <div className="space-y-1 min-w-0">
+            <span className="block text-[#A3C2A8] text-[11px] font-medium tracking-widest uppercase mb-0.5">
+              PORTAL PENGHUNI — GRIYA KENANGA SLEMAN
+            </span>
+            <h1 className="font-serif text-xl sm:text-2xl font-normal text-white tracking-tight leading-tight">
+              Selamat datang, {userName}
             </h1>
-            <p className="text-xs sm:text-sm text-[#A0A6AF] leading-relaxed">
-              Pantau kontrak sewa, foto &amp; model 3D kamar Anda, lunasi tagihan tepat waktu via gateway resmi Mayar, dan kelola laporan fasilitas langsung dari satu tempat.
+            <p className="text-[#D0E0D3]/80 text-xs sm:text-sm max-w-2xl line-clamp-1 leading-relaxed">
+              Pantau kontrak sewa, foto unit kamar Anda, serta kelola tagihan dan fasilitas hunian secara terpusat.
             </p>
           </div>
 
-          {/* Sisi Kanan: Status Verifikasi & Kontak */}
-          <div className="flex flex-col sm:flex-row md:flex-col items-start md:items-end gap-2.5 shrink-0">
+          {/* Sisi Kanan: Kotak Kaca Buram (Glassmorphism) Ringkas & Kompak */}
+          <div className="bg-white/10 backdrop-blur-md border border-white/15 rounded-xl px-3.5 py-2 flex flex-col items-start md:items-end justify-center shrink-0">
             {isIdentityVerified ? (
-              <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 text-xs font-bold backdrop-blur-md">
-                <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+              <span className="text-xs font-medium text-[#A3E6B4] flex items-center gap-1.5">
+                <CheckCircle2 className="w-3.5 h-3.5 text-[#A3E6B4] shrink-0" />
                 <span>Identitas Terverifikasi</span>
               </span>
             ) : isIdentityRejected ? (
-              <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-rose-500/15 text-rose-300 border border-rose-500/30 text-xs font-bold backdrop-blur-md">
-                <AlertTriangle className="w-4 h-4 text-rose-400" />
+              <span className="text-xs font-medium text-rose-300 flex items-center gap-1.5">
+                <AlertTriangle className="w-3.5 h-3.5 text-rose-400 shrink-0" />
                 <span>Identitas Ditolak</span>
               </span>
             ) : (
-              <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/30 text-xs font-bold backdrop-blur-md">
-                <Clock className="w-4 h-4 text-amber-400" />
+              <span className="text-xs font-medium text-amber-300 flex items-center gap-1.5">
+                <Clock className="w-3.5 h-3.5 text-amber-400 shrink-0" />
                 <span>Menunggu Verifikasi KTP</span>
               </span>
             )}
-
-            <div className="flex items-center gap-2 text-xs text-[#A0A6AF]">
-              <span>Akun Terdaftar:</span>
-              <span className="text-white font-medium">{userEmail}</span>
-            </div>
+            <span className="text-xs text-white/85 mt-0.5 truncate max-w-[220px]">
+              {userEmail}
+            </span>
           </div>
         </div>
       </div>

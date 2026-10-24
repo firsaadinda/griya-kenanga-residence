@@ -231,8 +231,10 @@ export async function POST(req: NextRequest) {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 10000);
 
-    // Expired 30 hari ke depan agar tidak pernah kadaluwarsa saat dibuka
-    const expiryDateIso = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
+    // Expired pada akhir hari ini (jam 23:59:59 waktu lokal)
+    const expiryDate = new Date();
+    expiryDate.setHours(23, 59, 59, 999);
+    const expiryDateIso = expiryDate.toISOString();
 
     let mayarRes: Response;
     try {

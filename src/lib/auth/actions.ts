@@ -3,7 +3,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { validateStrongPassword } from "./password";
+import { validateStrongPassword, sanitizeAuthInput } from "./password";
 
 export interface AuthActionResult {
   success: boolean;
@@ -20,8 +20,8 @@ export interface AuthActionResult {
  * - Pengecekan status akun aktif di tabel profiles
  */
 export async function loginAction(formData: FormData): Promise<AuthActionResult> {
-  const email = (formData.get("email") as string)?.trim().toLowerCase();
-  const password = formData.get("password") as string;
+  const email = sanitizeAuthInput(formData.get("email") as string).toLowerCase();
+  const password = sanitizeAuthInput(formData.get("password") as string);
 
   if (!email || !password) {
     return {
@@ -86,11 +86,11 @@ export async function loginAction(formData: FormData): Promise<AuthActionResult>
  * Otomatis mendapatkan peran 'penyewa' di tabel profiles
  */
 export async function registerAction(formData: FormData): Promise<AuthActionResult> {
-  const namaLengkap = (formData.get("nama_lengkap") as string)?.trim();
-  const email = (formData.get("email") as string)?.trim().toLowerCase();
-  const noHp = (formData.get("no_hp") as string)?.trim();
-  const password = formData.get("password") as string;
-  const konfirmasiPassword = formData.get("konfirmasi_password") as string;
+  const namaLengkap = sanitizeAuthInput(formData.get("nama_lengkap") as string);
+  const email = sanitizeAuthInput(formData.get("email") as string).toLowerCase();
+  const noHp = sanitizeAuthInput(formData.get("no_hp") as string);
+  const password = sanitizeAuthInput(formData.get("password") as string);
+  const konfirmasiPassword = sanitizeAuthInput(formData.get("konfirmasi_password") as string);
   const setujuSyarat = formData.get("setuju_syarat") === "true" || formData.get("setuju_syarat") === "on";
   const avatarFile = formData.get("foto_profil") as File | null;
 
@@ -289,10 +289,10 @@ export async function forgotPasswordAction(formData: FormData): Promise<AuthActi
  * Server Action untuk Verifikasi Kode OTP & Update Sandi Baru
  */
 export async function verifyOtpAndResetPasswordAction(formData: FormData): Promise<AuthActionResult> {
-  const email = (formData.get("email") as string)?.trim().toLowerCase();
-  const token = (formData.get("token") as string)?.trim();
-  const newPassword = formData.get("new_password") as string;
-  const confirmPassword = formData.get("confirm_password") as string;
+  const email = sanitizeAuthInput(formData.get("email") as string).toLowerCase();
+  const token = sanitizeAuthInput(formData.get("token") as string);
+  const newPassword = sanitizeAuthInput(formData.get("new_password") as string);
+  const confirmPassword = sanitizeAuthInput(formData.get("confirm_password") as string);
 
   if (!email || !token || !newPassword) {
     return {

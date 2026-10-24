@@ -1,71 +1,10 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
-import { ArrowUpRight, ArrowLeft, ArrowRight, Star, UserPlus, LogIn, Maximize2 } from "lucide-react";
-
-export interface HeroPhoto {
-  id: number;
-  src: string;
-  title: string;
-  floor: string;
-  unitTypeId: "standar" | "ac" | "studio";
-  caption: string;
-}
-
-export const HERO_PHOTOS: HeroPhoto[] = [
-  {
-    id: 1,
-    src: "/images/hero/hero-1.jpg",
-    title: "Suite Wide Angle",
-    floor: "Lantai 3",
-    unitTypeId: "studio",
-    caption: "Kamar Studio luas dengan integrasi ruang istirahat, foyer, dan pencahayaan alami optimal.",
-  },
-  {
-    id: 2,
-    src: "/images/hero/hero-2.jpg",
-    title: "Tempat Tidur Queen & Ambient Light",
-    floor: "Lantai 2",
-    unitTypeId: "ac",
-    caption: "Kamar Tipe AC dengan tempat tidur Queen single, headboard empuk, dan lampu gantung hangat.",
-  },
-  {
-    id: 3,
-    src: "/images/hero/hero-3.jpg",
-    title: "Living Room Cozy & Sofa",
-    floor: "Lantai 3",
-    unitTypeId: "studio",
-    caption: "Area santai Tipe Studio dilengkapi coffee table kayu solid dan akses langsung balkon.",
-  },
-  {
-    id: 4,
-    src: "/images/hero/hero-4.jpg",
-    title: "Pojok Kerja & Workstation",
-    floor: "Lantai 3",
-    unitTypeId: "studio",
-    caption: "Meja kerja luas dengan kursi ergonomis premium, stopkontak terorganisir, dan pemandangan luar.",
-  },
-  {
-    id: 5,
-    src: "/images/hero/hero-5.jpg",
-    title: "Pintu Masuk & AC Dingin",
-    floor: "Lantai 2",
-    unitTypeId: "ac",
-    caption: "Kerapian koridor Tipe AC dengan sirkulasi udara bersih dan pendingin ruangan modern.",
-  },
-  {
-    id: 6,
-    src: "/images/hero/hero-6.jpg",
-    title: "Ventilasi Jendela Lebar",
-    floor: "Lantai 2",
-    unitTypeId: "ac",
-    caption: "Jendela kaca tinggi menghadap pepohonan asri Sleman dengan tirai blackout ganda.",
-  },
-];
+import { ArrowUpRight, Building2 } from "lucide-react";
 
 interface HeroSectionProps {
-  onScrollToUnits: () => void;
+  onScrollToUnits?: () => void;
   onSelectUnitType?: (typeId: "standar" | "ac" | "studio") => void;
 }
 
@@ -73,334 +12,270 @@ export function HeroSection({
   onScrollToUnits,
   onSelectUnitType,
 }: HeroSectionProps) {
-  const [activeIndex, setActiveIndex] = useState(0);
-
-  const activePhoto = HERO_PHOTOS[activeIndex];
-
-  const handlePrev = (e?: React.MouseEvent) => {
-    if (e) e.stopPropagation();
-    setActiveIndex((prev) => (prev === 0 ? HERO_PHOTOS.length - 1 : prev - 1));
+  const handleScroll = (targetId: string) => {
+    if (typeof document !== "undefined") {
+      const element = document.getElementById(targetId);
+      if (element) {
+        element.scrollIntoView({ behavior: "smooth" });
+      } else if (onScrollToUnits) {
+        onScrollToUnits();
+      }
+    }
   };
 
-  const handleNext = (e?: React.MouseEvent) => {
-    if (e) e.stopPropagation();
-    setActiveIndex((prev) => (prev === HERO_PHOTOS.length - 1 ? 0 : prev + 1));
-  };
-
-  // Navigasi langsung ke Tipe Kamar & Lantai yang diklik pengguna
-  const handleGoToUnit = (photo: HeroPhoto) => {
-    const typeId = photo.unitTypeId || (photo.floor.includes("3") ? "studio" : photo.floor.includes("2") ? "ac" : "standar");
+  const handleSelectUnit = (typeId: "standar" | "ac" | "studio") => {
     if (onSelectUnitType) {
       onSelectUnitType(typeId);
     }
     if (typeof window !== "undefined") {
-      window.dispatchEvent(new CustomEvent("griya-select-unit", { detail: { typeId } }));
+      window.dispatchEvent(
+        new CustomEvent("griya-select-unit", { detail: { typeId } })
+      );
     }
-    onScrollToUnits();
+    handleScroll("tipe-kamar");
   };
 
   return (
-    <section className="relative w-full bg-white text-[#1C1E22] px-4 sm:px-8 lg:px-12 pt-6 sm:pt-8 pb-12 overflow-hidden">
-      {/* Internal Navigation Bar */}
-      <div className="flex items-center justify-between pb-6 sm:pb-8 border-b border-[#F0F2F4]">
-        {/* Brand Logo & Name */}
-        <Link href="/" className="flex items-center gap-3 group">
-          <img
-            src="/logo-griya-kenanga.png"
-            alt="Logo Griya Kenanga Residence"
-            className="h-10 sm:h-12 w-auto object-contain transition-transform group-hover:scale-105"
-          />
-          <div className="flex flex-col">
-            <span className="font-extrabold text-lg sm:text-xl tracking-tight text-[#1E2024] leading-tight">
-              GRIYA KENANGA
-            </span>
-            <span className="text-[10px] tracking-widest uppercase font-bold text-[#76A733] -mt-0.5">
-              RESIDENCE • SLEMAN
-            </span>
-          </div>
-        </Link>
-
-        {/* Tombol Masuk Sistem dan Buat Akun */}
-        <div className="flex items-center gap-3">
-          <Link
-            href="/login"
-            className="hidden sm:inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-semibold text-[#1E2024] bg-[#F4F5F7] hover:bg-[#E3E6EB] border border-[#E3E6EB] transition"
-          >
-            <LogIn className="w-3.5 h-3.5 text-[#737A84]" />
-            <span>Masuk Sistem</span>
-          </Link>
-
-          <Link
-            href="/register"
-            className="hidden md:inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-semibold text-white bg-[#424242] hover:bg-[#76A733] transition shadow-xs"
-          >
-            <UserPlus className="w-3.5 h-3.5 text-[#D4C4B1]" />
-            <span>Buat Akun</span>
-          </Link>
-
-          {/* Tombol Fullscreen Layar Penuh (Lampiran 2) */}
-          <button
-            type="button"
-            onClick={() => {
-              if (typeof document !== "undefined") {
-                if (!document.fullscreenElement) {
-                  document.documentElement.requestFullscreen().catch(() => {});
-                } else {
-                  document.exitFullscreen().catch(() => {});
-                }
-              }
-            }}
-            aria-label="Mode Layar Penuh"
-            title="Layar Penuh (Fullscreen)"
-            className="w-10 h-10 rounded-full flex items-center justify-center hover:bg-[#F4F5F6] transition border border-[#E8EAEC] text-[#1C1E22] hover:text-[#76A733] cursor-pointer shadow-2xs"
-          >
-            <Maximize2 className="w-4 h-4" />
-          </button>
-        </div>
-      </div>
-
-      {/* MAIN SPLIT GRID: 1 GAMBAR BESAR DI SEBELAH KIRI, TULISAN DI SEBELAH KANAN */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-stretch pt-6 sm:pt-8">
+    <section className="relative w-full p-2.5 sm:p-4 md:p-5 bg-white">
+      {/* 
+        Container Kartu Utama Hero:
+        Full bleed image background dengan rounded corners yang elegan ala Structa / Timeless Design
+      */}
+      <div className="relative w-full rounded-[24px] sm:rounded-[32px] md:rounded-[40px] overflow-hidden min-h-[640px] sm:min-h-[720px] lg:min-h-[820px] flex flex-col justify-between p-4 sm:p-7 lg:p-10 shadow-[0_20px_60px_rgba(0,0,0,0.18)] bg-[#1A1C20]">
         
-        {/* ========================================================================= */}
-        {/* KOLOM KIRI: 1 GAMBAR ELEGAN BESAR (BISA DIGESER)                           */}
-        {/* ========================================================================= */}
-        <div className="lg:col-span-6 xl:col-span-6 relative flex flex-col">
-          <div className="relative w-full h-full min-h-[460px] sm:min-h-[540px] lg:min-h-[580px] rounded-[24px] sm:rounded-[32px] overflow-hidden bg-[#E5E7EB] shadow-[0_16px_50px_rgba(0,0,0,0.12)] border border-[#E8EAEC] group">
-            {/* Foto Hero Aktif */}
-            <img
-              key={activePhoto.src}
-              src={activePhoto.src}
-              alt={activePhoto.title}
-              className="w-full h-full object-cover transition-all duration-700 ease-out cursor-pointer group-hover:scale-102"
-              onClick={() => handleGoToUnit(activePhoto)}
-              title={`Klik untuk eksplorasi kamar ${activePhoto.floor}`}
-            />
+        {/* Layer 1: Background Base Foto Rumah Lengkap (Pagi Hari Cerah) */}
+        <div className="absolute inset-0 z-0 pointer-events-none">
+          <img
+            src="/images/hero-facade.jpg"
+            alt="Fasad Arsitektur Griya Kenanga Residence Sleman"
+            className="w-full h-full object-cover object-center transform scale-100 hover:scale-102 transition-transform duration-1000 ease-out"
+          />
+          {/* Subtle dark gradient overlay untuk menghilangkan kesan mentah/AI slop dan menajamkan kontras teks & kartu */}
+          <div className="absolute inset-0 bg-gradient-to-b from-black/55 via-black/25 to-black/60 pointer-events-none" />
+        </div>
 
-            {/* Ambient Gradient Overlay */}
-            <div
-              onClick={() => handleGoToUnit(activePhoto)}
-              className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/30 cursor-pointer"
-            />
+        {/* 
+          Layer 2: Teks Raksasa "HUNIAN MODERN" (Tampil di Depan Atap Rumah, Transparansi 80%)
+          Teks utuh "HUNIAN MODERN" berada di depan atap rumah (z-25) dengan transparansi 80% (text-white/80).
+        */}
+        <div className="absolute top-16 sm:top-20 lg:top-24 inset-x-0 z-25 flex justify-center pointer-events-none select-none px-2 sm:px-6 overflow-visible">
+          <h1 
+            className="font-black text-white/90 uppercase leading-none drop-shadow-[0_4px_16px_rgba(0,0,0,0.6)] text-center tracking-tight sm:tracking-tighter whitespace-nowrap"
+            style={{
+              fontSize: "clamp(2rem, 9.2vw, 115px)",
+              letterSpacing: "-0.03em"
+            }}
+          >
+            HUNIAN MODERN
+          </h1>
+        </div>
 
-            {/* Tombol Geser Atas Kiri: [ ← ] [ → ] + Counter */}
-            <div className="absolute top-5 left-5 sm:top-6 sm:left-6 flex items-center gap-2 z-10">
-              <div className="flex items-center rounded-full border border-white/30 p-1 bg-black/45 backdrop-blur-md text-white shadow-md">
-                <button
-                  type="button"
-                  onClick={handlePrev}
-                  aria-label="Foto sebelumnya"
-                  title="Foto sebelumnya"
-                  className="w-7 h-7 rounded-full flex items-center justify-center hover:bg-white/20 transition cursor-pointer"
-                >
-                  <ArrowLeft className="w-3.5 h-3.5" />
-                </button>
-                <div className="w-[1px] h-3.5 bg-white/30 mx-0.5" />
-                <button
-                  type="button"
-                  onClick={handleNext}
-                  aria-label="Foto berikutnya"
-                  title="Foto berikutnya"
-                  className="w-7 h-7 rounded-full flex items-center justify-center hover:bg-white/20 transition cursor-pointer"
-                >
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </button>
-              </div>
-
-              <span className="px-3 py-1 rounded-full bg-black/45 backdrop-blur-md text-xs font-mono font-bold text-white border border-white/20 shadow-xs">
-                0{activeIndex + 1} | 0{HERO_PHOTOS.length}
-              </span>
-            </div>
-
-            {/* Badge Interaktif Atas Kanan: Info Tipe Kamar & Lantai */}
-            <button
-              type="button"
-              onClick={() => handleGoToUnit(activePhoto)}
-              title={`Buka Eksplorasi Kamar ${activePhoto.floor}`}
-              className="absolute top-5 right-5 sm:top-6 sm:right-6 text-right p-3 rounded-2xl bg-black/45 hover:bg-black/70 backdrop-blur-md border border-white/25 transition-all duration-200 active:scale-95 cursor-pointer shadow-lg z-10"
-            >
-              <div className="flex items-center justify-end gap-1.5 text-white/95">
-                <span className="text-lg sm:text-xl font-extrabold tracking-tight font-sans drop-shadow-md">
-                  {activePhoto.unitTypeId === "studio" ? "Tipe Studio" : activePhoto.unitTypeId === "ac" ? "Tipe AC" : "Tipe Standar"}
-                </span>
-                <ArrowUpRight className="w-4 h-4 sm:w-5 sm:h-5 drop-shadow-md text-[#D4C4B1]" />
-              </div>
-              <span className="text-[10px] sm:text-xs text-white/90 font-bold tracking-widest uppercase block mt-0.5">
-                {activePhoto.floor} • LIHAT SPESIFIKASI →
-              </span>
-            </button>
-
-            {/* Bottom Left Big Numeral & Caption */}
-            <div
-              onClick={() => handleGoToUnit(activePhoto)}
-              className="absolute bottom-6 left-6 sm:bottom-8 sm:left-8 max-w-sm cursor-pointer select-none z-10"
-            >
-              <span className="text-5xl sm:text-6xl font-light text-white/90 font-mono tracking-tighter block mb-1 drop-shadow-lg">
-                0{activeIndex + 1}
-              </span>
-              <p className="text-sm sm:text-base font-bold text-white drop-shadow-md flex items-center gap-2">
-                <span>{activePhoto.title}</span>
-                <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/25 backdrop-blur-xs font-normal">
-                  {activePhoto.floor}
-                </span>
-              </p>
-              <p className="text-xs text-white/85 leading-relaxed line-clamp-2 drop-shadow-xs font-normal mt-0.5">
-                {activePhoto.caption}
-              </p>
-            </div>
-
-            {/* Floor Badge on Bottom Right: Klik Menuju Unit */}
-            <button
-              type="button"
-              onClick={() => handleGoToUnit(activePhoto)}
-              title={`Buka Eksplorasi Kamar ${activePhoto.floor}`}
-              className="absolute bottom-6 right-6 sm:bottom-8 sm:right-8 cursor-pointer active:scale-95 transition-transform z-10"
-            >
-              <span className="px-3.5 py-1.5 rounded-full bg-white/95 hover:bg-white backdrop-blur-md text-[11px] font-bold text-[#1E3A2B] uppercase tracking-wider shadow-md flex items-center gap-1.5 border border-white/40">
-                <span>{activePhoto.floor}</span>
-                <ArrowUpRight className="w-3.5 h-3.5 text-[#5E8826]" />
-              </span>
-            </button>
-          </div>
+        {/* 
+          Layer Foreground Vignette untuk kontras bagian bawah
+        */}
+        <div className="absolute inset-0 z-20 pointer-events-none">
+          {/* Ambient vignette halus dari bawah untuk keterbacaan teks langsung dan kartu tanpa perlu kotak kaku */}
+          <div className="absolute inset-x-0 bottom-0 h-3/5 bg-gradient-to-t from-black/85 via-black/40 to-transparent" />
         </div>
 
         {/* ========================================================================= */}
-        {/* KOLOM KANAN: TULISAN EDITORIAL, HEADLINE, CTAS, PENILAIAN, DAN THUMBNAILS */}
+        {/* 1. NAVBAR MENU NAVIGASI ATAS DI DALAM HERO (Kiri, Tengah 4 menu, Kanan CTA) */}
         {/* ========================================================================= */}
-        <div className="lg:col-span-6 xl:col-span-6 flex flex-col justify-between space-y-6 sm:space-y-8">
-          <div className="space-y-5">
-            {/* Main Headline */}
-            <h1 className="text-3xl sm:text-4xl md:text-[38px] xl:text-[44px] font-extrabold text-[#476E2E] leading-[1.18] tracking-[-0.03em]">
-              Hunian Kos dan Studio Eksklusif Kabupaten Sleman Standar Arsitektur Modern dan Fungsional{" "}
-              <button
-                type="button"
-                onClick={onScrollToUnits}
-                title="Menuju Eksplorasi Kamar"
-                className="inline-flex items-center justify-center align-middle ml-1 -mt-1 w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-[#4A6C2F] hover:bg-[#5E8826] text-white shadow-sm transition-colors cursor-pointer"
-              >
-                <ArrowUpRight className="w-4 h-4 sm:w-4.5 sm:h-4.5" />
-              </button>
-            </h1>
+        <header className="relative z-30 flex flex-wrap items-center justify-between gap-3 sm:gap-4">
+          {/* KIRI: Logo & Teks Brand Griya Kenanga */}
+          <Link
+            href="/"
+            className="flex items-center gap-2.5 sm:gap-3 group drop-shadow-md select-none"
+          >
+            <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-white/95 backdrop-blur-md p-1.5 flex items-center justify-center shadow-md transition-transform group-hover:scale-105 border border-white/40">
+              <img
+                src="/logo-griya-kenanga.png"
+                alt="Logo Griya Kenanga Residence"
+                className="w-full h-full object-contain"
+              />
+            </div>
+            <div className="flex flex-col">
+              <span className="font-extrabold text-sm sm:text-base md:text-lg tracking-wider text-white uppercase drop-shadow-sm leading-tight">
+                GRIYA KENANGA
+              </span>
+              <span className="text-[10px] sm:text-[11px] tracking-widest uppercase font-bold text-[#A8D558] drop-shadow-sm">
+                RESIDENCE SLEMAN
+              </span>
+            </div>
+          </Link>
 
-            {/* Subtitle Paragraph */}
-            <p className="text-xs sm:text-sm text-[#4E6149] max-w-xl leading-relaxed font-normal">
+          {/* TENGAH: Menu Navigasi Horizontal 4 Anchor Links (Smooth Scroll) */}
+          <nav className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/40 backdrop-blur-xl border border-white/20 shadow-lg text-xs font-semibold text-white/90">
+            <button
+              type="button"
+              onClick={() => handleScroll("eksplorasi-ruang")}
+              className="px-3.5 py-1.5 rounded-full hover:text-white hover:bg-white/15 transition-all cursor-pointer"
+            >
+              Eksplorasi Ruang
+            </button>
+            <button
+              type="button"
+              onClick={() => handleScroll("tipe-kamar")}
+              className="px-3.5 py-1.5 rounded-full hover:text-white hover:bg-white/15 transition-all cursor-pointer"
+            >
+              Tipe Kamar
+            </button>
+            <button
+              type="button"
+              onClick={() => handleScroll("spesifikasi-3d")}
+              className="px-3.5 py-1.5 rounded-full hover:text-white hover:bg-white/15 transition-all cursor-pointer"
+            >
+              Spesifikasi &amp; 3D
+            </button>
+            <button
+              type="button"
+              onClick={() => handleScroll("ulasan")}
+              className="px-3.5 py-1.5 rounded-full hover:text-white hover:bg-white/15 transition-all cursor-pointer"
+            >
+              Ulasan Penghuni
+            </button>
+          </nav>
+
+          {/* KANAN: Tombol Masuk Sistem & Buat Akun */}
+          <div className="flex items-center gap-2 sm:gap-2.5">
+            <Link
+              href="/login"
+              className="px-3.5 sm:px-4 py-2 rounded-full text-xs font-bold text-[#14341B] bg-white/90 hover:bg-white border border-white/60 backdrop-blur-md transition-all shadow-sm hover:shadow"
+            >
+              Masuk Sistem
+            </Link>
+            <Link
+              href="/register"
+              className="px-4 sm:px-5 py-2 rounded-full text-xs font-bold text-[#1E2024] bg-white hover:bg-white/90 transition-all shadow-md active:scale-95"
+            >
+              Buat Akun
+            </Link>
+          </div>
+        </header>
+
+        {/* Spacer Transparan di Tengah Agar Layout Tetap Fleksibel */}
+        <div className="relative z-20 my-auto py-8 sm:py-14" aria-hidden="true" />
+
+        {/* ========================================================================= */}
+        {/* 2. BAGIAN BAWAH HERO: DESKRIPSI KIRI BAWAH & FLOATING CARDS DI KANAN BAWAH*/}
+        {/* ========================================================================= */}
+        <div className="relative z-30 flex flex-col lg:flex-row items-end justify-between gap-6 sm:gap-8 pt-4">
+          
+          {/* SISI KIRI BAWAH: Teks Deskripsi Bersih Langsung di Atas Foto (Clean Overlay Text) */}
+          <div className="w-full lg:max-w-xl pb-1 sm:pb-2">
+            <p className="text-xs sm:text-sm text-white/90 leading-relaxed font-medium drop-shadow-[0_2px_8px_rgba(0,0,0,0.6)]">
               Griya Kenanga Residence hadir sebagai tempat tinggal modern yang memadukan kenyamanan ruang dan fasilitas lengkap untuk mendukung aktivitas harianmu. Setiap unit dirancang dengan detail arsitektur untuk memberikan kenyamanan istirahat yang maksimal. Nikmati pengalaman sewa hunian yang transparan dan strategis di Sleman.
             </p>
-
-            {/* Action Buttons */}
-            <div className="flex flex-wrap items-center gap-3 pt-2">
-              <button
-                type="button"
-                onClick={onScrollToUnits}
-                className="px-6 sm:px-7 py-3 rounded-full bg-[#1C1E22] hover:bg-[#76A733] text-white text-xs sm:text-sm font-semibold transition-all duration-200 shadow-sm active:scale-95 cursor-pointer"
-              >
-                Eksplorasi Kamar
-              </button>
-
-              <button
-                type="button"
-                onClick={onScrollToUnits}
-                className="px-6 sm:px-7 py-3 rounded-full bg-white hover:bg-[#F6F7F9] text-[#1C1E22] text-xs sm:text-sm font-semibold border border-[#D1D5DB] transition-all duration-200 active:scale-95 cursor-pointer"
-              >
-                Lihat Fasilitas
-              </button>
-            </div>
           </div>
 
-          {/* Social Proof & Rating Block (Bahasa Indonesia & Angka Realistis 24 Unit) */}
-          <div className="pt-4 pb-2 border-t border-[#F0F2F4] space-y-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 items-center">
-              {/* Left rating item */}
-              <div className="space-y-1 sm:border-r border-[#E3E6EB] sm:pr-4">
-                <div className="flex items-center gap-1 text-[#BDA58B]">
-                  {[...Array(5)].map((_, i) => (
-                    <Star
-                      key={i}
-                      className="w-3.5 h-3.5 fill-[#BDA58B] text-[#BDA58B]"
-                    />
-                  ))}
-                </div>
-                <p className="text-xs text-[#1E2024] font-medium pt-0.5">
-                  <strong className="font-bold">(4.9)</strong> Penilaian{" "}
-                  <span className="text-[#70757D] block sm:inline">(22 Ulasan Penghuni)</span>
-                </p>
+          {/* SISI KANAN BAWAH: Tumpukan Floating Cards Modern */}
+          <div className="w-full lg:w-auto flex flex-col gap-3 sm:gap-3.5 items-stretch lg:items-end">
+            
+            {/* Card 1 (Atas - Soft Frosting Glass): Tipe Kamar Unit */}
+            <div
+              onClick={() => handleScroll("tipe-kamar")}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") handleScroll("tipe-kamar");
+              }}
+              title="Klik untuk melihat Tipe Kamar Unit"
+              className="group cursor-pointer w-full sm:w-[320px] md:w-[360px] p-3.5 rounded-2xl bg-white/85 hover:bg-white/95 backdrop-blur-md border border-white/60 shadow-lg transition-all duration-300 hover:-translate-y-1 active:scale-98"
+            >
+              <div className="flex items-center justify-between pb-2 mb-2 border-b border-black/10">
+                <span className="text-xs font-black uppercase tracking-wide text-[#142312]">
+                  TIPE KAMAR UNIT
+                </span>
+                <span className="w-6 h-6 rounded-full bg-black/5 group-hover:bg-[#14341B] group-hover:text-white flex items-center justify-center text-[#142312] transition-colors">
+                  <ArrowUpRight className="w-3.5 h-3.5" />
+                </span>
               </div>
 
-              {/* Right avatar stack: Anisa Rahmawati (Kerudung Merah), Bayu, Ratna, Sinta, Dimas */}
               <div className="flex items-center gap-3">
-                <div className="flex -space-x-2 shrink-0">
+                <div className="w-16 h-12 rounded-xl overflow-hidden shrink-0 border border-black/10 shadow-xs">
                   <img
-                    src="/profiles/w_5_white.jpg"
-                    alt="Anisa Rahmawati (Kerudung Merah)"
-                    title="Anisa Rahmawati"
-                    className="w-8 h-8 rounded-full border-2 border-white object-cover ring-1 ring-[#BDA58B]/50"
-                  />
-                  <img
-                    src="/profiles/bayu_white.jpg"
-                    alt="Bayu Pratama"
-                    title="Bayu Pratama"
-                    className="w-8 h-8 rounded-full border-2 border-white object-cover ring-1 ring-[#BDA58B]/50"
-                  />
-                  <img
-                    src="/profiles/ratna_white.jpg"
-                    alt="Ratna Dewi"
-                    title="Ratna Dewi"
-                    className="w-8 h-8 rounded-full border-2 border-white object-cover ring-1 ring-[#BDA58B]/50"
-                  />
-                  <img
-                    src="/profiles/sinta_white.jpg"
-                    alt="Sinta Maharani"
-                    title="Sinta Maharani"
-                    className="w-8 h-8 rounded-full border-2 border-white object-cover ring-1 ring-[#BDA58B]/50"
-                  />
-                  <img
-                    src="/profiles/m_1_white.jpg"
-                    alt="Dimas Wicaksono"
-                    title="Dimas Wicaksono"
-                    className="w-8 h-8 rounded-full border-2 border-white object-cover ring-1 ring-[#BDA58B]/50"
+                    src="/units/tipe-b/pov-2.jpg"
+                    alt="Preview Kamar"
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                   />
                 </div>
-                <p className="text-[11px] sm:text-xs text-[#70757D] leading-snug">
-                  <strong className="text-[#1E2024] font-semibold">22 Penghuni</strong> aktif dari 24 unit
-                </p>
+                <div>
+                  <span className="text-xs font-bold text-[#142312] block leading-tight">
+                    Lantai 1–3: Standar, AC, Studio
+                  </span>
+                  <span className="text-[11px] text-gray-600 mt-0.5 block font-medium">
+                    Nyaman, fully furnished &amp; water heater
+                  </span>
+                </div>
               </div>
             </div>
 
-            {/* Quick 6-photo Thumbnail selector strip */}
-            <div className="pt-2 border-t border-[#F0F2F4]/80">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-[10px] font-bold text-[#70757D] uppercase tracking-wider block">
-                  Pilih Sudut Pandang Foto (6 Pilihan):
+            {/* Card 2 (Tengah - Soft Frosting Glass): Tur Virtual 3D & Spesifikasi */}
+            <div
+              onClick={() => handleScroll("spesifikasi-3d")}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") handleScroll("spesifikasi-3d");
+              }}
+              title="Klik untuk membuka Tur Virtual 3D & Spesifikasi"
+              className="group cursor-pointer w-full sm:w-[320px] md:w-[360px] p-3.5 rounded-2xl bg-white/85 hover:bg-white/95 backdrop-blur-md border border-white/60 shadow-lg transition-all duration-300 hover:-translate-y-1 active:scale-98"
+            >
+              <div className="flex items-center justify-between pb-2 mb-2 border-b border-black/10">
+                <span className="text-xs font-black uppercase tracking-wide text-[#142312]">
+                  TUR VIRTUAL 3D &amp; SPESIFIKASI
                 </span>
-                <span className="text-[10px] font-semibold text-[#5E8826]">
-                  {activeIndex + 1} dari 6 Foto
+                <span className="w-6 h-6 rounded-full bg-black/5 group-hover:bg-[#14341B] group-hover:text-white flex items-center justify-center text-[#142312] transition-colors">
+                  <ArrowUpRight className="w-3.5 h-3.5" />
                 </span>
               </div>
-              <div className="grid grid-cols-6 gap-2">
-                {HERO_PHOTOS.map((photo, idx) => {
-                  const isSelected = activeIndex === idx;
-                  return (
-                    <button
-                      key={photo.id}
-                      type="button"
-                      onClick={() => setActiveIndex(idx)}
-                      title={`${photo.title} (${photo.floor})`}
-                      className={`relative aspect-square rounded-xl overflow-hidden border-2 transition-all cursor-pointer ${
-                        isSelected
-                          ? "border-[#76A733] ring-2 ring-[#76A733]/50 scale-105 shadow-md"
-                          : "border-transparent opacity-65 hover:opacity-100"
-                      }`}
-                    >
-                      <img
-                        src={photo.src}
-                        alt={photo.title}
-                        className="w-full h-full object-cover"
-                      />
-                    </button>
-                  );
-                })}
+
+              <div className="flex items-center gap-3">
+                <div className="w-16 h-12 rounded-xl overflow-hidden shrink-0 border border-black/10 shadow-xs">
+                  <img
+                    src="/units/tipe-c/pov-2.jpg"
+                    alt="Preview 3D"
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                  />
+                </div>
+                <div>
+                  <span className="text-xs font-bold text-[#142312] block leading-tight">
+                    Model Interaktif 360°
+                  </span>
+                  <span className="text-[11px] text-gray-600 mt-0.5 block font-medium">
+                    Kamar Mandi Dalam &amp; Fasilitas Lengkap
+                  </span>
+                </div>
               </div>
             </div>
+
+            {/* Card 3 (Bawah - Badge Kuning/Hijau Elegan): Rating & Ulasan */}
+            <div
+              onClick={() => handleScroll("ulasan")}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") handleScroll("ulasan");
+              }}
+              title="Klik untuk melihat Ulasan Penghuni"
+              className="cursor-pointer w-full sm:w-[320px] md:w-[360px] px-4 py-3 rounded-2xl bg-[#E2B714] hover:bg-[#D4A910] text-[#1E2024] shadow-[0_12px_36px_rgba(0,0,0,0.25)] transition-all duration-200 hover:-translate-y-0.5 active:scale-98 flex items-center justify-between gap-3 border border-yellow-300/40"
+            >
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-black/10 flex items-center justify-center shrink-0">
+                  <Building2 className="w-4 h-4 text-[#1E2024]" />
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-xs font-black tracking-tight leading-snug">
+                    Griya Kenanga Sleman
+                  </span>
+                  <span className="text-[11px] font-bold opacity-90">
+                    5.0★ (Ulasan Penghuni)
+                  </span>
+                </div>
+              </div>
+              <ArrowUpRight className="w-4 h-4 text-[#1E2024] shrink-0" />
+            </div>
+
           </div>
 
         </div>

@@ -84,7 +84,7 @@ export const TENANT_REVIEWS: TenantReview[] = [
 
 export function TenantReviewsSection() {
   return (
-    <section className="w-full bg-[#F4F5F7] py-14 sm:py-20 px-6 sm:px-10 lg:px-14 border-t border-[#E3E6EB]">
+    <section id="ulasan" className="w-full bg-[#F4F5F7] py-14 sm:py-20 px-6 sm:px-10 lg:px-14 border-t border-[#E3E6EB]">
       <div className="max-w-7xl mx-auto space-y-10 sm:space-y-12">
         {/* Section Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-[#E3E6EB] pb-6">

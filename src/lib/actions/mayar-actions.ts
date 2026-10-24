@@ -152,7 +152,9 @@ export async function buatInvoiceMayarAction(
     let generatedInvoiceId = `inv_${Date.now()}`;
     let generatedPaymentUrl = "";
 
-    const expiryDateIso = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
+    const expiryDate = new Date();
+    expiryDate.setHours(23, 59, 59, 999);
+    const expiryDateIso = expiryDate.toISOString();
 
     if (hasValidApiKey) {
       try {

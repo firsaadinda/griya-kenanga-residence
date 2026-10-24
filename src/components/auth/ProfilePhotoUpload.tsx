@@ -69,11 +69,11 @@ export function ProfilePhotoUpload({
   };
 
   return (
-    <div className="space-y-3">
-      <div className="flex items-center gap-4">
+    <div className="space-y-2">
+      <div className="flex items-center gap-3">
         {/* Lingkaran Avatar Preview dengan Inisial Real-Time */}
         <div className="relative shrink-0">
-          <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-white shadow-sm bg-gradient-to-br from-[#26292E] to-[#1C1E22] flex items-center justify-center text-white select-none">
+          <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-white shadow-xs bg-gradient-to-br from-[#26292E] to-[#1C1E22] flex items-center justify-center text-white select-none">
             {previewUrl ? (
               <img
                 src={previewUrl}
@@ -81,7 +81,7 @@ export function ProfilePhotoUpload({
                 className="w-full h-full object-cover"
               />
             ) : (
-              <span className="tracking-wider text-base font-bold text-[#88BC3C]">
+              <span className="tracking-wider text-xs font-bold text-[#88BC3C]">
                 {initials}
               </span>
             )}
@@ -92,15 +92,15 @@ export function ProfilePhotoUpload({
               type="button"
               onClick={handleRemovePhoto}
               title="Hapus foto"
-              className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-rose-500 text-white flex items-center justify-center shadow hover:bg-rose-600 transition"
+              className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-rose-500 text-white flex items-center justify-center shadow hover:bg-rose-600 transition"
             >
-              <X className="w-3 h-3" />
+              <X className="w-2.5 h-2.5" />
             </button>
           )}
         </div>
 
         {/* Kontrol Upload Bersih & Minimalis */}
-        <div className="flex-1 space-y-1.5">
+        <div className="flex-1 min-w-0">
           <input
             type="file"
             ref={fileInputRef}
@@ -114,29 +114,28 @@ export function ProfilePhotoUpload({
           <div className="flex items-center gap-2">
             <label
               htmlFor="foto-profil-input"
-              className="cursor-pointer inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white hover:bg-[#F6F7F9] border border-[#D5D9DE] hover:border-[#26292E] text-xs font-semibold text-[#26292E] shadow-sm transition"
+              className="cursor-pointer inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white hover:bg-[#F6F7F9] border border-gray-200 hover:border-[#14341B] text-xs font-semibold text-[#26292E] shadow-xs transition"
             >
               <UploadCloud className="w-3.5 h-3.5 text-[#26292E]" />
               <span>{previewUrl ? "Ganti Foto" : "Pilih Foto"}</span>
             </label>
 
-            {previewUrl && (
-              <span className="text-[11px] text-emerald-600 font-medium">
+            {previewUrl ? (
+              <span className="text-[11px] text-emerald-600 font-medium truncate">
                 Foto terpilih
+              </span>
+            ) : (
+              <span className="text-[11px] text-[#737A84] truncate">
+                Opsional (bisa diatur nanti)
               </span>
             )}
           </div>
-
-          {/* Teks helper natural tanpa badge kaku */}
-          <p className="text-[11px] text-[#737A84] leading-relaxed">
-            Opsional. Foto bisa ditambahkan atau diganti nanti setelah akun aktif.
-          </p>
         </div>
       </div>
 
       {/* Pesan Error Validasi File */}
       {errorMsg && (
-        <div className="p-2.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-center gap-2 animate-in fade-in duration-200">
+        <div className="p-2 rounded-lg bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-center gap-1.5 animate-in fade-in duration-200">
           <span className="font-semibold">Perhatian:</span>
           <span>{errorMsg}</span>
         </div>

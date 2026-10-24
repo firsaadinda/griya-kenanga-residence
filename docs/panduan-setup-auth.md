@@ -51,33 +51,33 @@ Sistem login dan registrasi menerapkan validasi ganda (*Client-side* dan *Server
 
 Berikut adalah daftar lengkap 25 akun uji coba terkonfigurasi di database Supabase dengan domain `@gmail.com`, sandi unik kuat yang memenuhi standar keamanan (*min. 8 karakter, huruf besar, huruf kecil, angka, simbol*), serta **catatan resmi yang dipertahankan utuh untuk pengujian fitur sistem**:
 
-| No | Nama Lengkap            |   Peran   | Email Akun (@gmail.com)        | Kata Sandi Unik | Catatan Resmi (Skenario Pengujian)                         |
-| :-: | :---------------------- | :-------: | :----------------------------- | :------------- | :--------------------------------------------------------- |
-|  1  | **Ratna Kusumawardani** |  Pemilik  | `ratna.griyakenanga@gmail.com` | `Latihan#2026` | **Pemilik**                                                |
-|  2  | **Bayu Prasetyo**       | Pengelola | `bayu.prasetyo@gmail.com`      | `Latihan#2026` | **Pengelola utama**                                        |
-|  3  | **Sinta Maharani**      | Pengelola | `sinta.maharani@gmail.com`     | `Latihan#2026` | **Pengelola (dipromosikan Pemilik 5 Okt)**                 |
-|  4  | **Aditya Pratama**      |  Penyewa  | `aditya.pratama@gmail.com`     | `Latihan#2026` | *(kosong)*                                                 |
-|  5  | **Bella Safitri**       |  Penyewa  | `bella.safitri@gmail.com`      | `Latihan#2026` | *(kosong)*                                                 |
-|  6  | **Cahya Ramadhan**      |  Penyewa  | `cahya.ramadhan@gmail.com`     | `Latihan#2026` | **Kontrak berakhir 31 Okt dan draf perpanjangan**          |
-|  7  | **Dimas Saputra**       |  Penyewa  | `dimas.saputra@gmail.com`      | `Latihan#2026` | **3 laporan terbuka, tagihan Okt belum bayar**             |
-|  8  | **Eka Wulandari**       |  Penyewa  | `eka.wulandari@gmail.com`      | `Latihan#2026` | *(kosong)*                                                 |
-|  9  | **Fajar Nugroho**       |  Penyewa  | `fajar.nugroho@gmail.com`      | `Latihan#2026` | **Identitas belum diverifikasi, kontrak draf C-307**       |
-| 10  | **Gilang Mahendra**     |  Penyewa  | `gilang.mahendra@gmail.com`    | `Latihan#2026` | **Kontrak diakhiri, identitas ditolak**                    |
-| 11  | **Hana Puspita**        |  Penyewa  | `hana.puspita@gmail.com`       | `Latihan#2026` | **Tunggakan September dan Oktober**                        |
-| 12  | **Indra Kurniawan**     |  Penyewa  | `indra.kurniawan@gmail.com`    | `Latihan#2026` | *(kosong)*                                                 |
-| 13  | **Jihan Aulia**         |  Penyewa  | `jihan.aulia@gmail.com`        | `Latihan#2026` | *(kosong)*                                                 |
-| 14  | **Kevin Wijaya**        |  Penyewa  | `kevin.wijaya@gmail.com`       | `Latihan#2026` | *(kosong)*                                                 |
-| 15  | **Laras Anggraini**     |  Penyewa  | `laras.anggraini@gmail.com`    | `Latihan#2026` | **Tagihan Okt sebagian**                                   |
-| 16  | **Muhammad Rizki**      |  Penyewa  | `muhammad.rizki@gmail.com`     | `Latihan#2026` | *(kosong)*                                                 |
-| 17  | **Nadia Salsabila**     |  Penyewa  | `nadia.salsabila@gmail.com`    | `Latihan#2026` | *(kosong)*                                                 |
-| 18  | **Oki Firmansyah**      |  Penyewa  | `oki.firmansyah@gmail.com`     | `Latihan#2026` | *(kosong)*                                                 |
-| 19  | **Putri Lestari**       |  Penyewa  | `putri.lestari@gmail.com`      | `Latihan#2026` | *(kosong)*                                                 |
-| 20  | **Raka Aditama**        |  Penyewa  | `raka.aditama@gmail.com`       | `Latihan#2026` | *(kosong)*                                                 |
-| 21  | **Salma Nuraini**       |  Penyewa  | `salma.nuraini@gmail.com`      | `Latihan#2026` | *(kosong)*                                                 |
-| 22  | **Teguh Santoso**       |  Penyewa  | `teguh.santoso@gmail.com`      | `Latihan#2026` | *(kosong)*                                                 |
-| 23  | **Vina Rahmawati**      |  Penyewa  | `vina.rahmawati@gmail.com`     | `Latihan#2026` | **Pernah bayar lewat Mayar**                               |
-| 24  | **Wahyu Hidayat**       |  Penyewa  | `wahyu.hidayat@gmail.com`      | `Latihan#2026` | *(kosong)*                                                 |
-| 25  | **Yoga Permana**        |  Penyewa  | `yoga.permana@gmail.com`       | `Latihan#2026` | **Mantan penyewa (kontrak selesai)**                       |
+| No | Nama Lengkap                  |   Peran   | Email Akun (@gmail.com)          | Kata Sandi Unik  | Catatan Resmi (Skenario Pengujian)                         |
+| :-: | :---------------------------- | :-------: | :------------------------------- | :--------------- | :--------------------------------------------------------- |
+| 1 | **Ratna Kusumawardani** |  Pemilik  | `ratna.griyakenanga@gmail.com` | `Latihan#2026` | **Pemilik**                                          |
+| 2 | **Bayu Prasetyo**       | Pengelola | `bayu.prasetyo@gmail.com`      | `Latihan#2026` | **Pengelola utama**                                  |
+| 3 | **Sinta Maharani**      | Pengelola | `sinta.maharani@gmail.com`     | `Latihan#2026` | **Pengelola (dipromosikan Pemilik 5 Okt)**           |
+| 4 | **Aditya Pratama**      |  Penyewa  | `aditya.pratama@gmail.com`     | `Latihan#2026` | *(kosong)*                                               |
+| 5 | **Bella Safitri**       |  Penyewa  | `bella.safitri@gmail.com`      | `Latihan#2026` | *(kosong)*                                               |
+| 6 | **Cahya Ramadhan**      |  Penyewa  | `cahya.ramadhan@gmail.com`     | `Latihan#2026` | **Kontrak berakhir 31 Okt dan draf perpanjangan**    |
+| 7 | **Dimas Saputra**       |  Penyewa  | `dimas.saputra@gmail.com`      | `Latihan#2026` | **3 laporan terbuka, tagihan Okt belum bayar**       |
+| 8 | **Eka Wulandari**       |  Penyewa  | `eka.wulandari@gmail.com`      | `Latihan#2026` | *(kosong)*                                               |
+| 9 | **Fajar Nugroho**       |  Penyewa  | `fajar.nugroho@gmail.com`      | `Latihan#2026` | **Identitas diverifikasi, kontrak aktif C-307 (BR-03)** |
+| 10 | **Gilang Mahendra**     |  Penyewa  | `gilang.mahendra@gmail.com`    | `Latihan#2026` | **Kontrak diakhiri, identitas ditolak**              |
+| 11 | **Hana Puspita**        |  Penyewa  | `hana.puspita@gmail.com`       | `Latihan#2026` | **Tunggakan September dan Oktober**                  |
+| 12 | **Indra Kurniawan**     |  Penyewa  | `indra.kurniawan@gmail.com`    | `Latihan#2026` | *(kosong)*                                               |
+| 13 | **Jihan Aulia**         |  Penyewa  | `jihan.aulia@gmail.com`        | `Latihan#2026` | *(kosong)*                                               |
+| 14 | **Kevin Wijaya**        |  Penyewa  | `kevin.wijaya@gmail.com`       | `Latihan#2026` | *(kosong)*                                               |
+| 15 | **Laras Anggraini**     |  Penyewa  | `laras.anggraini@gmail.com`    | `Latihan#2026` | **Tagihan Okt sebagian**                             |
+| 16 | **Muhammad Rizki**      |  Penyewa  | `muhammad.rizki@gmail.com`     | `Latihan#2026` | *(kosong)*                                               |
+| 17 | **Nadia Salsabila**     |  Penyewa  | `nadia.salsabila@gmail.com`    | `Latihan#2026` | *(kosong)*                                               |
+| 18 | **Oki Firmansyah**      |  Penyewa  | `oki.firmansyah@gmail.com`     | `Latihan#2026` | *(kosong)*                                               |
+| 19 | **Putri Lestari**       |  Penyewa  | `putri.lestari@gmail.com`      | `Latihan#2026` | *(kosong)*                                               |
+| 20 | **Raka Aditama**        |  Penyewa  | `raka.aditama@gmail.com`       | `Latihan#2026` | *(kosong)*                                               |
+| 21 | **Salma Nuraini**       |  Penyewa  | `salma.nuraini@gmail.com`      | `Latihan#2026` | *(kosong)*                                               |
+| 22 | **Teguh Santoso**       |  Penyewa  | `teguh.santoso@gmail.com`      | `Latihan#2026` | *(kosong)*                                               |
+| 23 | **Vina Rahmawati**      |  Penyewa  | `vina.rahmawati@gmail.com`     | `Latihan#2026` | **Pernah bayar lewat Mayar**                         |
+| 24 | **Wahyu Hidayat**       |  Penyewa  | `wahyu.hidayat@gmail.com`      | `Latihan#2026` | *(kosong)*                                               |
+| 25 | **Yoga Permana**        |  Penyewa  | `yoga.permana@gmail.com`       | `Latihan#2026` | **Mantan penyewa (kontrak selesai)**                 |
 
 ---
 
@@ -90,3 +90,13 @@ Aplikasi secara ketat menolak kata sandi lemah dengan aturan:
 - **Respon Server**: Menolak dengan kode status **`400 Bad Request`** jika syarat tidak terpenuhi.
 - **UI Helper**: Menampilkan panduan abu-abu di bawah kotak input:
   *"Kombinasi huruf besar, huruf kecil, angka, dan simbol khusus (min. 8 karakter)."*
+
+---
+
+## 5. Perlindungan Data Sensitif & Verifikasi Kata Sandi Akses Penyewa
+
+Untuk memenuhi kepatuhan privasi (UU PDP) dan mencegah penyalahgunaan data kependudukan penghuni, sistem menerapkan mekanisme penyamaran serta verifikasi sandi konfirmasi khusus bagi peran **Pemilik** dan **Pengelola**:
+
+- **Penyamaran NIK (*Data Masking*) & Akses Data di Akun Pemilik:** Nomor Induk Kependudukan (NIK) penyewa otomatis disensor menjadi `****-****-****-XXXX` (hanya 4 angka terakhir yang terlihat) saat dibuka dari akun Pemilik atau di halaman ringkasan internal. Jika Pemilik ingin melihat detail informasi kontak seperti **Nomor Telepon** dan **Email** penyewa, Pemilik wajib memasukkan kata sandi konfirmasi (`Latihan#2026`).
+- **Verifikasi Kata Sandi & Penyimpanan Foto KTP Privat di Akun Pengelola (*Expiring Signed URLs*):** File foto KTP disimpan di *private storage bucket* Supabase yang tertutup dari publik dan hanya bisa diakses lewat tautan khusus (*Signed URL*) berbatas waktu singkat. Saat Pengelola ingin membuka detail **Data KTP, NIK penuh, Email, dan Nomor Telepon** penyewa, sistem mengharuskan Pengelola memasukkan kata sandi konfirmasi (`Latihan#2026`) terlebih dahulu.
+

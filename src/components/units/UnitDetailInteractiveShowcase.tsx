@@ -250,7 +250,7 @@ export function UnitDetailInteractiveShowcase({
   };
 
   return (
-    <section id={id} className="w-full bg-white py-14 sm:py-20 px-4 sm:px-8 lg:px-12 border-t border-[#E3E6EB]">
+    <section id="eksplorasi-ruang" className="w-full bg-white py-14 sm:py-20 px-4 sm:px-8 lg:px-12 border-t border-[#E3E6EB]">
       <div className="max-w-7xl mx-auto space-y-10">
         {/* Section Title & Type Pills */}
         <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 border-b border-[#F0F2F4] pb-6">
@@ -289,7 +289,7 @@ export function UnitDetailInteractiveShowcase({
         </div>
 
         {/* Main Interactive Stage Box */}
-        <div className="rounded-[32px] bg-[#F8F9FA] border border-[#E3E6EB] p-5 sm:p-8 lg:p-10 shadow-sm space-y-8">
+        <div id="spesifikasi-3d" className="scroll-mt-10 rounded-[32px] bg-[#F8F9FA] border border-[#E3E6EB] p-5 sm:p-8 lg:p-10 shadow-sm space-y-8">
           {/* Header of Active Type */}
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 pb-6 border-b border-[#E3E6EB]">
             <div className="space-y-1.5">
@@ -510,7 +510,7 @@ export function UnitDetailInteractiveShowcase({
         </div>
 
         {/* 3 Room Types Quick Selection Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-2">
+        <div id="tipe-kamar" className="scroll-mt-10 grid grid-cols-1 md:grid-cols-3 gap-6 pt-2">
           {UNIT_TYPES_DATA.map((t) => {
             const isSelected = selectedTypeId === t.id;
             return (
